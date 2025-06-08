@@ -1,6 +1,6 @@
 import Page from "../animation/Page.tsx";
 import Badge from "../components/badge/Badge.tsx";
-import AnimatedCustomButton from "../components/button/AnimatedCustomButton.tsx";
+import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import LandingPageCard from "../components/card/LandingPageCard.tsx";
 import {
   Camera,
@@ -35,7 +35,7 @@ const LandingPage = () => {
             </p>
           </div>
           <div className={"flex "}>
-            <AnimatedCustomButton
+            <AnimatedButton
               borderColor={"#767676"}
               borderColorHover={"#14b8a6"}
               className={
@@ -44,7 +44,7 @@ const LandingPage = () => {
               onClick={() => navigate("/sign-up")}
             >
               Start Your Journey
-            </AnimatedCustomButton>
+            </AnimatedButton>
           </div>
         </div>
         <div className={"relative"}>
@@ -209,7 +209,7 @@ const LandingPage = () => {
               Join thousands of users who have already discovered a new way to
               share their creativity and build community.
             </p>
-            <AnimatedCustomButton
+            <AnimatedButton
               borderColor={"#14b8a6"}
               bgColor={"#222222"}
               bgColorHover={"#14b8a6"}
@@ -217,7 +217,7 @@ const LandingPage = () => {
               onClick={() => navigate("/sign-up")}
             >
               Sign up for free
-            </AnimatedCustomButton>
+            </AnimatedButton>
           </div>
         </LandingPageCard>
       </div>

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import AnimatedCustomButton from "../button/AnimatedCustomButton.tsx";
+import AnimatedButton from "../button/AnimatedButton.tsx";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -20,19 +20,19 @@ const Header = () => {
           <div className={"text-2xl font-bold text-white-100"}>Syncly</div>
         </div>
         <div className={"flex items-center gap-4"}>
-          <AnimatedCustomButton
+          <AnimatedButton
             onClick={() => navigate("/sign-in")}
             className={"px-4 py-3 rounded-lg"}
             bgColor={"#171719"}
           >
             Sign In
-          </AnimatedCustomButton>
-          <AnimatedCustomButton
+          </AnimatedButton>
+          <AnimatedButton
             onClick={() => navigate("/sign-up")}
             className={"px-4 py-3 rounded-lg"}
           >
             Sign Up
-          </AnimatedCustomButton>
+          </AnimatedButton>
         </div>
       </nav>
     </header>

@@ -1,9 +1,12 @@
+import React from "react";
+
 type BadgeProps = {
-  title: string;
+  title?: string;
   bgColor?: string;
   textColor?: string;
   borderColor?: string;
   className?: string;
+  children?: React.ReactNode;
 };
 
 const Badge = ({
@@ -12,6 +15,7 @@ const Badge = ({
   bgColor,
   textColor,
   className,
+  children,
 }: BadgeProps) => {
   return (
     <div
@@ -22,7 +26,7 @@ const Badge = ({
       }}
       className={`w-fit h-fit px-4 py-2 rounded-full flex text-center ${className}`}
     >
-      {title}
+      {title ?? children}
     </div>
   );
 };

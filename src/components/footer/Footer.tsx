@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import AnimatedCustomButton from "../button/AnimatedCustomButton.tsx";
+import AnimatedButton from "../button/AnimatedButton.tsx";
 
 const footerNavData = [
   {
@@ -38,7 +38,7 @@ const Footer = () => {
             style={{ color: "var(--color-gray-300)" }}
           >
             {footerNavData.map((item, index) => (
-              <AnimatedCustomButton
+              <AnimatedButton
                 textColorHover={"#e6e6e6"}
                 bgColor={"#171719"}
                 bgColorHover={"#171719"}
@@ -48,7 +48,7 @@ const Footer = () => {
                 onClick={() => navigate(item.value)}
               >
                 {item.title}
-              </AnimatedCustomButton>
+              </AnimatedButton>
             ))}
           </div>
         </div>

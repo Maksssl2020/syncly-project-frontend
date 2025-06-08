@@ -16,7 +16,7 @@ type AnimatedCustomButtonProps = {
   children: React.ReactNode;
 };
 
-const AnimatedCustomButton = ({
+const AnimatedButton = ({
   textColorHover = "#0a0a0c",
   bgColor = "#0a0a0c",
   bgColorHover = "#14b8a6",
@@ -42,7 +42,7 @@ const AnimatedCustomButton = ({
         backgroundColor: bgColor,
         borderColor: borderColor,
       }}
-      className={`cursor-pointer ${className}`}
+      className={`cursor-pointer border-2 ${className}`}
       onClick={onClick}
       type={type}
       disabled={disabled}
@@ -52,4 +52,4 @@ const AnimatedCustomButton = ({
   );
 };
 
-export default AnimatedCustomButton;
+export default AnimatedButton;
