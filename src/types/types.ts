@@ -20,6 +20,15 @@ export interface ToggleOption {
 }
 
 export interface DropdownOption {
-  value: string;
+  value?: string;
   label: string;
+  onClick?: () => void;
+}
+
+export interface ApiErrorResponse {
+  error?: string;
+  message?: string;
+  path?: string;
+  status?: number;
+  timestamp?: number;
 }

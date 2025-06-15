@@ -1,5 +1,5 @@
 import { Activity, Clock, Flag, MessageSquare, Tag, User } from "lucide-react";
-import type { RecentActivityStats } from "../../types/admin.ts";
+import type { ActivityStats } from "../../types/admin.ts";
 import { getActivityColor } from "../../utils/colorUtils.ts";
 import { formatTimeAgo } from "../../utils/dateUtils.ts";
 
@@ -19,7 +19,7 @@ const getActivityIcon = (type: string) => {
 };
 
 type AdminActivityCardProps = {
-  activity: RecentActivityStats;
+  activity: ActivityStats;
 };
 
 const AdminActivityCard = ({ activity }: AdminActivityCardProps) => {

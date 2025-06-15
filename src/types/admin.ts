@@ -8,7 +8,7 @@ export interface PageStats {
   color: string;
 }
 
-export interface RecentActivityStats {
+export interface ActivityStats {
   id: string;
   action: ActivityActionType;
   user: string;

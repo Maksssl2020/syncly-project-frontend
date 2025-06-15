@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import type { MainTag } from "../../types/tags.ts";
-import { getTagColor } from "../../utils/tagsUtils.ts";
 import {
   Edit,
   Hash,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import Badge from "../badge/Badge.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
+import { getTagColor } from "../../utils/colorUtils.ts";
 
 type MainTagAdminCardProps = {
   tag: MainTag;

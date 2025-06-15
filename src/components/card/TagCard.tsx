@@ -1,10 +1,10 @@
 import type { MainTag } from "../../types/tags";
 import { motion } from "framer-motion";
 import { Check, Flame, Hash, MessageCircle, Plus, Users } from "lucide-react";
-import { getTagColor } from "../../utils/tagsUtils";
 import AnimatedButton from "../button/AnimatedButton.tsx";
 import { useNavigate } from "react-router-dom";
 import Badge from "../badge/Badge.tsx";
+import { getTagColor } from "../../utils/colorUtils.ts";
 
 type TagCardProps = {
   tag: MainTag;

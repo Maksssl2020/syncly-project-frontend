@@ -1,5 +1,5 @@
 import Page from "../animation/Page.tsx";
-import type { PageStats, RecentActivityStats } from "../types/admin.ts";
+import type { ActivityStats, PageStats } from "../types/admin.ts";
 import {
   AlertCircle,
   ArrowRight,
@@ -69,7 +69,7 @@ const quickActions = [
   },
 ];
 
-const recentActivities: RecentActivityStats[] = [
+const recentActivities: ActivityStats[] = [
   {
     id: "1",
     action: "blocked",

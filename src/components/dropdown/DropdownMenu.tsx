@@ -1,8 +1,9 @@
 import type { DropdownOption } from "../../types/types.ts";
 import useClickOutside from "../../hooks/useClickOutside.ts";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import React from "react";
+import Dropdown from "./Dropdown.tsx";
 
 type DropdownMenuProps = {
   options: DropdownOption[];
@@ -27,7 +28,7 @@ const DropdownMenu = ({
   return (
     <div ref={ref} className={`relative w-full  ${className}`}>
       <motion.button
-        whileTap={{ scale: 0.98 }}
+        type={"button"}
         onClick={() => setIsOpen(!isOpen)}
         className={
           "flex items-center h-full justify-between w-full  px-4 py-2 rounded-lg focus:outline-none border-2 bg-black-300 border-gray-600 text-white-100"
@@ -50,38 +51,13 @@ const DropdownMenu = ({
         </motion.div>
       </motion.button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-1 rounded-lg shadow-lg overflow-hidden border-2 bg-black-200 border-gray-600"
-          >
-            <div className={"max-h-50 overflow-y-auto py-1"}>
-              {options.map((option) => (
-                <motion.div
-                  key={option.value}
-                  onClick={() => {
-                    onChange(option.value);
-                    setIsOpen(false);
-                  }}
-                  whileHover={{ backgroundColor: "#2c2c2e" }}
-                  animate={{
-                    color: value === option.value ? "#14b8a6" : "#e6e6e6",
-                    backgroundColor:
-                      value === option.value ? "#171719" : "#222222",
-                  }}
-                  className={"px-4 py-2 cursor-pointer"}
-                >
-                  {option.label}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Dropdown
+        isOpen={isOpen}
+        options={options}
+        value={value}
+        onClose={() => setIsOpen(false)}
+        onChange={(value) => onChange(value)}
+      />
     </div>
   );
 };

@@ -119,7 +119,7 @@ const Dashboard = () => {
         }
       >
         <div className={"p-6"}>
-          <Searchbar onChange={() => {}} />
+          <Searchbar onChange={() => {}} value={""} />
 
           <div className={"mt-6"}>
             <h3 className={"text-gray-300 text-lg font-semibold mb-4"}>

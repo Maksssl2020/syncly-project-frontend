@@ -10,7 +10,9 @@ import {
   Settings,
   Share2,
   Tag,
+  Users,
 } from "lucide-react";
+import Avatar from "../img/Avatar.tsx";
 
 const DashboardHeader = () => {
   const navigate = useNavigate();
@@ -37,6 +39,14 @@ const DashboardHeader = () => {
         </div>
       );
     }
+    if (pathname === "/friends") {
+      return (
+        <div className="flex items-center gap-3">
+          <Users className="size-6 text-teal-100" />
+          <h1 className="text-2xl font-bold text-white-100">Friends</h1>
+        </div>
+      );
+    }
     if (pathname.includes("/tags") && tag) {
       return (
         <div className="flex items-center gap-3">
@@ -56,6 +66,18 @@ const DashboardHeader = () => {
         <div className="flex items-center gap-3">
           <Settings className="size-6 text-teal-100" />
           <h1 className="text-2xl font-bold text-white-100">Settings</h1>
+        </div>
+      );
+    }
+
+    if (pathname.includes("conversation")) {
+      return (
+        <div className={"flex items-center gap-3"}>
+          <Avatar size={"size-10"} />
+          <div className={"flex flex-col "}>
+            <p className={"text-lg text-white-100"}>dev_mike</p>
+            <p className={"text-sm text-gray-400"}>offline</p>
+          </div>
         </div>
       );
     }
@@ -123,16 +145,28 @@ const DashboardHeader = () => {
     }
   };
 
+  const isDeltaNavigation = () => {
+    if (pathname.includes("conversation")) {
+      return true;
+    }
+
+    return false;
+  };
+
   return (
     <header
       className={
         "w-full h-[85px] px-4 border-b-2 border-gray-600 bg-black-200 justify-center flex items-center relative"
       }
     >
-      <nav className={"max-w-6xl  w-full justify-between items-center flex"}>
+      <nav
+        className={` w-full justify-between items-center flex ${pathname.includes("conversation") ? "" : "max-w-6xl"}`}
+      >
         <div className={"flex gap-5 items-center"}>
           <AnimatedButton
-            onClick={() => navigate("/dashboard")}
+            onClick={() =>
+              isDeltaNavigation() ? navigate(-1) : navigate("/dashboard")
+            }
             bgColor={"#222222"}
             bgColorHover={"#393939"}
             textColorHover={"#14b8a6"}

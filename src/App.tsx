@@ -19,27 +19,46 @@ import AdminReports from "./pages/AdminReports.tsx";
 import AdminTags from "./pages/AdminTags.tsx";
 import AdminTagForm from "./pages/AdminTagForm.tsx";
 import AdminUserForm from "./pages/AdminUserForm.tsx";
+import AdminCategories from "./pages/AdminCategories.tsx";
+import AdminTagCategoryForm from "./pages/AdminTagCategoryForm.tsx";
+import AdminAllActivity from "./pages/AdminAllActivity.tsx";
+import NotFound from "./pages/NotFound.tsx";
+import Conversations from "./pages/Conversations.tsx";
+import { Conversation } from "./pages/Conversation.tsx";
+import Friends from "./pages/Friends.tsx";
 
 function App() {
   return (
     <AnimatePresence mode={"wait"}>
       <BrowserRouter>
         <Routes>
+          <Route path="*" element={<NotFound />} />
           <Route element={<AppLayout />}>
             <Route path="/" element={<LandingPage />} />
           </Route>
           <Route element={<DashboardLayout />}>
             <Route path="/blog" element={<UserBlog />} />
+            <Route path="/blog/:userId" element={<UserBlog />} />
             <Route path="/saved-posts" element={<SavedPosts />} />
             <Route path="/tags" element={<Tags />} />
             <Route path="/tags/:tag" element={<Tag />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/conversations" element={<Conversations />} />
+            <Route path="/friends" element={<Friends />} />
+            <Route
+              path="/conversation/:conversationId"
+              element={<Conversation />}
+            />
             <Route path="/search" element={<Search />} />
           </Route>
 
           <Route element={<AdminLayout />}>
             <Route path={"/admin/panel"} element={<AdminPanel />} />
             <Route path={"/admin/panel/users"} element={<AdminUsers />} />
+            <Route
+              path={"/admin/panel/all-activity"}
+              element={<AdminAllActivity />}
+            />
             <Route
               path={"/admin/panel/users/edit/:id"}
               element={<AdminUserForm />}
@@ -49,6 +68,14 @@ function App() {
             <Route
               path={"/admin/panel/tags/create"}
               element={<AdminTagForm />}
+            />
+            <Route
+              path={"/admin/panel/categories"}
+              element={<AdminCategories />}
+            />
+            <Route
+              path={"/admin/panel/categories/create"}
+              element={<AdminTagCategoryForm />}
             />
           </Route>
           <Route path="/dashboard" element={<Dashboard />} />

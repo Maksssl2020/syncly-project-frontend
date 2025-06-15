@@ -3,6 +3,7 @@ import AnimatedButton from "../button/AnimatedButton.tsx";
 import {
   Bookmark,
   Home,
+  MessageCircle,
   Search,
   Settings,
   Tag,
@@ -15,7 +16,7 @@ import type { NavigationData } from "../../types/types.ts";
 const navigationData: NavigationData[] = [
   {
     title: "Home",
-    link: "/",
+    link: "/dashboard",
     icon: <Home className="size-5 mr-3" />,
   },
   {
@@ -27,6 +28,11 @@ const navigationData: NavigationData[] = [
     title: "Friends",
     link: "/friends",
     icon: <Users className="size-5 mr-3" />,
+  },
+  {
+    title: "Messages",
+    link: "/conversations",
+    icon: <MessageCircle className="size-5 mr-3" />,
   },
   {
     title: "My Blog",

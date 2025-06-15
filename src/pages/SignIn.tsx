@@ -7,6 +7,8 @@ import AnimatedAElement from "../components/a/AnimatedAElement.tsx";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signInValidator } from "../validators/signInValidator.ts";
 import { useNavigate } from "react-router-dom";
+import useSignInMutation from "../hooks/mutations/useSignInMutation.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -23,6 +25,8 @@ const SignIn = () => {
     },
   });
 
+  const { signIn, signingIn } = useSignInMutation();
+
   const onSubmit = ({
     username,
     password,
@@ -30,13 +34,22 @@ const SignIn = () => {
     username: string;
     password: string;
   }) => {
-    console.log(username, password);
+    signIn({
+      username,
+      password,
+    });
   };
+
+  if (signingIn) {
+    return <Spinner />;
+  }
 
   return (
     <Page className={"min-h-screen flex items-center justify-center py-6"}>
       <div className={"w-full max-w-lg "}>
         <AnimatedButton
+          borderColor={"#111111"}
+          borderColorHover={"#111111"}
           bgColorHover={"#111111"}
           textColorHover={"#14b8a6"}
           className={"flex items-center gap-2 mb-8 text-gray-300"}

@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import {
+  Activity,
   Flag,
+  Folder,
   LayoutDashboard,
   LogOut,
   Shield,
@@ -18,6 +20,11 @@ const adminNavItems: NavigationData[] = [
     icon: <LayoutDashboard className={"size-5"} />,
   },
   {
+    title: "All Activity",
+    link: "/admin/panel/all-activity",
+    icon: <Activity className={"size-5"} />,
+  },
+  {
     title: "Users",
     link: "/admin/panel/users",
     icon: <Users className={"size-5"} />,
@@ -31,6 +38,11 @@ const adminNavItems: NavigationData[] = [
     title: "Tags",
     link: "/admin/panel/tags",
     icon: <Tag className={"size-5"} />,
+  },
+  {
+    title: "Categories",
+    link: "/admin/panel/categories",
+    icon: <Folder className={"size-5"} />,
   },
 ];
 

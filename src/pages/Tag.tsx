@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import type { MainTag } from "../types/tags.ts";
 import { Flame, Grid3X3, List, SortDesc } from "lucide-react";
 import Badge from "../components/badge/Badge.tsx";
-import { getRandomTagColor } from "../utils/tagsUtils.ts";
 import PageHeaderContainer from "../components/header/PageHeaderContainer.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import type { DropdownOption, ToggleOption } from "../types/types.ts";
@@ -12,6 +11,7 @@ import ViewToggle from "../components/toggle/ViewToggle.tsx";
 import { motion } from "framer-motion";
 import DashboardPostGridCard from "../components/card/DashboardPostGridCard.tsx";
 import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
+import { getRandomTagColor } from "../utils/colorUtils.ts";
 
 const options: DropdownOption[] = [
   {

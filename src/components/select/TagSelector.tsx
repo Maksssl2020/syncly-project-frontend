@@ -4,8 +4,8 @@ import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import TagSelectionCard from "../card/TagSelectionCard.tsx";
 import { Hash, Plus, Search, Trash2 } from "lucide-react";
-import { getTagColor } from "../../utils/tagsUtils.ts";
 import AnimatedButton from "../button/AnimatedButton.tsx";
+import { getTagColor } from "../../utils/colorUtils.ts";
 
 const TagSelector = () => {
   const inputRef = useRef<HTMLInputElement>(null);

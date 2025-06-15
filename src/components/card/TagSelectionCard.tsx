@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import type { Tag } from "../../types/tags.ts";
 import { X } from "lucide-react";
-import { getTagColor } from "../../utils/tagsUtils.ts";
+import { getTagColor } from "../../utils/colorUtils.ts";
 
 type TagSelectionCardProps = {
   tag: Tag;

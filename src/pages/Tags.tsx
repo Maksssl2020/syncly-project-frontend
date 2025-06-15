@@ -42,6 +42,7 @@ const tabsData: TabData[] = [
 
 const allTags: MainTag[] = [
   {
+    id: "1",
     name: "Art",
     description:
       "Digital art, traditional painting, sculptures and creative expressions",
@@ -51,6 +52,7 @@ const allTags: MainTag[] = [
     category: "Creative",
   },
   {
+    id: "2",
     name: "Photography",
     description: "Photography tips, techniques, and stunning visual captures",
     postsCount: 1923,
@@ -59,6 +61,7 @@ const allTags: MainTag[] = [
     category: "Visual",
   },
   {
+    id: "3",
     name: "Music",
     description: "Music production, reviews, and audio experiences",
     postsCount: 1456,
@@ -67,6 +70,7 @@ const allTags: MainTag[] = [
     category: "Audio",
   },
   {
+    id: "4",
     name: "Travels",
     description: "Travel experiences, destinations, and adventure stories",
     postsCount: 1234,
@@ -75,6 +79,7 @@ const allTags: MainTag[] = [
     category: "Lifestyle",
   },
   {
+    id: "5",
     name: "Technology",
     description: "Latest tech trends, gadgets, and digital innovations",
     postsCount: 987,
@@ -83,6 +88,7 @@ const allTags: MainTag[] = [
     category: "Tech",
   },
   {
+    id: "6",
     name: "Cooking",
     description: "Recipes, cooking tips, and food photography",
     postsCount: 876,
@@ -91,6 +97,7 @@ const allTags: MainTag[] = [
     category: "Food",
   },
   {
+    id: "7",
     name: "sport",
     description: "Fitness, sports events, and healthy lifestyle content",
     postsCount: 654,
@@ -99,6 +106,7 @@ const allTags: MainTag[] = [
     category: "Health",
   },
   {
+    id: "8",
     name: "moda",
     description: "Fashion trends, style tips, and outfit inspirations",
     postsCount: 543,
