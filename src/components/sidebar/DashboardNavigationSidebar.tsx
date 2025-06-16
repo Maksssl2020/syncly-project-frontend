@@ -3,15 +3,19 @@ import AnimatedButton from "../button/AnimatedButton.tsx";
 import {
   Bookmark,
   Home,
+  LogOut,
   MessageCircle,
   Search,
   Settings,
+  Shield,
   Tag,
   User,
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { NavigationData } from "../../types/types.ts";
+import useAuthentication from "../../hooks/useAuthentication.ts";
+import { useAuthenticationStore } from "../../store/authenticationStore.ts";
 
 const navigationData: NavigationData[] = [
   {
@@ -57,6 +61,7 @@ const navigationData: NavigationData[] = [
 ];
 
 const DashboardNavigationSidebar = () => {
+  const { role } = useAuthentication();
   const navigate = useNavigate();
 
   return (
@@ -65,7 +70,7 @@ const DashboardNavigationSidebar = () => {
         "min-w-[25%] border-r-2 border-gray-600 h-screen sticky top-0 bg-black-200"
       }
     >
-      <div className={"p-6"}>
+      <div className={"p-6 h-full flex flex-col"}>
         <Logo />
         <nav className={"flex flex-col gap-4 mt-10 items-start"}>
           {navigationData.map((item, index) => (
@@ -86,6 +91,39 @@ const DashboardNavigationSidebar = () => {
             </AnimatedButton>
           ))}
         </nav>
+
+        <div className={"mt-auto flex flex-col gap-4"}>
+          <AnimatedButton
+            onClick={() => useAuthenticationStore.getState().logout()}
+            bgColor={"#222222"}
+            borderColor={"#222222"}
+            bgColorHover={"#393939"}
+            borderColorHover={"#ef4444"}
+            textColorHover={"#ef4444"}
+            className={
+              "flex gap-2 h-[50px] rounded-lg items-center justify-center"
+            }
+          >
+            <LogOut className={"size-6"} />
+            Logout
+          </AnimatedButton>
+          {role === "ADMIN" && (
+            <AnimatedButton
+              onClick={() => navigate("/admin/panel")}
+              bgColor={"#222222"}
+              borderColor={"#222222"}
+              bgColorHover={"#393939"}
+              borderColorHover={"#14b8a6"}
+              textColorHover={"#14b8a6"}
+              className={
+                "flex gap-2 h-[50px] rounded-lg items-center justify-center"
+              }
+            >
+              <Shield className={"size-5 "} />
+              Go To Admin Panel
+            </AnimatedButton>
+          )}
+        </div>
       </div>
     </div>
   );

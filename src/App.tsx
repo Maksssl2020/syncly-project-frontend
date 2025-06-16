@@ -26,6 +26,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Conversations from "./pages/Conversations.tsx";
 import { Conversation } from "./pages/Conversation.tsx";
 import Friends from "./pages/Friends.tsx";
+import ProtectedSignedInRoute from "./routes/ProtectedSignedInRoute.tsx";
 
 function App() {
   return (
@@ -36,49 +37,51 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<LandingPage />} />
           </Route>
-          <Route element={<DashboardLayout />}>
-            <Route path="/blog" element={<UserBlog />} />
-            <Route path="/blog/:userId" element={<UserBlog />} />
-            <Route path="/saved-posts" element={<SavedPosts />} />
-            <Route path="/tags" element={<Tags />} />
-            <Route path="/tags/:tag" element={<Tag />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/conversations" element={<Conversations />} />
-            <Route path="/friends" element={<Friends />} />
-            <Route
-              path="/conversation/:conversationId"
-              element={<Conversation />}
-            />
-            <Route path="/search" element={<Search />} />
-          </Route>
+          <Route element={<ProtectedSignedInRoute />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="/blog" element={<UserBlog />} />
+              <Route path="/blog/:userId" element={<UserBlog />} />
+              <Route path="/saved-posts" element={<SavedPosts />} />
+              <Route path="/tags" element={<Tags />} />
+              <Route path="/tags/:tag" element={<Tag />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/conversations" element={<Conversations />} />
+              <Route path="/friends" element={<Friends />} />
+              <Route
+                path="/conversation/:conversationId"
+                element={<Conversation />}
+              />
+              <Route path="/search" element={<Search />} />
+            </Route>
 
-          <Route element={<AdminLayout />}>
-            <Route path={"/admin/panel"} element={<AdminPanel />} />
-            <Route path={"/admin/panel/users"} element={<AdminUsers />} />
-            <Route
-              path={"/admin/panel/all-activity"}
-              element={<AdminAllActivity />}
-            />
-            <Route
-              path={"/admin/panel/users/edit/:id"}
-              element={<AdminUserForm />}
-            />
-            <Route path={"/admin/panel/reports"} element={<AdminReports />} />
-            <Route path={"/admin/panel/tags"} element={<AdminTags />} />
-            <Route
-              path={"/admin/panel/tags/create"}
-              element={<AdminTagForm />}
-            />
-            <Route
-              path={"/admin/panel/categories"}
-              element={<AdminCategories />}
-            />
-            <Route
-              path={"/admin/panel/categories/create"}
-              element={<AdminTagCategoryForm />}
-            />
+            <Route element={<AdminLayout />}>
+              <Route path={"/admin/panel"} element={<AdminPanel />} />
+              <Route path={"/admin/panel/users"} element={<AdminUsers />} />
+              <Route
+                path={"/admin/panel/all-activity"}
+                element={<AdminAllActivity />}
+              />
+              <Route
+                path={"/admin/panel/users/edit/:id"}
+                element={<AdminUserForm />}
+              />
+              <Route path={"/admin/panel/reports"} element={<AdminReports />} />
+              <Route path={"/admin/panel/tags"} element={<AdminTags />} />
+              <Route
+                path={"/admin/panel/tags/create"}
+                element={<AdminTagForm />}
+              />
+              <Route
+                path={"/admin/panel/categories"}
+                element={<AdminCategories />}
+              />
+              <Route
+                path={"/admin/panel/categories/create"}
+                element={<AdminTagCategoryForm />}
+              />
+            </Route>
+            <Route path="/dashboard" element={<Dashboard />} />
           </Route>
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
         </Routes>
