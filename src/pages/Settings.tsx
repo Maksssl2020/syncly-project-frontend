@@ -6,6 +6,10 @@ import { useState } from "react";
 import ProfileSettingsSection from "../components/section/ProfileSettingsSection.tsx";
 import PrivacySettingsSection from "../components/section/PrivacySettingsSection.tsx";
 import AccountSettingsSection from "../components/section/AccountSettingsSection.tsx";
+import useUserProfileByUserIdQuery from "../hooks/queries/useUserProfileByUserIdQuery.ts";
+import useAuthentication from "../hooks/useAuthentication.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import useUserSettingsByUserIdQuery from "../hooks/queries/useUserSettingsByUserIdQuery.ts";
 
 const tabs: TabData[] = [
   {
@@ -26,7 +30,21 @@ const tabs: TabData[] = [
 ];
 
 const Settings = () => {
+  const { userId } = useAuthentication();
+
   const [activeTabId, setActiveTabId] = useState<string>("profile");
+  const { userProfile, fetchingUserProfile } =
+    useUserProfileByUserIdQuery(userId);
+  const { userSettings, fetchingUserSettings } = useUserSettingsByUserIdQuery();
+
+  if (
+    fetchingUserProfile ||
+    !userProfile ||
+    fetchingUserSettings ||
+    !userSettings
+  ) {
+    return <Spinner />;
+  }
 
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
@@ -56,9 +74,19 @@ const Settings = () => {
                   Manage your {activeTabId} settings and preferences
                 </p>
               </div>
-              {activeTabId === "profile" && <ProfileSettingsSection />}
-              {activeTabId === "account" && <AccountSettingsSection />}
-              {activeTabId === "privacy" && <PrivacySettingsSection />}
+              {activeTabId === "profile" && (
+                <ProfileSettingsSection data={userProfile} />
+              )}
+              {activeTabId === "account" && (
+                <AccountSettingsSection
+                  isTwoFactorAuthentication={
+                    userSettings.twoFactorAuthentication
+                  }
+                />
+              )}
+              {activeTabId === "privacy" && (
+                <PrivacySettingsSection userSettings={userSettings} />
+              )}
             </div>
           </div>
         </div>

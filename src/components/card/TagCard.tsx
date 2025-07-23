@@ -10,10 +10,17 @@ type TagCardProps = {
   tag: MainTag;
   index: number;
   isFollowed: boolean;
-  onToggleFollow: () => void;
+  loading?: boolean;
+  onToggleFollow: (isFollowed: boolean, tagId: string | number) => void;
 };
 
-const TagCard = ({ tag, onToggleFollow, isFollowed, index }: TagCardProps) => {
+const TagCard = ({
+  tag,
+  onToggleFollow,
+  loading,
+  isFollowed,
+  index,
+}: TagCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -34,7 +41,7 @@ const TagCard = ({ tag, onToggleFollow, isFollowed, index }: TagCardProps) => {
           <div className={"flex-row flex"}>
             <div className={"flex flex-col items-start gap-2"}>
               <h3 className="text-lg font-bold text-white-100">#{tag.name}</h3>
-              <p className={"text-sm text-gray-400"}>{tag.category}</p>
+              <p className={"text-sm text-gray-400"}>{tag.tagCategory}</p>
             </div>
           </div>
         </div>
@@ -80,7 +87,7 @@ const TagCard = ({ tag, onToggleFollow, isFollowed, index }: TagCardProps) => {
       </div>
 
       <AnimatedButton
-        onClick={onToggleFollow}
+        onClick={() => onToggleFollow(isFollowed, tag.id)}
         className={
           "px-4 py-2 rounded-lg w-full mt-4 flex items-center gap-2 border-2"
         }
@@ -89,6 +96,7 @@ const TagCard = ({ tag, onToggleFollow, isFollowed, index }: TagCardProps) => {
         textColor={isFollowed ? "#111111" : "#14b8a6"}
         textColorHover={"#111111"}
         borderColor={"#14b8a6"}
+        loading={loading}
       >
         {isFollowed ? (
           <Check className="size-4" />

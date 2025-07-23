@@ -18,13 +18,11 @@ import ViewToggle from "../components/toggle/ViewToggle.tsx";
 import { motion } from "framer-motion";
 import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
 import DashboardPostGridCard from "../components/card/DashboardPostGridCard.tsx";
-
-const userStats = [
-  { label: "Posts", value: "127" },
-  { label: "Followers", value: "2.4k" },
-  { label: "Following", value: "892" },
-  { label: "Likes", value: "15.2k" },
-];
+import useUserProfileByUserIdQuery from "../hooks/queries/useUserProfileByUserIdQuery.ts";
+import useAuthentication from "../hooks/useAuthentication.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import { format } from "date-fns";
+import usePostsByUserIdQuery from "../hooks/queries/usePostsByUserIdQuery.ts";
 
 const filterOptions: TabData[] = [
   {
@@ -73,44 +71,58 @@ type FilterType = "all" | "photo" | "video" | "music" | "quote";
 type ViewMode = "list" | "grid";
 
 const UserBlog = () => {
+  const { userId } = useAuthentication();
+
+  const { userProfile, fetchingUserProfile } =
+    useUserProfileByUserIdQuery(userId);
+  const { userPosts, fetchingUserPosts } = usePostsByUserIdQuery(userId);
+
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [filterType, setFilterType] = useState<FilterType>("all");
+
+  if (fetchingUserProfile || !userProfile || fetchingUserPosts) {
+    return <Spinner />;
+  }
+
+  const {
+    displayName,
+    username,
+    bio,
+    location,
+    joinedAt,
+    website,
+    followersCount,
+    followingCount,
+    profileLikes,
+    avatar,
+  } = userProfile;
+
+  const userStats = [
+    { label: "Posts", value: userPosts?.length ?? 0 },
+    { label: "Followers", value: followersCount },
+    { label: "Following", value: followingCount },
+    {
+      label: "Likes",
+      value: profileLikes,
+    },
+  ];
+
+  console.log(userPosts);
 
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
       <div className={"max-w-6xl w-full flex flex-col gap-8"}>
         <div className={"w-full h-full gap-8 flex rounded-lg bg-black-200 p-8"}>
           <div className={"flex flex-col gap-4 items-center lg:items-start"}>
-            <Avatar size={"size-32"} />
+            <Avatar size={"size-32"} avatar={avatar} />
             <div className={"text-center lg:text-left"}>
               <h1 className={"text-3xl font-bold text-white-100"}>
-                Anna Kowalska
+                {displayName}
               </h1>
-              <p className={"text-xl text-gray-300"}>@anna_k</p>
+              <p className={"text-xl text-gray-300"}>@{username}</p>
             </div>
           </div>
           <div className={"flex-1 space-y-4"}>
-            <p className={"text-lg leading-relaxed text-white-100"}>
-              🎨 Digital artist & creative soul. Sharing my journey through
-              colors, emotions, and imagination. Currently exploring abstract
-              expressionism and digital painting techniques.
-            </p>
-            <div className={"flex flex-wrap gap-4 text-gray-300"}>
-              <div className={"flex items-center gap-2"}>
-                <MapPin className={"size-4"} />
-                <span>Warsaw, Poland</span>
-              </div>
-              <div className={"flex items-center gap-2"}>
-                <Calendar className={"size-4"} />
-                <span>Joined in 2021</span>
-              </div>
-              <div className={"flex items-center gap-2"}>
-                <LinkIcon className={"size-4"} />
-                <a href={"#"} className={"hover:underline text-teal-100"}>
-                  annakowalska.com
-                </a>
-              </div>
-            </div>
             <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
               {userStats.map((stat, index) => (
                 <div key={index} className={"text-center lg:text-left"}>
@@ -121,6 +133,27 @@ const UserBlog = () => {
                 </div>
               ))}
             </div>
+            <div className={"flex flex-wrap gap-4 text-gray-300"}>
+              {location && (
+                <div className={"flex items-center gap-2"}>
+                  <MapPin className={"size-4"} />
+                  <span>{location}</span>
+                </div>
+              )}
+              <div className={"flex items-center gap-2"}>
+                <Calendar className={"size-4"} />
+                <span>Joined in {format(joinedAt, "yyyy")}</span>
+              </div>
+              {website && (
+                <div className={"flex items-center gap-2"}>
+                  <LinkIcon className={"size-4"} />
+                  <a href={"#"} className={"hover:underline text-teal-100"}>
+                    annakowalska.com
+                  </a>
+                </div>
+              )}
+            </div>
+            <p className={"text-lg leading-relaxed text-white-100"}>{bio}</p>
           </div>
         </div>
 
@@ -156,11 +189,7 @@ const UserBlog = () => {
           }
         >
           {viewMode === "list" ? (
-            <>
-              <DashboardPostCard />
-              <DashboardPostCard />
-              <DashboardPostCard />
-            </>
+            <>{userPosts?.map((post) => <DashboardPostCard post={post} />)}</>
           ) : (
             <>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (

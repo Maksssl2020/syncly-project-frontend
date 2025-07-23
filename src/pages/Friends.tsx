@@ -9,6 +9,8 @@ import FriendsList from "../components/list/FriendsList.tsx";
 import type { Friend, FriendRequest, FriendSuggest } from "../types/user.ts";
 import FriendRequestsList from "../components/list/FriendRequestsList.tsx";
 import SuggestedFriendsList from "../components/list/SuggestedFriendsList.tsx";
+import useUserFriendsQuery from "../hooks/queries/useUserFriendsQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
 
 const mockFriends: Friend[] = [
   {
@@ -95,27 +97,6 @@ const mockSuggested: FriendSuggest[] = [
   },
 ];
 
-const tabs: TabData[] = [
-  {
-    id: "friends",
-    label: "Friends",
-    icon: <Users className={"size-5"} />,
-    count: 4,
-  },
-  {
-    id: "requests",
-    label: "Requests",
-    icon: <UserPlus className={"size-5"} />,
-    count: 2,
-  },
-  {
-    id: "suggested",
-    label: "Suggested",
-    icon: <UserSearch className={"size-5"} />,
-    count: 2,
-  },
-];
-
 const filterOptions: DropdownOption[] = [
   { value: "all", label: "All Friends" },
   { value: "online", label: "Online" },
@@ -133,6 +114,33 @@ const Friends = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("alphabetical");
+
+  const { userFriendsData, fetchingUserFriendsData } = useUserFriendsQuery();
+
+  if (fetchingUserFriendsData || !userFriendsData) {
+    return <Spinner />;
+  }
+
+  const tabs: TabData[] = [
+    {
+      id: "friends",
+      label: "Friends",
+      icon: <Users className={"size-5"} />,
+      count: userFriendsData.length,
+    },
+    {
+      id: "requests",
+      label: "Requests",
+      icon: <UserPlus className={"size-5"} />,
+      count: 2,
+    },
+    {
+      id: "suggested",
+      label: "Suggested",
+      icon: <UserSearch className={"size-5"} />,
+      count: 2,
+    },
+  ];
 
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
@@ -178,7 +186,7 @@ const Friends = () => {
         >
           {activeTab === "friends" && (
             <FriendsList
-              friends={mockFriends}
+              friends={userFriendsData}
               searchQuery={searchQuery}
               filterStatus={filterStatus}
               sortBy={sortBy}

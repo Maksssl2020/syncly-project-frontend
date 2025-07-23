@@ -94,15 +94,16 @@ const DashboardNavigationSidebar = () => {
 
         <div className={"mt-auto flex flex-col gap-4"}>
           <AnimatedButton
-            onClick={() => useAuthenticationStore.getState().logout()}
+            onClick={() => {
+              useAuthenticationStore.getState().logout();
+              navigate("/");
+            }}
             bgColor={"#222222"}
             borderColor={"#222222"}
             bgColorHover={"#393939"}
             borderColorHover={"#ef4444"}
             textColorHover={"#ef4444"}
-            className={
-              "flex gap-2 h-[50px] rounded-lg items-center justify-center"
-            }
+            className={"flex gap-2 h-[50px] rounded-lg items-center px-2"}
           >
             <LogOut className={"size-6"} />
             Logout

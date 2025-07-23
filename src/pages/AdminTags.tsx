@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import PageStatsCard from "../components/card/PageStatsCard.tsx";
 import type { PageStats } from "../types/admin.ts";
-import type { MainTag } from "../types/tags.ts";
 import { useState } from "react";
 import Searchbar from "../components/input/Searchbar.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
@@ -19,61 +18,16 @@ import type { DropdownOption } from "../types/types.ts";
 import { AnimatePresence } from "framer-motion";
 import MainTagAdminCard from "../components/card/MainTagAdminCard.tsx";
 import { useNavigate } from "react-router-dom";
-
-const MAIN_TAGS: MainTag[] = [
-  {
-    id: "1",
-    name: "photography",
-    description: "Share your best photos and photography tips",
-    postsCount: 12450,
-    followersCount: 8920,
-    trending: true,
-    category: "Creative",
-  },
-  {
-    id: "2",
-    name: "art",
-    description: "Digital and traditional art showcase",
-    postsCount: 9870,
-    followersCount: 7650,
-    trending: true,
-    category: "Creative",
-  },
-  {
-    id: "3",
-    name: "technology",
-    description: "Latest tech news and innovations",
-    postsCount: 7560,
-    followersCount: 6540,
-    trending: false,
-    category: "Technology",
-  },
-  {
-    id: "4",
-    name: "travel",
-    description: "Travel experiences and destination guides",
-    postsCount: 6540,
-    followersCount: 5430,
-    trending: true,
-    category: "Lifestyle",
-  },
-  {
-    id: "5",
-    name: "music",
-    description: "Music discovery and artist discussions",
-    postsCount: 5430,
-    followersCount: 4320,
-    trending: false,
-    category: "Entertainment",
-  },
-];
+import useAllTagsQuery from "../hooks/queries/useAllTagsQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
 
 const AdminTags = () => {
   const navigate = useNavigate();
-  const [tags, setTags] = useState<MainTag[]>(MAIN_TAGS);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showTrendingOnly, setShowTrendingOnly] = useState(false);
+
+  const { allTagsData, fetchingAllTagsData } = useAllTagsQuery();
 
   const tagsStats: PageStats[] = [
     {
@@ -81,47 +35,55 @@ const AdminTags = () => {
       icon: <Hash className={"size-6"} />,
       color: "#14b8a6",
       change: "",
-      value: tags.length,
+      value: allTagsData?.length ?? 0,
     },
     {
       title: "Trending",
       icon: <TrendingUp className={"size-6"} />,
       color: "#22d3ee",
       change: "",
-      value: tags.filter((tag) => tag.trending).length,
+      value: allTagsData?.filter((tag) => tag.trending).length ?? 0,
     },
     {
       title: "Total Posts",
       icon: <MessageSquare className={"size-6"} />,
       color: "#0d9488",
       change: "",
-      value: tags
-        .reduce((sum, tag) => sum + tag.postsCount, 0)
-        .toLocaleString(),
+      value:
+        allTagsData
+          ?.reduce((sum, tag) => sum + tag.postsCount, 0)
+          .toLocaleString() ?? 0,
     },
     {
       title: "Total Followers",
       icon: <Users className={"size-6"} />,
       color: "#06b6d4",
       change: "",
-      value: tags
-        .reduce((sum, tag) => sum + tag.followersCount, 0)
-        .toLocaleString(),
+      value:
+        allTagsData
+          ?.reduce((sum, tag) => sum + tag.followersCount, 0)
+          .toLocaleString() ?? 0,
     },
   ];
 
-  const filteredTags = tags.filter((tag) => {
+  if (fetchingAllTagsData || !allTagsData) {
+    return <Spinner />;
+  }
+
+  console.log(allTagsData);
+
+  const filteredTags = allTagsData.filter((tag) => {
     const matchesSearch =
       tag.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tag.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === "all" || tag.category === selectedCategory;
+      selectedCategory === "all" || tag.tagCategory === selectedCategory;
     const matchesTrending = !showTrendingOnly || tag.trending;
 
     return matchesSearch && matchesCategory && matchesTrending;
   });
 
-  const tagsCategories = new Set(tags.map((tag) => tag.category));
+  const tagsCategories = new Set(allTagsData.map((tag) => tag.tagCategory));
   const filters: DropdownOption[] = [
     { label: "All", value: "all" },
     ...Array.from(tagsCategories.values()).map((category) => ({

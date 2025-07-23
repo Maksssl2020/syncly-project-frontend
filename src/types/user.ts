@@ -1,3 +1,5 @@
+import type { UserProfile } from "./userProfile.ts";
+
 export type UserRole = "ADMIN" | "MODERATOR" | "USER";
 export type UserStatus = "ACTIVE" | "BLOCKED" | "INACTIVE";
 
@@ -13,6 +15,7 @@ export interface UserItem {
   lastActive: string;
   avatar: string;
   isActive: boolean;
+  userProfile: UserProfile;
 }
 
 export interface UserSearchResult {

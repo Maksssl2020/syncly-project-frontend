@@ -1,25 +1,21 @@
-import { useState } from "react";
-import Searchbar from "../input/Searchbar";
 import SavedPostCategoryButton from "../button/SavedPostCategoryButton.tsx";
 import { Heart, MessageCircle, Tag, Trash2 } from "lucide-react";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import { savedPostCategories } from "../../data/savedPosts.ts";
+import type { PostCollection } from "../../types/postCollection.ts";
 
 type SavedPostsSidebarProps = {
+  userPostCollections: PostCollection[];
   selectedCategoryId: string;
   onChange: (id: string) => void;
 };
 
 const SavedPostsSidebar = ({
+  userPostCollections,
   selectedCategoryId,
   onChange,
 }: SavedPostsSidebarProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-
   return (
     <div className={"lg:col-span-1 space-y-6"}>
-      <Searchbar onChange={() => {}} placeholder={"Search saved posts..."} />
-
       <div
         className={
           "rounded-lg p-6 border-2 flex flex-col gap-4 bg-black-200 border-gray-600"
@@ -34,10 +30,10 @@ const SavedPostsSidebar = ({
           Collections
         </h3>
         <div className={"space-y-2"}>
-          {savedPostCategories.map((category, index) => (
+          {userPostCollections.map((postCollection, index) => (
             <SavedPostCategoryButton
-              key={category.id + index}
-              category={category}
+              key={`${postCollection.id}${index}`}
+              postCollection={postCollection}
               onClick={(id) => onChange(id)}
               selectedCategoryId={selectedCategoryId}
             />

@@ -1,19 +1,13 @@
 import { motion } from "framer-motion";
 import type { Tag } from "../../types/tags.ts";
 import { X } from "lucide-react";
-import { getTagColor } from "../../utils/colorUtils.ts";
 
 type TagSelectionCardProps = {
   tag: Tag;
-  index: number;
   onRemoveTag: (tag: Tag) => void;
 };
 
-const TagSelectionCard = ({
-  tag,
-  index,
-  onRemoveTag,
-}: TagSelectionCardProps) => {
+const TagSelectionCard = ({ tag, onRemoveTag }: TagSelectionCardProps) => {
   return (
     <motion.div
       key={tag.id + tag.name}
@@ -24,13 +18,16 @@ const TagSelectionCard = ({
         "flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium text-black-100"
       }
       style={{
-        backgroundColor: getTagColor(index),
+        backgroundColor: tag.color,
       }}
     >
       <span>#{tag.name}</span>
       <button
         onClick={() => onRemoveTag(tag)}
-        className={"ml-1 rounded-full p-0.5 hover:bg-black-100/20"}
+        className={
+          "ml-1 rounded-full p-0.5 hover:bg-black-100/20 cursor-pointer"
+        }
+        type={"button"}
       >
         <X className={"size-3"} />
       </button>

@@ -7,13 +7,118 @@ import {
   MoreHorizontal,
   Share2,
 } from "lucide-react";
+import type { PostUnion } from "../../types/post.ts";
+import TextPostCard from "./TextPostCard.tsx";
+import QuotePostCard from "./QuotePostCard.tsx";
+import PhotoPostCard from "./PhotoPostCard.tsx";
+import { formatDistanceToNow } from "date-fns";
+import {
+  isAudioPost,
+  isLinkPost,
+  isPhotoPost,
+  isQuotePost,
+  isTextPost,
+  isVideoPost,
+} from "../../utils/postUnionGuards.ts";
+import VideoPostCard from "./VideoPostCard.tsx";
+import AudioPostCard from "./AudioPostCard.tsx";
+import LinkPostCard from "./LinkPostCard.tsx";
+import useLikePostMutation from "../../hooks/mutations/useLikePostMutation.ts";
+import useAuthentication from "../../hooks/useAuthentication.ts";
+import { useState } from "react";
+import CommentsSection from "../section/CommentsSection.tsx";
+import useUnsavePostByUserPostCollectionMutation from "../../hooks/mutations/useUnsavePostByUserPostCollectionMutation.ts";
+import SavePostInCollectionModal from "../modal/SavePostInCollectionModal.tsx";
+
+const defaultPost = {
+  id: 1,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  postType: "text" as const,
+  authorId: 1,
+  authorName: "Anna Kowalska",
+  authorUsername: "a_kowalska",
+  tags: ["nature", "art", "photography"],
+  title: "My thoughts today",
+  content:
+    "Właśnie skończyłam nowy obraz! 🎨 Inspiracją były kolory jesieni w moim ogrodzie. Co myślicie?",
+};
 
 type DashboardPostCardProps = {
   isSavedPost?: boolean;
+  post: PostUnion;
 };
 
-const DashboardPostCard = ({ isSavedPost = false }: DashboardPostCardProps) => {
-  const tags = ["nature", "art", "photography"];
+const DashboardPostCard = ({
+  isSavedPost = false,
+  post,
+}: DashboardPostCardProps) => {
+  const { userId } = useAuthentication();
+  const currentPost = post || defaultPost;
+  const {
+    id,
+    authorName,
+    authorUsername,
+    createdAt,
+    likesBy,
+    commentsCount,
+    savedBy,
+  } = currentPost;
+  const likesBySet = new Set(likesBy);
+  const savedBySet = new Set(savedBy);
+  const [isLiked, setIsLiked] = useState(likesBySet.has(Number(userId)));
+  const [isSaved, setIsSaved] = useState(savedBySet.has(Number(userId)));
+  const [likes, setLikes] = useState<number>(likesBySet.size);
+  const [showComments, setShowComments] = useState(false);
+  const [showSavePostModal, setShowSavePostModal] = useState(false);
+
+  const [showLikes, setShowLikes] = useState(false);
+  const [showShares, setShowShares] = useState(false);
+
+  const { likePost } = useLikePostMutation(() => {
+    setLikes((prevState) => prevState + 1);
+    setIsLiked(true);
+  });
+  const { unsavePost } = useUnsavePostByUserPostCollectionMutation();
+
+  const renderPostContent = () => {
+    if (isTextPost(currentPost)) {
+      return <TextPostCard post={currentPost} />;
+    }
+
+    if (isQuotePost(currentPost)) {
+      return <QuotePostCard post={currentPost} />;
+    }
+
+    if (isPhotoPost(currentPost)) {
+      return <PhotoPostCard post={currentPost} />;
+    }
+
+    if (isVideoPost(currentPost)) {
+      return <VideoPostCard post={currentPost} />;
+    }
+
+    if (isAudioPost(currentPost)) {
+      return <AudioPostCard post={currentPost} />;
+    }
+
+    if (isLinkPost(currentPost)) {
+      return <LinkPostCard post={currentPost} />;
+    }
+
+    return null;
+  };
+
+  const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
+
+  const onLikePost = () => {
+    if (userId) {
+      likePost({
+        userId,
+        postId: id,
+      });
+    }
+  };
 
   return (
     <div
@@ -24,11 +129,11 @@ const DashboardPostCard = ({ isSavedPost = false }: DashboardPostCardProps) => {
       <header className={"w-full h-auto flex gap-4 items-center"}>
         <Avatar />
         <div className={"flex flex-col gap-1 text-white-100"}>
-          <h3 className={"text-xl font-semibold"}>Anna Kowalska</h3>
+          <h3 className={"text-xl font-semibold"}>{authorName}</h3>
           <div className={"flex gap-1 text-gray-400"}>
-            <p className={"text-base"}>@anna_k</p>
+            <p className={"text-base"}>@{authorUsername}</p>
             <p>•</p>
-            <p className={"text-base"}>2 hours ago</p>
+            <p className={"text-base"}>{timeAgo}</p>
           </div>
         </div>
         <div className={"ml-auto flex gap-2"}>
@@ -57,26 +162,12 @@ const DashboardPostCard = ({ isSavedPost = false }: DashboardPostCardProps) => {
           )}
         </div>
       </header>
-      <div className={"w-full h-auto flex flex-col gap-6"}>
-        <textarea
-          className={
-            "text-white-100 text-xl w-full h-auto resize-none outline-none"
-          }
-        >
-          Właśnie skończyłam nowy obraz! 🎨 Inspiracją były kolory jesieni w
-          moim ogrodzie. Co myślicie?
-        </textarea>
-        <img
-          src={"./placeholder.svg"}
-          alt={"test"}
-          className={
-            "w-full h-auto object-cover bg-black-100 rounded-lg border-2 border-gray-600 outline-none overflow-hidden"
-          }
-        />
+      <div className="w-full h-auto flex flex-col gap-6">
+        {renderPostContent()}
       </div>
 
       <div className={"flex flex-wrap gap-1"}>
-        {tags.map((tag) => (
+        {post.tags.map((tag) => (
           <span
             key={tag}
             className={
@@ -95,21 +186,23 @@ const DashboardPostCard = ({ isSavedPost = false }: DashboardPostCardProps) => {
       >
         <div className={"w-auto flex items-center gap-4"}>
           <AnimatedButton
-            bgColor={"#222222"}
+            onClick={() => onLikePost()}
+            bgColor={isLiked ? "#4D3232" : "#222222"}
             textColor={"#b0b0b0"}
             textColorHover={"#b0b0b0"}
             bgColorHover={"#4D3232"}
-            borderColor={"#222222"}
+            borderColor={isLiked ? "#4D3232" : "#222222"}
             borderColorHover={"#4D3232"}
             className={
               "px-4 py-3 h-fit w-auto rounded-lg flex gap-4 items-center"
             }
           >
             <Heart className={"size-4"} />
-            122
+            {likes}
           </AnimatedButton>
           <AnimatedButton
-            bgColor={"#222222"}
+            onClick={() => setShowComments(!showComments)}
+            bgColor={showComments ? "#22454B" : "#222222"}
             textColor={"#b0b0b0"}
             textColorHover={"#b0b0b0"}
             bgColorHover={"#22454B"}
@@ -120,7 +213,7 @@ const DashboardPostCard = ({ isSavedPost = false }: DashboardPostCardProps) => {
             }
           >
             <MessageCircle className={"size-4"} />
-            122
+            {commentsCount}
           </AnimatedButton>
           <AnimatedButton
             bgColor={"#222222"}
@@ -138,12 +231,24 @@ const DashboardPostCard = ({ isSavedPost = false }: DashboardPostCardProps) => {
           </AnimatedButton>
         </div>
         <AnimatedButton
-          bgColor={"#222222"}
+          bgColor={isSaved ? "#4D441F" : "#222222"}
           bgColorHover={"#4D441F"}
-          borderColor={"#222222"}
+          borderColor={isSaved ? "#4D441F" : "#222222"}
           borderColorHover={"#4D441F"}
           textColor={"#b0b0b0"}
           textColorHover={"#b0b0b0"}
+          onClick={() => {
+            if (isSaved) {
+              if (userId) {
+                unsavePost({
+                  postCollectionId: userId,
+                  postId: post.id,
+                });
+              }
+            } else {
+              setShowSavePostModal(true);
+            }
+          }}
           className={
             "px-4 py-3 h-fit w-auto rounded-lg flex gap-4 items-center"
           }
@@ -151,6 +256,14 @@ const DashboardPostCard = ({ isSavedPost = false }: DashboardPostCardProps) => {
           <Bookmark className={"size-4"} />
         </AnimatedButton>
       </footer>
+
+      {showComments && <CommentsSection postId={post.id} />}
+
+      <SavePostInCollectionModal
+        postId={post.id}
+        isOpen={showSavePostModal}
+        onClose={() => setShowSavePostModal(false)}
+      />
     </div>
   );
 };

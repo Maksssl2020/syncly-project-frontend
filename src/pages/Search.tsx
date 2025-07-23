@@ -1,109 +1,20 @@
 import Page from "../animation/Page";
 import Searchbar from "../components/input/Searchbar.tsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { TabData } from "../types/types.ts";
 import { FileText, Hash, SearchIcon, Users } from "lucide-react";
 import Tab from "../components/tab/Tab.tsx";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import UserSearchCard from "../components/card/UserSearchCard.tsx";
-import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
 import TagCard from "../components/card/TagCard.tsx";
-import type { MainTag } from "../types/tags.ts";
-
-const filterOptions: TabData[] = [
-  {
-    id: "all",
-    label: "All",
-    icon: <SearchIcon className="size-4" />,
-    count: 156,
-  },
-  {
-    id: "users",
-    label: "Users",
-    icon: <Users className="size-4" />,
-    count: 45,
-  },
-  {
-    id: "posts",
-    label: "Posts",
-    icon: <FileText className="size-4" />,
-    count: 89,
-  },
-  { id: "tags", label: "Tags", icon: <Hash className="size-4" />, count: 22 },
-];
-
-const users = [
-  {
-    name: "Anna Kowalska",
-    username: "anna_art",
-    bio: "🎨 Digital artist & creative soul. Sharing my journey through colors, emotions, and imagination.",
-    followers: 12500,
-    posts: 127,
-    avatar: "/placeholder.svg",
-  },
-  {
-    name: "Michał Nowak",
-    username: "michal_photo",
-    bio: "📸 Professional photographer capturing life's beautiful moments. Nature and portrait specialist.",
-    followers: 8900,
-    posts: 89,
-    avatar: "/placeholder.svg",
-  },
-  {
-    name: "Kasia Music",
-    username: "kasia_beats",
-    bio: "🎵 Music producer and DJ. Electronic music enthusiast. Always creating new beats.",
-    followers: 6700,
-    posts: 156,
-    avatar: "/placeholder.svg",
-  },
-];
-
-const posts = [
-  {
-    id: 1,
-    user: { name: "Anna Kowalska", username: "anna_art" },
-    content:
-      "Właśnie skończyłam nowy obraz! 🎨 Inspiracją były kolory jesieni w moim ogrodzie. Co myślicie?",
-    image: "/placeholder.svg?height=400&width=600",
-    likes: 156,
-    comments: 23,
-    shares: 12,
-    timestamp: "2 godz. temu",
-    tags: ["sztuka", "digital-art", "autumn"],
-  },
-  {
-    id: 2,
-    user: { name: "Michał Nowak", username: "michal_photo" },
-    content: "Wschód słońca nad Tatrami. Warto było wstać o 4 rano! 🏔️",
-    image: "/placeholder.svg?height=400&width=600",
-    likes: 234,
-    comments: 45,
-    shares: 28,
-    timestamp: "4 godz. temu",
-    tags: ["fotografia", "nature", "mountains"],
-  },
-];
-
-const tags: MainTag[] = [
-  {
-    name: "sztuka",
-    trending: false,
-    description:
-      "Digital art, traditional painting, sculptures and creative expressions",
-    postsCount: 2847,
-    followersCount: 12500,
-    category: "Creative",
-  },
-  {
-    name: "fotografia",
-    trending: true,
-    description: "Photography tips, techniques, and stunning visual captures",
-    postsCount: 1923,
-    followersCount: 8900,
-    category: "Visual",
-  },
-];
+import useSearchUsersByQuery from "../hooks/queries/useSearchUsersByQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import useSearchTagsQuery from "../hooks/queries/useSearchTagsQuery.ts";
+import useSearchPostsQuery from "../hooks/queries/useSearchPostsQuery.ts";
+import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
+import useFollowedTagsQuery from "../hooks/queries/useFollowedTagsQuery.ts";
+import useFollowTagMutation from "../hooks/mutations/useFollowTagMutation.ts";
+import useUnfollowTagMutation from "../hooks/mutations/useUnfollowTagMutation.ts";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,37 +22,79 @@ const Search = () => {
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(
     new Set(["anna_art", "michal_photo"]),
   );
+  const { searchedUsers, searchingUsers } = useSearchUsersByQuery(searchQuery);
+  const { searchedTags, searchingTags } = useSearchTagsQuery(searchQuery);
+  const { searchedPosts, searchingPosts } = useSearchPostsQuery(searchQuery);
+  const { followedTags, fetchingFollowedTags } = useFollowedTagsQuery();
+  const { followTag, followingTag } = useFollowTagMutation();
+  const { unfollowTag, unfollowingTag } = useUnfollowTagMutation();
+  const [followingTags, setFollowingTags] = useState<Set<string>>(new Set([]));
 
-  const getFilteredResults = () => {
-    if (!searchQuery.trim()) return { users: [], posts: [], tags: [] };
+  useEffect(() => {
+    if (followedTags && !fetchingFollowedTags) {
+      const mappedTags = followedTags.map((tag) => tag.name.toLowerCase());
+      const uniqueTags = new Set(mappedTags);
+      setFollowingTags(uniqueTags);
 
-    const query = searchQuery.toLowerCase();
-    return {
-      users: users.filter(
-        (user) =>
-          user.name.toLowerCase().includes(query) ||
-          user.username.toLowerCase().includes(query) ||
-          user.bio.toLowerCase().includes(query),
-      ),
-      posts: posts.filter(
-        (post) =>
-          post.content.toLowerCase().includes(query) ||
-          post.tags?.some((tag) => tag.toLowerCase().includes(query)),
-      ),
-      tags: tags.filter(
-        (tag) =>
-          tag.name.toLowerCase().includes(query) ||
-          tag.description.toLowerCase().includes(query) ||
-          tag.category.toLowerCase().includes(query),
-      ),
-    };
+      console.log(mappedTags);
+    }
+  }, [fetchingFollowedTags, followedTags]);
+
+  if (
+    searchingUsers ||
+    searchingTags ||
+    searchingPosts ||
+    fetchingFollowedTags
+  ) {
+    return <Spinner />;
+  }
+
+  const hasResults =
+    (searchedUsers && searchedUsers.length > 0) ||
+    (searchedPosts && searchedPosts.length > 0) ||
+    (searchedTags && searchedTags.length > 0);
+
+  const sum =
+    (searchedUsers?.length ?? 0) +
+    (searchedPosts?.length ?? 0) +
+    (searchedTags?.length ?? 0);
+
+  const filterOptions: TabData[] = [
+    {
+      id: "all",
+      label: "All",
+      icon: <SearchIcon className="size-4" />,
+      count: sum,
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: <Users className="size-4" />,
+      count: searchedUsers?.length ?? 0,
+    },
+    {
+      id: "posts",
+      label: "Posts",
+      icon: <FileText className="size-4" />,
+      count: searchedPosts?.length ?? 0,
+    },
+    {
+      id: "tags",
+      label: "Tags",
+      icon: <Hash className="size-4" />,
+      count: searchedTags?.length ?? 0,
+    },
+  ];
+
+  const onFollowToggle = (isFollowed: boolean, tagId: string | number) => {
+    if (isFollowed) {
+      unfollowTag(tagId);
+    } else {
+      followTag(tagId);
+    }
   };
 
-  const results = getFilteredResults();
-  const hasResults =
-    results.users.length > 0 ||
-    results.posts.length > 0 ||
-    results.tags.length > 0;
+  console.log(searchedUsers);
 
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
@@ -157,6 +110,7 @@ const Search = () => {
             value={searchQuery}
             placeholder={"Search users, posts, tags..."}
             onChange={(value) => setSearchQuery(value)}
+            debounceMs={500}
           />
         </div>
         <div className=" px-6 py-8 w-full rounded-lg bg-black-200 border-gray-600 border-2">
@@ -166,7 +120,7 @@ const Search = () => {
                 "flex flex-col lg:flex-row  items-start lg:items-center gap-4"
               }
             >
-              {filterOptions.map((option, index) => (
+              {filterOptions.map((option) => (
                 <Tab
                   data={option}
                   onClick={() => setChosenTab(option.id)}
@@ -192,56 +146,61 @@ const Search = () => {
           hasResults ? (
             <div className={"space-y-8"}>
               {(chosenTab === "all" || chosenTab === "users") &&
-                results.users.length > 0 && (
+                searchedUsers!.length > 0 && (
                   <div>
                     <h2
                       className="text-xl font-bold mb-4"
                       style={{ color: "var(--color-white-100)" }}
                     >
-                      Users ({results.users.length})
+                      Users ({searchedUsers?.length})
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {results.users.map((item, index) => (
-                        <UserSearchCard isFollowed={index % 2 === 0} />
+                      {searchedUsers?.map((item, index) => (
+                        <UserSearchCard
+                          user={item}
+                          isFollowed={index % 2 === 0}
+                        />
                       ))}
                     </div>
                   </div>
                 )}
 
               {(chosenTab === "all" || chosenTab === "posts") &&
-                results.posts.length > 0 && (
+                searchedPosts!.length > 0 && (
                   <div>
                     <h2
                       className="text-xl font-bold mb-4"
                       style={{ color: "var(--color-white-100)" }}
                     >
-                      Posts ({results.posts.length})
+                      Posts ({searchedPosts?.length})
                     </h2>
                     <div className="space-y-6">
-                      {results.posts.map((post) => (
-                        <DashboardPostCard key={post.id} />
+                      {searchedPosts?.map((post) => (
+                        <DashboardPostCard key={post.id} post={post} />
                       ))}
                     </div>
                   </div>
                 )}
 
               {(chosenTab === "all" || chosenTab === "tags") &&
-                results.tags.length > 0 && (
+                searchedTags!.length > 0 && (
                   <div>
                     <h2
                       className="text-xl font-bold mb-4"
                       style={{ color: "var(--color-white-100)" }}
                     >
-                      Tags ({results.tags.length})
+                      Tags ({searchedTags?.length})
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {results.tags.map((tag, index) => (
+                      {searchedTags?.map((tag, index) => (
                         <TagCard
-                          isFollowed={false}
+                          isFollowed={followingTags.has(tag.name.toLowerCase())}
                           index={index}
                           tag={tag}
                           key={tag.name}
-                          onToggleFollow={() => {}}
+                          onToggleFollow={(isFollowed, tagId) =>
+                            onFollowToggle(isFollowed, tagId)
+                          }
                         />
                       ))}
                     </div>

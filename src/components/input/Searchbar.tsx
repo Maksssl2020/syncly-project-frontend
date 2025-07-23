@@ -6,12 +6,14 @@ type SearchbarProps = {
   onChange: (value: string) => void;
   placeholder?: string;
   value: string;
+  debounceMs?: number;
 };
 
 const Searchbar = ({
   value,
   onChange,
   placeholder = "Szukaj...",
+  debounceMs = 300,
 }: SearchbarProps) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState(value);
@@ -20,9 +22,16 @@ const Searchbar = ({
     setInputValue(value);
   }, [value]);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(inputValue);
+    }, debounceMs);
+
+    return () => clearTimeout(timeout);
+  }, [inputValue, onChange, debounceMs]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
-    onChange(e.target.value);
   };
 
   const handleClear = () => {

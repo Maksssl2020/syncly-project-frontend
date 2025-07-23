@@ -28,7 +28,7 @@ const Tab = ({ data, activeTabId, onClick, className }: TabProps) => {
     >
       {data.icon}
       {data.label}
-      {data.count && (
+      {data.count !== undefined && (
         <span
           className={
             "text-xs px-2 py-1 rounded-full bg-gray-600 text-white-100"

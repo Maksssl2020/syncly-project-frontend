@@ -24,7 +24,7 @@ const Badge = ({
         color: textColor,
         borderColor: borderColor,
       }}
-      className={`w-fit h-fit px-4 py-2 rounded-full flex text-center ${className}`}
+      className={`w-fit h-fit px-4 py-1 rounded-full flex text-center ${className}`}
     >
       {title ?? children}
     </div>

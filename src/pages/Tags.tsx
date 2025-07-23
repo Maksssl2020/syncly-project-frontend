@@ -4,134 +4,90 @@ import PageHeaderContainer from "../components/header/PageHeaderContainer.tsx";
 import type { TabData } from "../types/types.ts";
 import { Clock, Eye, Hash, TrendingUp } from "lucide-react";
 import Tabs from "../components/tab/Tabs.tsx";
-import { useState } from "react";
-import type { MainTag } from "../types/tags.ts";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import TagCard from "../components/card/TagCard.tsx";
-
-const tabsData: TabData[] = [
-  {
-    id: "all",
-    label: "All Tags",
-    icon: <Hash className="size-4" />,
-    count: 156,
-    color: "#14b8a6",
-  },
-  {
-    id: "following",
-    label: "Following",
-    icon: <Eye className="size-4" />,
-    count: 22,
-    color: "#22d3ee",
-  },
-  {
-    id: "trending",
-    label: "Trending",
-    icon: <TrendingUp className="size-4" />,
-    count: 12,
-    color: "#0d9488",
-  },
-  {
-    id: "recent",
-    label: "Recent",
-    icon: <Clock className="size-4" />,
-    count: 24,
-    color: "#06b6d4",
-  },
-];
-
-const allTags: MainTag[] = [
-  {
-    id: "1",
-    name: "Art",
-    description:
-      "Digital art, traditional painting, sculptures and creative expressions",
-    postsCount: 2847,
-    followersCount: 12500,
-    trending: true,
-    category: "Creative",
-  },
-  {
-    id: "2",
-    name: "Photography",
-    description: "Photography tips, techniques, and stunning visual captures",
-    postsCount: 1923,
-    followersCount: 8900,
-    trending: true,
-    category: "Visual",
-  },
-  {
-    id: "3",
-    name: "Music",
-    description: "Music production, reviews, and audio experiences",
-    postsCount: 1456,
-    followersCount: 6700,
-    trending: false,
-    category: "Audio",
-  },
-  {
-    id: "4",
-    name: "Travels",
-    description: "Travel experiences, destinations, and adventure stories",
-    postsCount: 1234,
-    followersCount: 5400,
-    trending: true,
-    category: "Lifestyle",
-  },
-  {
-    id: "5",
-    name: "Technology",
-    description: "Latest tech trends, gadgets, and digital innovations",
-    postsCount: 987,
-    followersCount: 4200,
-    trending: false,
-    category: "Tech",
-  },
-  {
-    id: "6",
-    name: "Cooking",
-    description: "Recipes, cooking tips, and food photography",
-    postsCount: 876,
-    followersCount: 3800,
-    trending: false,
-    category: "Food",
-  },
-  {
-    id: "7",
-    name: "sport",
-    description: "Fitness, sports events, and healthy lifestyle content",
-    postsCount: 654,
-    followersCount: 2900,
-    trending: false,
-    category: "Health",
-  },
-  {
-    id: "8",
-    name: "moda",
-    description: "Fashion trends, style tips, and outfit inspirations",
-    postsCount: 543,
-    followersCount: 2100,
-    trending: true,
-    category: "Style",
-  },
-];
+import useAllTagsQuery from "../hooks/queries/useAllTagsQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import useFollowedTagsQuery from "../hooks/queries/useFollowedTagsQuery.ts";
+import useFollowTagMutation from "../hooks/mutations/useFollowTagMutation.ts";
+import useUnfollowTagMutation from "../hooks/mutations/useUnfollowTagMutation.ts";
+import { isThisWeek } from "date-fns";
 
 const Tags = () => {
+  const { allTagsData, fetchingAllTagsData } = useAllTagsQuery();
+  const { followedTags, fetchingFollowedTags } = useFollowedTagsQuery();
+  const { followTag, followingTag } = useFollowTagMutation();
+  const { unfollowTag, unfollowingTag } = useUnfollowTagMutation();
+
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [chosenTab, setChosenTab] = useState<string>("all");
-  const [followingTags, setFollowingTags] = useState<Set<string>>(
-    new Set(["art", "photography", "music", "travelling"]),
-  );
+  const [followingTags, setFollowingTags] = useState<Set<string>>(new Set([]));
 
-  const filteredTags = allTags.filter((tag) => {
+  useEffect(() => {
+    if (followedTags && !fetchingFollowedTags) {
+      const mappedTags = followedTags.map((tag) => tag.name.toLowerCase());
+      console.log(mappedTags);
+      const uniqueTags = new Set(mappedTags);
+      setFollowingTags(uniqueTags);
+    }
+  }, [fetchingFollowedTags, followedTags]);
+
+  if (fetchingAllTagsData || !allTagsData || fetchingFollowedTags) {
+    return <Spinner />;
+  }
+
+  const tabsData: TabData[] = [
+    {
+      id: "all",
+      label: "All Tags",
+      icon: <Hash className="size-4" />,
+      count: allTagsData.length,
+      color: "#14b8a6",
+    },
+    {
+      id: "following",
+      label: "Following",
+      icon: <Eye className="size-4" />,
+      count: followingTags.size,
+      color: "#22d3ee",
+    },
+    {
+      id: "trending",
+      label: "Trending",
+      icon: <TrendingUp className="size-4" />,
+      count: allTagsData.filter((tag) => tag.trending).length,
+      color: "#0d9488",
+    },
+    {
+      id: "recent",
+      label: "Recent",
+      icon: <Clock className="size-4" />,
+      count: allTagsData.filter((tag) => isThisWeek(tag.createdAt)).length,
+      color: "#0d9488",
+    },
+  ];
+
+  console.log(followedTags);
+
+  const onFollowToggle = (isFollowed: boolean, tagId: string | number) => {
+    if (isFollowed) {
+      unfollowTag(tagId);
+    } else {
+      followTag(tagId);
+    }
+  };
+
+  const filteredTags = allTagsData.filter((tag) => {
     const matchesSearch = tag.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesFilter =
       chosenTab === "all" ||
-      (chosenTab === "following" && followingTags.has(tag.name)) ||
+      (chosenTab === "following" &&
+        followingTags.has(tag.name.toLowerCase())) ||
       (chosenTab === "trending" && tag.trending) ||
-      chosenTab === "recent";
+      (chosenTab === "recent" && isThisWeek(tag.createdAt));
 
     return matchesSearch && matchesFilter;
   });
@@ -140,7 +96,11 @@ const Tags = () => {
     <Page className={"w-full mt-8 flex flex-col items-center"}>
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className={"grid grid-cols-1 lg:grid-cols-4 gap-8"}>
-          <TagsSidebar onChange={(value) => setSearchQuery(value)} />
+          <TagsSidebar
+            tagsData={allTagsData}
+            followedTags={followingTags}
+            onChange={(value) => setSearchQuery(value)}
+          />
           <div className={"lg:col-span-3 space-y-6"}>
             <PageHeaderContainer>
               <Tabs
@@ -164,7 +124,10 @@ const Tags = () => {
                   tag={tag}
                   index={index}
                   isFollowed={followingTags.has(tag.name.toLowerCase())}
-                  onToggleFollow={() => {}}
+                  onToggleFollow={(isFollowed, tagId) =>
+                    onFollowToggle(isFollowed, tagId)
+                  }
+                  loading={followingTag || unfollowingTag}
                 />
               ))}
             </motion.div>

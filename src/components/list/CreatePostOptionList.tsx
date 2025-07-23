@@ -1,6 +1,13 @@
 import { motion } from "framer-motion";
 import type { PostOption, PostType } from "../../types/post";
-import { Camera, FileText, LinkIcon, Music, Quote, Video } from "lucide-react";
+import {
+  AudioLines,
+  Camera,
+  FileText,
+  LinkIcon,
+  Quote,
+  Video,
+} from "lucide-react";
 
 const postOptions: PostOption[] = [
   {
@@ -28,9 +35,9 @@ const postOptions: PostOption[] = [
     color: "#06b6d4",
   },
   {
-    type: "music",
-    icon: Music,
-    label: "Music",
+    type: "audio",
+    icon: AudioLines,
+    label: "Audio",
     color: "#14b8a6",
   },
   {

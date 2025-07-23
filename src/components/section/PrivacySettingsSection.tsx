@@ -1,13 +1,23 @@
 import FormSwitch from "../input/FormSwitch.tsx";
 import { useForm } from "react-hook-form";
+import type { UserSettings } from "../../types/userSettings.ts";
 
-const PrivacySettingsSection = () => {
+type PrivacySettingsSectionProps = {
+  userSettings: UserSettings;
+};
+
+const PrivacySettingsSection = ({
+  userSettings,
+}: PrivacySettingsSectionProps) => {
+  const { showEmail, publicProfile, showLocation, showOnlineStatus } =
+    userSettings;
+
   const { setValue, watch } = useForm({
     defaultValues: {
-      publicProfile: true,
-      showEmail: false,
-      showLocation: false,
-      showOnlineStatus: false,
+      publicProfile: publicProfile,
+      showEmail: showEmail,
+      showLocation: showLocation,
+      showOnlineStatus: showOnlineStatus,
     },
   });
 

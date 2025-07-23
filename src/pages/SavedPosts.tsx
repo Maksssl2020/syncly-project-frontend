@@ -1,7 +1,6 @@
 import Page from "../animation/Page";
 import SavedPostsSidebar from "../components/sidebar/SavedPostsSidebar.tsx";
 import { useState } from "react";
-import { savedPostCategories } from "../data/savedPosts.ts";
 import { Grid3X3, List, SortDesc } from "lucide-react";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import type { DropdownOption, ToggleOption } from "../types/types.ts";
@@ -10,6 +9,8 @@ import { motion } from "framer-motion";
 import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
 import DashboardPostGridCard from "../components/card/DashboardPostGridCard.tsx";
 import PageHeaderContainer from "../components/header/PageHeaderContainer.tsx";
+import Spinner from "../components/spinner/Spinner.tsx";
+import useUserPostCollectionsQuery from "../hooks/queries/useUserPostCollectionsQuery.ts";
 
 const sortOptions: DropdownOption[] = [
   {
@@ -41,11 +42,19 @@ const SavedPosts = () => {
   const [chosenSortOption, setChosenSortOption] =
     useState<SortOption>("recent");
 
+  const { userPostCollections, fetchingUserPostCollections } =
+    useUserPostCollectionsQuery();
+
+  if (!userPostCollections || fetchingUserPostCollections) {
+    return <Spinner />;
+  }
+
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className={"grid grid-cols-1 lg:grid-cols-4 gap-8"}>
           <SavedPostsSidebar
+            userPostCollections={userPostCollections}
             selectedCategoryId={selectedCategory}
             onChange={setSelectedCategory}
           />
@@ -55,15 +64,18 @@ const SavedPosts = () => {
               <div className={"flex items-center gap-4"}>
                 <h2 className={"text-xl font-semibold text-white-100"}>
                   {
-                    savedPostCategories.find(
-                      (category) => category.id === selectedCategory,
-                    )?.name
+                    userPostCollections.find(
+                      (postCollection) =>
+                        postCollection.title.toLowerCase() === selectedCategory,
+                    )?.title
                   }
                   <span className={"text-gray-400 ml-2"}>
                     {
-                      savedPostCategories.find(
-                        (category) => category.id === selectedCategory,
-                      )?.count
+                      userPostCollections.find(
+                        (postCollection) =>
+                          postCollection.title.toLowerCase() ===
+                          selectedCategory,
+                      )?.posts.length
                     }
                   </span>
                 </h2>
@@ -99,8 +111,18 @@ const SavedPosts = () => {
             >
               {viewMode === "list" ? (
                 <>
-                  <DashboardPostCard isSavedPost={true} />
-                  <DashboardPostCard isSavedPost={true} />
+                  {userPostCollections
+                    .find(
+                      (postCollection) =>
+                        postCollection.title.toLowerCase() === selectedCategory,
+                    )
+                    ?.posts?.map((post, index) => (
+                      <DashboardPostCard
+                        key={index}
+                        post={post}
+                        isSavedPost={true}
+                      />
+                    ))}
                 </>
               ) : (
                 <>

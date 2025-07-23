@@ -11,14 +11,13 @@ import {
 } from "lucide-react";
 import Badge from "../badge/Badge.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import { getTagColor } from "../../utils/colorUtils.ts";
 
 type MainTagAdminCardProps = {
   tag: MainTag;
   index: number;
 };
 
-const MainTagAdminCard = ({ tag, index }: MainTagAdminCardProps) => {
+const MainTagAdminCard = ({ tag }: MainTagAdminCardProps) => {
   return (
     <motion.div
       key={tag.id}
@@ -32,7 +31,7 @@ const MainTagAdminCard = ({ tag, index }: MainTagAdminCardProps) => {
           <div
             className={"size-12 rounded-lg flex items-center justify-center"}
             style={{
-              backgroundColor: getTagColor(index),
+              backgroundColor: tag.color,
             }}
           >
             <Hash className={"size-6 text-black-100"} />
@@ -54,9 +53,10 @@ const MainTagAdminCard = ({ tag, index }: MainTagAdminCardProps) => {
               )}
               <Badge
                 className={
-                  "px-2 py-1 rounded-full text-xs bg-gray-600 text-gray-300"
+                  "px-2 py-1 rounded-full text-xs bg-gray-600 text-black-100 font-bold"
                 }
-                title={tag.category}
+                bgColor={tag.color}
+                title={tag.tagCategory}
               />
             </div>
             <p className={"text-gray-400"}>{tag.description}</p>

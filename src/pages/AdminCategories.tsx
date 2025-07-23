@@ -9,41 +9,11 @@ import Searchbar from "../components/input/Searchbar.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import type { DropdownOption } from "../types/types.ts";
 import { AnimatePresence, motion } from "framer-motion";
-import type { TagCategory } from "../types/tagCategory.ts";
 import { useState } from "react";
 import AdminTagCategoryCard from "../components/card/AdminTagCategoryCard.tsx";
 import { getRandomTagColor } from "../utils/colorUtils.ts";
-
-const categoriesStats: PageStats[] = [
-  {
-    title: "Total Categories",
-    value: 14,
-    change: "",
-    icon: <Folder className={"size-6 "} />,
-    color: "#14b8a6",
-  },
-  {
-    title: "Total Tags",
-    value: 84,
-    change: "",
-    icon: <Hash className={"size-6 "} />,
-    color: "#22d3ee",
-  },
-  {
-    title: "Avg Tags / Category",
-    value: 5,
-    change: "",
-    icon: <BarChart3 className={"size-6 "} />,
-    color: "#0d9488",
-  },
-  {
-    title: "Avg Tags / Category",
-    value: 5,
-    change: "",
-    icon: <BarChart3 className={"size-6 "} />,
-    color: "#06b6d4",
-  },
-];
+import useTagCategoriesQuery from "../hooks/queries/useTagCategoriesQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
 
 const dropdownSortingOptions: DropdownOption[] = [
   {
@@ -60,58 +30,55 @@ const dropdownSortingOptions: DropdownOption[] = [
   },
 ];
 
-const MOCK_CATEGORIES: TagCategory[] = [
-  {
-    id: "1",
-    name: "Creative",
-    description: "Art, design, photography and creative content",
-    color: "var(--color-teal-100)",
-    tagCount: 15,
-  },
-  {
-    id: "2",
-    name: "Technology",
-    description: "Tech, programming, gadgets and innovations",
-    color: "var(--color-cyan-100)",
-    tagCount: 23,
-  },
-  {
-    id: "3",
-    name: "Lifestyle",
-    description: "Fashion, food, travel and daily life",
-    color: "var(--color-teal-200)",
-    tagCount: 18,
-  },
-  {
-    id: "4",
-    name: "Entertainment",
-    description: "Movies, music, games and fun content",
-    color: "var(--color-cyan-200)",
-    tagCount: 12,
-  },
-  {
-    id: "5",
-    name: "Education",
-    description: "Learning, books, tutorials and knowledge",
-    color: "var(--color-teal-100)",
-    tagCount: 9,
-  },
-  {
-    id: "6",
-    name: "Business",
-    description: "Entrepreneurship, finance and professional topics",
-    color: "var(--color-cyan-100)",
-    tagCount: 7,
-  },
-];
-
 const AdminCategories = () => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState(MOCK_CATEGORIES);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("name");
 
-  const filteredCategories = categories
+  const { tagCategories, fetchingTagCategories } = useTagCategoriesQuery();
+
+  if (!tagCategories || fetchingTagCategories) {
+    return <Spinner />;
+  }
+
+  const totalTagsCount = tagCategories.reduce(
+    (sum, cat) => sum + cat.tagCount,
+    0,
+  );
+  const avgTagsPerCategory = Math.round(totalTagsCount / tagCategories.length);
+
+  const categoriesStats: PageStats[] = [
+    {
+      title: "Total Categories",
+      value: tagCategories.length,
+      change: "",
+      icon: <Folder className={"size-6 "} />,
+      color: "#14b8a6",
+    },
+    {
+      title: "Total Tags",
+      value: totalTagsCount,
+      change: "",
+      icon: <Hash className={"size-6 "} />,
+      color: "#22d3ee",
+    },
+    {
+      title: "Avg Tags / Category",
+      value: avgTagsPerCategory,
+      change: "",
+      icon: <BarChart3 className={"size-6 "} />,
+      color: "#0d9488",
+    },
+    {
+      title: "Avg Tags / Category",
+      value: 5,
+      change: "",
+      icon: <BarChart3 className={"size-6 "} />,
+      color: "#06b6d4",
+    },
+  ];
+
+  const filteredCategories = tagCategories
     .filter(
       (category) =>
         category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,11 +97,7 @@ const AdminCategories = () => {
       }
     });
 
-  const deleteCategory = (categoryId: string) => {
-    setCategories(categories.filter((cat) => cat.id !== categoryId));
-  };
-
-  const totalTags = categories.reduce((sum, cat) => sum + cat.tagCount, 0);
+  const totalTags = tagCategories.reduce((sum, cat) => sum + cat.tagCount, 0);
 
   return (
     <Page className={"min-h-screen p-6 flex flex-col gap-8 w-full"}>
@@ -215,7 +178,7 @@ const AdminCategories = () => {
             Category Distribution
           </h3>
           <div className={"space-y-3"}>
-            {categories
+            {tagCategories
               .sort((a, b) => b.tagCount - a.tagCount)
               .map((category) => {
                 const precentage = (category.tagCount / totalTags) * 100;

@@ -5,3 +5,9 @@ export interface TagCategory {
   tagCount: number;
   color: string;
 }
+
+export interface TagCategoryRequest {
+  name: string;
+  description: string;
+  color: string;
+}

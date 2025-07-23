@@ -1,9 +1,9 @@
-import type { Friend } from "../../types/user";
 import { MessageCircle } from "lucide-react";
 import FriendCard from "../card/FriendCard.tsx";
+import type { FriendUser } from "../../types/friends.ts";
 
 interface FriendsListProps {
-  friends: Friend[];
+  friends: FriendUser[];
   searchQuery: string;
   filterStatus: string;
   sortBy: string;
@@ -16,22 +16,22 @@ const FriendsList = ({
   searchQuery,
 }: FriendsListProps) => {
   const filteredFriends = friends.filter((friend) => {
-    const matchesSearch = friend.username
+    const matchesSearch = friend.user.username
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesFilter =
-      filterStatus === "all" || friend.status === filterStatus;
+      filterStatus === "all" || friend.user.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
   const sortedFriends = [...filteredFriends].sort((a, b) => {
     switch (sortBy) {
       case "alphabetical":
-        return a.username.localeCompare(b.username);
+        return a.user.username.localeCompare(b.user.username);
       case "activity":
-        return a.status === "online" ? -1 : 1;
+        return a.user.status === "ACTIVE" ? -1 : 1;
       case "mutual":
-        return b.mutualFriends - a.mutualFriends;
+        return b.mutualFriendsCount - a.mutualFriendsCount;
       default:
         return 0;
     }

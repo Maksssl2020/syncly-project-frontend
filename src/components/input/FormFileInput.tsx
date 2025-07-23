@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
 
 type FormFileInputProps = {
@@ -13,6 +13,7 @@ type FormFileInputProps = {
   multiple?: boolean;
   maxFiles?: number;
   accept?: string;
+  onClick?: () => void;
 };
 
 const FormFileInput = ({
@@ -25,6 +26,7 @@ const FormFileInput = ({
   title,
   description,
   accept,
+  onClick,
 }: FormFileInputProps) => {
   const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -69,6 +71,7 @@ const FormFileInput = ({
         }}
         onDragLeave={() => setIsDraggedOver(false)}
         onDrop={handleDrop}
+        onClick={onClick}
         htmlFor={"filesInput"}
         className={
           "border-2 border-dashed rounded-lg p-8 text-center border-gray-600"

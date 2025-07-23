@@ -7,6 +7,11 @@ import FormInput from "../components/input/FormInput.tsx";
 import FormTextArea from "../components/input/FormTextarea.tsx";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import { useNavigate } from "react-router-dom";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { tagCategoryValidator } from "../validators/tagCategoryValidator.ts";
+import useCreateTagCategoryMutation from "../hooks/mutations/useCreateTagCategoryMutation.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import type { TagCategoryRequest } from "../types/tagCategory.ts";
 
 const AVAILABLE_COLORS = [
   { name: "Teal", value: "#14b8a6" },
@@ -25,19 +30,36 @@ const AVAILABLE_COLORS = [
 
 const AdminTagCategoryForm = () => {
   const navigate = useNavigate();
+  const initialValues = {
+    name: "",
+    description: "",
+    color: AVAILABLE_COLORS[0].value,
+  };
+
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
     setValue,
+    reset,
   } = useForm({
-    defaultValues: {
-      name: "",
-      description: "",
-      color: AVAILABLE_COLORS[0].value,
-    },
+    resolver: yupResolver(tagCategoryValidator),
+    defaultValues: initialValues,
   });
+
+  const { createTagCategory, creatingTagCategory } =
+    useCreateTagCategoryMutation(() => {
+      reset(initialValues);
+    });
+
+  if (creatingTagCategory) {
+    return <Spinner />;
+  }
+
+  const onSubmit = (data: TagCategoryRequest) => {
+    createTagCategory(data);
+  };
 
   return (
     <Page className={"min-h-screen p-6  flex flex-col gap-8 w-full"}>
@@ -74,7 +96,10 @@ const AdminTagCategoryForm = () => {
             </div>
           </header>
 
-          <form className={"p-6 flex flex-col gap-6"}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className={"p-6 flex flex-col gap-6"}
+          >
             <FormInput
               title={"Category Name *"}
               type={"text"}

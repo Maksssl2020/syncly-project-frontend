@@ -57,9 +57,7 @@ const AdminSidebar = () => {
   return (
     <motion.div
       initial={false}
-      className={
-        "fixed bg-black-200 md:relative z-40 h-full md:h-auto md:min-h-screen min-w-[300px]"
-      }
+      className={"bg-black-200  z-40 min-w-[300px] h-screen sticky top-0"}
     >
       <div className={"p-6 flex flex-col gap-12"}>
         <div className={"flex items-center justify-center space-x-2 "}>

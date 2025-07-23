@@ -1,60 +1,64 @@
 import Searchbar from "../input/Searchbar.tsx";
 import SidebarElementBanner from "../banner/SidebarElementBanner.tsx";
 import { Eye, Star, TrendingUp } from "lucide-react";
-import type { TagsStatistics } from "../../types/tags.ts";
+import type { MainTag, TagsStatistics } from "../../types/tags.ts";
 import TagsStatisticsCard from "../card/TagsStatisticsCard.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-
-const trendingStats: TagsStatistics[] = [
-  {
-    label: "Total Tags",
-    value: 156,
-  },
-  {
-    label: "Following",
-    value: 29,
-  },
-  {
-    label: "Trending Now",
-    value: 12,
-  },
-  {
-    label: "New this week",
-    value: 16,
-  },
-];
-
-const topTags: TagsStatistics[] = [
-  {
-    label: "Creative",
-    value: "156 tags",
-  },
-  {
-    label: "Visual",
-    value: "29 tags",
-  },
-  {
-    label: "Tech",
-    value: "12 tags",
-  },
-  {
-    label: "Lifestyle",
-    value: "16 tags",
-  },
-  {
-    label: "Food",
-    value: "12 tags",
-  },
-];
+import { isThisWeek } from "date-fns";
 
 type TagsSidebarProps = {
+  tagsData: MainTag[];
+  followedTags: Set<string>;
   onChange: (value: string) => void;
 };
 
-const TagsSidebar = ({ onChange }: TagsSidebarProps) => {
+const TagsSidebar = ({
+  tagsData,
+  followedTags,
+  onChange,
+}: TagsSidebarProps) => {
+  const groupedByCategory: Record<string, number> = tagsData.reduce<
+    Record<string, number>
+  >((acc, tag) => {
+    const category = tag.tagCategory || "Uncategorized";
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topTags: TagsStatistics[] = Object.entries(groupedByCategory)
+    .sort(([, countA], [, countB]) => countB - countA)
+    .slice(0, 5)
+    .map(([category, count]) => ({
+      label: category,
+      value: `${count} tags`,
+    }));
+
+  const trendingStats: TagsStatistics[] = [
+    {
+      label: "Total Tags",
+      value: tagsData.length,
+    },
+    {
+      label: "Following",
+      value: followedTags.size,
+    },
+    {
+      label: "Trending Now",
+      value: tagsData.filter((tag) => tag.trending).length,
+    },
+    {
+      label: "New this week",
+      value: tagsData.filter((tag) => isThisWeek(tag.createdAt)).length,
+    },
+  ];
+
   return (
     <div className={"lg:col-span-1 space-y-6"}>
-      <Searchbar onChange={onChange} placeholder={"Search tags..."} />
+      <Searchbar
+        onChange={onChange}
+        placeholder={"Search tags..."}
+        value={""}
+      />
 
       <div
         className={

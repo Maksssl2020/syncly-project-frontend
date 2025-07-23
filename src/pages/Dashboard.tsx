@@ -1,16 +1,23 @@
 import Page from "../animation/Page.tsx";
-import AnimatedButton from "../components/button/AnimatedButton.tsx";
-import { Camera, Music, Palette, Send, Video } from "lucide-react";
-import Avatar from "../components/img/Avatar.tsx";
-import FormTextArea from "../components/input/FormTextarea.tsx";
 import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
 import Searchbar from "../components/input/Searchbar.tsx";
 import DashboardNavigationSidebar from "../components/sidebar/DashboardNavigationSidebar.tsx";
 import { useState } from "react";
 import FloatingButton from "../components/button/FloatingButton.tsx";
 import CreatePostOptionList from "../components/list/CreatePostOptionList.tsx";
-import type { PostType } from "../types/post.ts";
+import type {
+  AudioPostRequest,
+  LinkPostRequest,
+  PhotoPostRequest,
+  PostType,
+  QuotePostRequest,
+  TextPostRequest,
+  VideoPostRequest,
+} from "../types/post.ts";
 import CreatePostModal from "../components/modal/CreatePostModal.tsx";
+import useCreatePostMutation from "../hooks/mutations/useCreatePostMutation.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import usePostsForUserDashboard from "../hooks/queries/usePostsForUserDashboard.ts";
 
 const Dashboard = () => {
   const [isCreatePostListOpen, setIsCreatePostListOpen] = useState(false);
@@ -18,100 +25,41 @@ const Dashboard = () => {
     null,
   );
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
+  const { createPost, creatingPost } = useCreatePostMutation();
+
+  const { postsForUserDashboard, fetchingPostsForUserDashboard } =
+    usePostsForUserDashboard();
 
   const handleCreatePost = (type: PostType) => {
     setIsCreatePostModalOpen(true);
     setSelectedPostType(type);
   };
 
+  const handleCreatePostSubmit = (
+    data:
+      | TextPostRequest
+      | QuotePostRequest
+      | PhotoPostRequest
+      | VideoPostRequest
+      | AudioPostRequest
+      | LinkPostRequest,
+  ) => {
+    if (selectedPostType) {
+      createPost({ data, type: selectedPostType });
+    }
+  };
+
+  if (creatingPost || fetchingPostsForUserDashboard) {
+    return <Spinner />;
+  }
+
   return (
     <Page className={"min-h-screen flex"}>
       <DashboardNavigationSidebar />
       <div className={"flex-1 mx-auto p-6 space-y-6"}>
-        <div
-          className={
-            "w-full h-[300px] p-5 flex border-2 border-gray-600 rounded-lg bg-black-200"
-          }
-        >
-          <div className={"flex gap-4 w-full "}>
-            <Avatar />
-            <div className={"flex-1 flex-col"}>
-              <div className={"w-full h-[80%]"}>
-                <FormTextArea
-                  title={""}
-                  placeholder={"What do you want to share?"}
-                />
-              </div>
-              <div
-                className={"w-full h-[50px] flex items-center justify-between"}
-              >
-                <div className={"flex gap-2 h-full"}>
-                  <AnimatedButton
-                    bgColor={"#222222"}
-                    bgColorHover={"#254542"}
-                    textColorHover={"#14b8a6"}
-                    textColor={"#14b8a6"}
-                    className={
-                      "flex gap-2 items-center h-full rounded-lg px-4 "
-                    }
-                  >
-                    <Camera className={"size-4"} />
-                    Photo
-                  </AnimatedButton>
-                  <AnimatedButton
-                    bgColor={"#222222"}
-                    bgColorHover={"#23444B"}
-                    textColorHover={"#22d3ee"}
-                    textColor={"#22d3ee"}
-                    className={
-                      "flex gap-2 items-center h-full rounded-lg px-4 "
-                    }
-                  >
-                    <Video className={"size-4"} />
-                    Video
-                  </AnimatedButton>
-                  <AnimatedButton
-                    bgColor={"#222222"}
-                    bgColorHover={"#254542"}
-                    textColorHover={"#0d9488"}
-                    textColor={"#0d9488"}
-                    className={
-                      "flex gap-2 items-center h-full rounded-lg px-4 "
-                    }
-                  >
-                    <Music className={"size-4"} />
-                    Music
-                  </AnimatedButton>
-                  <AnimatedButton
-                    bgColor={"#222222"}
-                    bgColorHover={"#23444B"}
-                    textColorHover={"#06b6d4"}
-                    textColor={"#06b6d4"}
-                    className={
-                      "flex gap-2 items-center h-full rounded-lg px-4 "
-                    }
-                  >
-                    <Palette className={"size-4"} />
-                    GIF
-                  </AnimatedButton>
-                </div>
-                <AnimatedButton
-                  bgColor={"#222222"}
-                  borderColorHover={"#14b8a6"}
-                  textColorHover={"#222222"}
-                  className={
-                    "flex gap-2 border-2 items-center h-full rounded-lg px-6 "
-                  }
-                >
-                  <Send className={"size-4"} />
-                  Share
-                </AnimatedButton>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <DashboardPostCard />
+        {postsForUserDashboard?.map((post) => (
+          <DashboardPostCard post={post} />
+        ))}
       </div>
       <div
         className={
@@ -161,7 +109,7 @@ const Dashboard = () => {
         isOpen={isCreatePostModalOpen}
         postType={selectedPostType}
         onClose={() => setIsCreatePostModalOpen(false)}
-        onSubmit={() => {}}
+        onSubmit={(data) => handleCreatePostSubmit(data)}
       />
     </Page>
   );

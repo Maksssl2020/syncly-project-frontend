@@ -25,3 +25,8 @@ export interface AuthenticationResponse {
   accessToken: string;
   role: string;
 }
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}

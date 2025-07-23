@@ -3,8 +3,21 @@ import FormInput from "../input/FormInput.tsx";
 import FormSwitch from "../input/FormSwitch.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
 import { Trash2 } from "lucide-react";
+import useChangePasswordMutation from "../../hooks/mutations/useChangePasswordMutation.ts";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { changePasswordValidator } from "../../validators/changePasswordValidator.ts";
+import { useEffect, useState } from "react";
 
-const AccountSettingsSection = () => {
+type AccountSettingsSectionProps = {
+  isTwoFactorAuthentication: boolean;
+};
+
+const AccountSettingsSection = ({
+  isTwoFactorAuthentication,
+}: AccountSettingsSectionProps) => {
+  const [isChangePasswordActive, setIsChangePasswordActive] = useState(false);
+  const { changePassword, changingPassword } = useChangePasswordMutation();
+
   const {
     register,
     handleSubmit,
@@ -16,9 +29,20 @@ const AccountSettingsSection = () => {
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-      twoFactorAuthentication: false,
+      twoFactorAuthentication: isTwoFactorAuthentication,
     },
+    resolver: yupResolver(changePasswordValidator),
   });
+
+  const watchedValues = watch();
+  useEffect(() => {
+    const isChangePassword =
+      watchedValues.currentPassword !== "" ||
+      watchedValues.newPassword !== "" ||
+      watchedValues.confirmPassword !== "";
+
+    setIsChangePasswordActive(isChangePassword);
+  }, [watchedValues]);
 
   return (
     <div className={"space-y-12"}>
@@ -47,6 +71,28 @@ const AccountSettingsSection = () => {
           />
         </div>
       </div>
+
+      {isChangePasswordActive && (
+        <AnimatedButton
+          onClick={handleSubmit((data) =>
+            changePassword({
+              oldPassword: data.currentPassword,
+              newPassword: data.newPassword,
+            }),
+          )}
+          bgColor={"#222222"}
+          bgColorHover={"#222222"}
+          borderColor={"#4a4a4d"}
+          borderColorHover={"#22c55e"}
+          textColorHover={"#22c55e"}
+          loading={changingPassword}
+          className={
+            "w-full flex items-center justify-center gap-2 p-3 rounded-lg border-2"
+          }
+        >
+          Change Password
+        </AnimatedButton>
+      )}
 
       <div>
         <h3 className={"text-xl font-semibold mb-4 text-white-100"}>

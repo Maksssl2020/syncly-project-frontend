@@ -21,6 +21,7 @@ export interface ToggleOption {
 
 export interface DropdownOption {
   value?: string;
+  color?: string;
   label: string;
   onClick?: () => void;
 }

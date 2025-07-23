@@ -5,21 +5,30 @@ import { AnimatePresence, motion } from "framer-motion";
 import TagSelectionCard from "../card/TagSelectionCard.tsx";
 import { Hash, Plus, Search, Trash2 } from "lucide-react";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import { getTagColor } from "../../utils/colorUtils.ts";
 
-const TagSelector = () => {
+type TagSelectorProps = {
+  onSelectTag: (value: string[]) => void;
+};
+
+const TagSelector = ({ onSelectTag }: TagSelectorProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { ref, isOpen, setIsOpen } = useClickOutside(false);
   const {
     removeTag,
     resetTags,
-    availableTags,
     selectedTags,
     selectTag,
     filteredTags,
     setSearchQuery,
     searchQuery,
+    fetchingAllTagsData,
   } = useTagSelection();
+
+  console.log(selectedTags);
+
+  if (fetchingAllTagsData) {
+    return null;
+  }
 
   return (
     <div ref={ref} className={"relative"}>
@@ -43,12 +52,14 @@ const TagSelector = () => {
       {selectedTags.length > 0 && (
         <div className={"flex flex-wrap gap-2 mb-3"}>
           <AnimatePresence>
-            {selectedTags.map((tag, index) => (
+            {selectedTags.map((tag) => (
               <TagSelectionCard
                 key={tag.name}
                 tag={tag}
-                index={index}
-                onRemoveTag={removeTag}
+                onRemoveTag={() => {
+                  const updatedData = removeTag(tag);
+                  onSelectTag(updatedData.map((tag) => tag.name));
+                }}
               />
             ))}
           </AnimatePresence>
@@ -120,27 +131,32 @@ const TagSelector = () => {
 
             {filteredTags.length > 0 ? (
               <div className={"max-h-48 overflow-y-auto"}>
-                {filteredTags.map((tag, index) => (
-                  <button
+                {filteredTags.map((tag) => (
+                  <motion.button
+                    whileHover={{
+                      backgroundColor: "#4d4d4c",
+                    }}
                     key={tag.name}
-                    onClick={() => selectTag(tag)}
-                    className={"w-full flex items-center gap-3 px-4 py-3"}
+                    onClick={() => {
+                      const updatedTags = selectTag(tag);
+                      onSelectTag(updatedTags.map((tag) => tag.name));
+                    }}
+                    className={
+                      "w-full flex items-center gap-3 px-4 py-3 cursor-pointer"
+                    }
                   >
                     <div
                       className="size-6 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: getTagColor(index) }}
+                      style={{ backgroundColor: tag.color }}
                     >
-                      <Hash
-                        className="size-3"
-                        style={{ color: "var(--color-black-400)" }}
-                      />
+                      <Hash className="size-3" style={{ color: "#111111" }} />
                     </div>
                     <div className={"flex-1 text-left"}>
                       <div className={"text-sm font-medium text-white-100"}>
                         {tag.name}
                       </div>
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             ) : (

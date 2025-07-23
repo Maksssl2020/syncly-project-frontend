@@ -1,7 +1,15 @@
-import type { PostType } from "../../types/post.ts";
+import type {
+  AudioPostRequest,
+  LinkPostRequest,
+  PhotoPostRequest,
+  PostType,
+  QuotePostRequest,
+  TextPostRequest,
+  VideoPostRequest,
+} from "../../types/post.ts";
 import Modal from "./Modal.tsx";
 import TextPostForm from "../form/TextPostForm.tsx";
-import React from "react";
+import React, { useRef } from "react";
 import {
   Camera,
   FileText,
@@ -16,14 +24,22 @@ import AnimatedButton from "../button/AnimatedButton.tsx";
 import QuotePostForm from "../form/QuotePostForm.tsx";
 import PhotoPostForm from "../form/PhotoPostForm.tsx";
 import VideoPostForm from "../form/VideoPostForm.tsx";
-import MusicPostForm from "../form/MusicPostForm.tsx";
+import AudioPostForm from "../form/AudioPostForm.tsx";
 import LinkPostForm from "../form/LinkPostForm.tsx";
 
 type CreatePostModalProps = {
   isOpen: boolean;
   postType: PostType | null;
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: (
+    data:
+      | TextPostRequest
+      | QuotePostRequest
+      | PhotoPostRequest
+      | VideoPostRequest
+      | AudioPostRequest
+      | LinkPostRequest,
+  ) => void;
 };
 
 type ModalConfig = {
@@ -58,7 +74,7 @@ const modalConfig = (postType: PostType | null): ModalConfig => {
         icon: Video,
         color: "#06b6d4",
       };
-    case "music":
+    case "audio":
       return {
         title: "Create Music Post",
         icon: Music,
@@ -79,25 +95,6 @@ const modalConfig = (postType: PostType | null): ModalConfig => {
   }
 };
 
-const section = (postType: PostType | null) => {
-  switch (postType) {
-    case "text":
-      return <TextPostForm />;
-    case "quote":
-      return <QuotePostForm />;
-    case "photo":
-      return <PhotoPostForm />;
-    case "video":
-      return <VideoPostForm />;
-    case "music":
-      return <MusicPostForm />;
-    case "link":
-      return <LinkPostForm />;
-    default:
-      return <TextPostForm />;
-  }
-};
-
 const CreatePostModal = ({
   isOpen,
   onClose,
@@ -105,6 +102,77 @@ const CreatePostModal = ({
   onSubmit,
 }: CreatePostModalProps) => {
   const config = modalConfig(postType);
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  const handlePostClick = () => {
+    formRef.current?.requestSubmit();
+  };
+
+  const handleFormSubmit = (
+    data:
+      | TextPostRequest
+      | QuotePostRequest
+      | PhotoPostRequest
+      | VideoPostRequest
+      | AudioPostRequest
+      | LinkPostRequest,
+  ) => {
+    onSubmit(data);
+  };
+
+  const section = (postType: PostType | null) => {
+    switch (postType) {
+      case "text":
+        return (
+          <TextPostForm
+            ref={formRef}
+            onSubmit={(data) => handleFormSubmit(data)}
+          />
+        );
+      case "quote":
+        return (
+          <QuotePostForm
+            ref={formRef}
+            onSubmit={(data) => handleFormSubmit(data)}
+          />
+        );
+      case "photo":
+        return (
+          <PhotoPostForm
+            ref={formRef}
+            onSubmit={(data) => handleFormSubmit(data)}
+          />
+        );
+      case "video":
+        return (
+          <VideoPostForm
+            ref={formRef}
+            onSubmit={(data) => handleFormSubmit(data)}
+          />
+        );
+      case "audio":
+        return (
+          <AudioPostForm
+            ref={formRef}
+            onSubmit={(data) => handleFormSubmit(data)}
+          />
+        );
+      case "link":
+        return (
+          <LinkPostForm
+            ref={formRef}
+            onSubmit={(data) => handleFormSubmit(data)}
+          />
+        );
+      default:
+        return (
+          <TextPostForm
+            ref={formRef}
+            onSubmit={(data) => handleFormSubmit(data)}
+          />
+        );
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -160,6 +228,7 @@ const CreatePostModal = ({
             borderColorHover={config.color}
             textColor={config.color}
             textColorHover={"#111111"}
+            onClick={handlePostClick}
             className={"px-6 py-3 rounded-lg flex gap-2 items-center border-2"}
           >
             <Send className={"size-4"} />

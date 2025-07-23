@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import type { UseFormRegisterReturn } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 type FormInputProps = {
   title: string;
@@ -9,12 +9,13 @@ type FormInputProps = {
   error?: string;
   register?: UseFormRegisterReturn<string>;
   onChange?: (value: string) => void;
-  inputWidth?: string;
-  inputHeight?: string;
   defaultValue?: string;
   required?: boolean;
   placeholder?: string;
   canShowPassword?: boolean;
+  inputClassname?: string;
+  showError?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const FormInput = ({
@@ -27,6 +28,9 @@ const FormInput = ({
   required = false,
   canShowPassword = true,
   placeholder,
+  onKeyDown,
+  showError = true,
+  inputClassname = "rounded-lg",
 }: FormInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [inputType, setInputType] = useState(type);
@@ -43,10 +47,12 @@ const FormInput = ({
 
   return (
     <div className={"flex flex-col gap-3"}>
-      <label className="text-white-100 ml-1 flex items-center gap-1 text-sm font-medium md:text-lg">
-        {title}
-        {required && <span className="text-red-200">*</span>}
-      </label>
+      {title !== "" && (
+        <label className="text-white-100 ml-1 flex items-center gap-1 text-sm font-medium md:text-lg">
+          {title}
+          {required && <span className="text-red-200">*</span>}
+        </label>
+      )}
 
       <div className={"w-full flex items-center h-[50px] relative"}>
         <motion.input
@@ -55,8 +61,9 @@ const FormInput = ({
           type={inputType}
           placeholder={placeholder}
           autoFocus={false}
-          className={`bg-black-300 placeholder:text-gray-400 text-white-100 h-12 w-full rounded-lg border-2 px-3 outline-none md:h-14 md:text-lg`}
+          className={`${inputClassname} bg-black-300 placeholder:text-gray-400 text-white-100 h-12 w-full  border-2 px-3 outline-none md:h-14 md:text-lg`}
           onChange={(e) => onChange?.(e.target.value)}
+          onKeyDown={(e) => onKeyDown?.(e)}
           defaultValue={defaultValue}
           {...register}
         />
@@ -77,9 +84,11 @@ const FormInput = ({
           </button>
         )}
       </div>
-      <p className={"h-[20px] pl-3 text-sm text-red-500 select-none"}>
-        {error && error}
-      </p>
+      {showError && (
+        <p className={"h-[20px] pl-3 text-sm text-red-500 select-none"}>
+          {error && error}
+        </p>
+      )}
     </div>
   );
 };

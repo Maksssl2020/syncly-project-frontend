@@ -5,12 +5,26 @@ export interface MainTag {
   postsCount: number;
   followersCount: number;
   trending: boolean;
-  category: string;
+  tagCategory: string;
+  type: TagType;
+  color: string;
+  createdAt: string;
+}
+
+export type TagType = "MAIN" | "COMMON";
+
+export interface MainTagRequest {
+  name: string;
+  description: string;
+  tagCategoryName: string;
+  color: string;
+  trending: boolean;
 }
 
 export interface Tag {
-  id: string;
+  id: string | number;
   name: string;
+  color: string;
 }
 
 export interface TagsStatistics {
