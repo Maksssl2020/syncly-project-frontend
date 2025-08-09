@@ -1,19 +1,13 @@
-import type { ConversationUser, Message } from "../../types/conversation.ts";
+import type { ConversationMessage } from "../../types/conversation.ts";
 import Avatar from "../img/Avatar.tsx";
 import { format } from "date-fns";
-import { Check, CheckCheck } from "lucide-react";
 
 interface MessageBubbleProps {
-  messages: Message[];
+  messages: ConversationMessage[];
   isCurrentUser: boolean;
-  participant: ConversationUser;
 }
 
-const MessageBubble = ({
-  messages,
-  isCurrentUser,
-  participant,
-}: MessageBubbleProps) => {
+const MessageBubble = ({ messages, isCurrentUser }: MessageBubbleProps) => {
   if (!messages.length) return null;
   const lastMessage = messages[messages.length - 1];
 
@@ -41,15 +35,15 @@ const MessageBubble = ({
             <span className={"text-gray-400"}>
               {format(new Date(lastMessage.timestamp), "h:mm a")}
             </span>
-            {isCurrentUser && (
-              <span className="ml-1">
-                {lastMessage.read ? (
-                  <CheckCheck className="size-3.5 text-teal-100" />
-                ) : (
-                  <Check className="size-3.5 text-gray-400" />
-                )}
-              </span>
-            )}
+            {/*{isCurrentUser && (*/}
+            {/*  <span className="ml-1">*/}
+            {/*    {lastMessage.read ? (*/}
+            {/*      <CheckCheck className="size-3.5 text-teal-100" />*/}
+            {/*    ) : (*/}
+            {/*      <Check className="size-3.5 text-gray-400" />*/}
+            {/*    )}*/}
+            {/*  </span>*/}
+            {/*)}*/}
           </div>
         </div>
       </div>

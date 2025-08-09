@@ -84,7 +84,7 @@ const DashboardHeader = () => {
   };
 
   const getHeaderAdditionalElements = () => {
-    if (pathname.includes("user-blog")) {
+    if (pathname.includes("blog")) {
       return (
         <>
           <AnimatedButton
@@ -147,6 +147,10 @@ const DashboardHeader = () => {
 
   const isDeltaNavigation = () => {
     if (pathname.includes("conversation")) {
+      return true;
+    }
+
+    if (pathname.includes("/blog")) {
       return true;
     }
 

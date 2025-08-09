@@ -1,25 +1,22 @@
 import { useEffect, useRef } from "react";
-import type { ConversationUser, Message } from "../../types/conversation.ts";
+import type { ConversationMessage } from "../../types/conversation.ts";
 import MessageBubble from "../bubble/MessageBubble.tsx";
+import useAuthentication from "../../hooks/useAuthentication.ts";
 
 interface ChatSectionProps {
-  messages: Message[];
-  currentUserId: string;
-  participant: ConversationUser;
+  messages: ConversationMessage[];
 }
 
-const ChatSection = ({
-  messages,
-  currentUserId,
-  participant,
-}: ChatSectionProps) => {
+const ChatSection = ({ messages }: ChatSectionProps) => {
+  const { userId } = useAuthentication();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const groupedMessages: { [key: string]: Message[] } = {};
+  const groupedMessages: { [key: string]: ConversationMessage[] } = {};
+
   messages.forEach((message) => {
     const date = new Date(message.timestamp).toLocaleDateString();
     if (!groupedMessages[date]) {
@@ -28,18 +25,16 @@ const ChatSection = ({
     groupedMessages[date].push(message);
   });
 
-  const groupConsecutiveMessages = (messages: Message[]) => {
-    const groups: Message[][] = [];
-    let currentGroup: Message[] = [];
-    let currentSender: string | null = null;
+  const groupConsecutiveMessages = (messages: ConversationMessage[]) => {
+    const groups: ConversationMessage[][] = [];
+    let currentGroup: ConversationMessage[] = [];
 
     messages.forEach((message) => {
-      if (message.senderId !== currentSender) {
+      if (message.senderUserId !== userId) {
         if (currentGroup.length > 0) {
           groups.push([...currentGroup]);
         }
         currentGroup = [message];
-        currentSender = message.senderId;
       } else {
         currentGroup.push(message);
       }
@@ -71,8 +66,7 @@ const ChatSection = ({
             <div key={groupIndex} className=" flex flex-col gap-2 ">
               <MessageBubble
                 messages={group}
-                isCurrentUser={group[0].senderId === currentUserId}
-                participant={participant}
+                isCurrentUser={group[0].senderUserId === userId}
               />
             </div>
           ))}

@@ -1,12 +1,8 @@
 import axiosConfig from "../config/axiosConfig.ts";
 
-export async function handleLikePost(
-  userId: string | number,
-  postId: string | number,
-) {
+export async function handleLikePost(postId: string | number) {
   const response = await axiosConfig.post("/likes/like/post", null, {
     params: {
-      userId,
       postId,
     },
   });
@@ -14,13 +10,9 @@ export async function handleLikePost(
   return response.data;
 }
 
-export async function handleLikeComment(
-  userId: string | number,
-  commentId: string | number,
-) {
+export async function handleLikeComment(commentId: string | number) {
   const response = await axiosConfig.post("/likes/like/comment", null, {
     params: {
-      userId,
       commentId,
     },
   });

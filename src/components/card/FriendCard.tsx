@@ -17,11 +17,11 @@ const FriendCard = ({ friend }: FriendCardProps) => {
   const friendOptions: DropdownOption[] = [
     {
       label: "View Profile",
-      onClick: () => navigate(`/blog/${friend.user.id}`),
+      onClick: () => navigate(`/blog/${friend.user.userId}`),
     },
     {
       label: "Block User",
-      onClick: () => console.log("Block user", friend.user.id),
+      onClick: () => console.log("Block user", friend.user.userId),
     },
   ];
 
@@ -30,12 +30,12 @@ const FriendCard = ({ friend }: FriendCardProps) => {
       whileHover={{
         boxShadow: "0 8px 24px rgba(20, 184, 166, 0.25)",
       }}
-      key={friend.user.id + friend.user.username}
+      key={friend.user.userId + friend.user.username}
       className={"p-4 border-2 border-gray-600 flex flex-col gap-3 rounded-lg "}
     >
       <div className={"flex items-center gap-3 relative"}>
         <div className={"relative"}>
-          <Avatar size={"size-12"} />
+          <Avatar size={"size-12"} avatar={friend.user.userProfile.avatar} />
 
           {friend.user.status === "ACTIVE" && (
             <div
@@ -68,6 +68,11 @@ const FriendCard = ({ friend }: FriendCardProps) => {
           borderColorHover={"#0d9488"}
           textColor={"#111111"}
           textColorHover={"#111111"}
+          onClick={() =>
+            navigate(
+              `/conversation/${friend.user.userId}/${friend.user.username}`,
+            )
+          }
           className={
             "flex-1 flex px-4 items-center justify-center gap-2 py-2 rounded-lg"
           }

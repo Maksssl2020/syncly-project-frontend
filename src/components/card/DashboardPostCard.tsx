@@ -29,20 +29,8 @@ import { useState } from "react";
 import CommentsSection from "../section/CommentsSection.tsx";
 import useUnsavePostByUserPostCollectionMutation from "../../hooks/mutations/useUnsavePostByUserPostCollectionMutation.ts";
 import SavePostInCollectionModal from "../modal/SavePostInCollectionModal.tsx";
-
-const defaultPost = {
-  id: 1,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  postType: "text" as const,
-  authorId: 1,
-  authorName: "Anna Kowalska",
-  authorUsername: "a_kowalska",
-  tags: ["nature", "art", "photography"],
-  title: "My thoughts today",
-  content:
-    "Właśnie skończyłam nowy obraz! 🎨 Inspiracją były kolory jesieni w moim ogrodzie. Co myślicie?",
-};
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 type DashboardPostCardProps = {
   isSavedPost?: boolean;
@@ -54,9 +42,11 @@ const DashboardPostCard = ({
   post,
 }: DashboardPostCardProps) => {
   const { userId } = useAuthentication();
-  const currentPost = post || defaultPost;
+  const navigate = useNavigate();
+  const currentPost = post;
   const {
     id,
+    authorId,
     authorName,
     authorUsername,
     createdAt,
@@ -64,6 +54,7 @@ const DashboardPostCard = ({
     commentsCount,
     savedBy,
   } = currentPost;
+
   const likesBySet = new Set(likesBy);
   const savedBySet = new Set(savedBy);
   const [isLiked, setIsLiked] = useState(likesBySet.has(Number(userId)));
@@ -112,12 +103,7 @@ const DashboardPostCard = ({
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
 
   const onLikePost = () => {
-    if (userId) {
-      likePost({
-        userId,
-        postId: id,
-      });
-    }
+    likePost(id);
   };
 
   return (
@@ -129,9 +115,25 @@ const DashboardPostCard = ({
       <header className={"w-full h-auto flex gap-4 items-center"}>
         <Avatar />
         <div className={"flex flex-col gap-1 text-white-100"}>
-          <h3 className={"text-xl font-semibold"}>{authorName}</h3>
+          <motion.h3
+            whileHover={{
+              color: "#14b8a6",
+            }}
+            onClick={() => navigate(`/blog/${authorId}`)}
+            className={"text-xl font-semibold cursor-pointer"}
+          >
+            {authorName}
+          </motion.h3>
           <div className={"flex gap-1 text-gray-400"}>
-            <p className={"text-base"}>@{authorUsername}</p>
+            <motion.p
+              whileHover={{
+                color: "#14b8a6",
+              }}
+              onClick={() => navigate(`/blog/${authorId}`)}
+              className={"text-base cursor-pointer"}
+            >
+              @{authorUsername}
+            </motion.p>
             <p>•</p>
             <p className={"text-base"}>{timeAgo}</p>
           </div>

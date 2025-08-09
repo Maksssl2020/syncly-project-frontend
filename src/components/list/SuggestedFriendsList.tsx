@@ -1,10 +1,9 @@
-import React from "react";
-import type { FriendSuggest } from "../../types/user.ts";
+import type { UserItem } from "../../types/user.ts";
 import { UserPlus } from "lucide-react";
 import SuggestedFriendCard from "../card/SuggestedFriendCard.tsx";
 
 interface SuggestedFriendsProps {
-  suggested: FriendSuggest[];
+  suggested: UserItem[];
 }
 
 const SuggestedFriendsList = ({ suggested }: SuggestedFriendsProps) => {

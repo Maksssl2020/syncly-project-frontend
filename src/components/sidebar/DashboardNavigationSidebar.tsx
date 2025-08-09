@@ -40,7 +40,7 @@ const navigationData: NavigationData[] = [
   },
   {
     title: "My Blog",
-    link: "/blog",
+    link: "/my-blog",
     icon: <User className="size-5 mr-3" />,
   },
   {
@@ -67,7 +67,7 @@ const DashboardNavigationSidebar = () => {
   return (
     <div
       className={
-        "min-w-[25%] border-r-2 border-gray-600 h-screen sticky top-0 bg-black-200"
+        "min-w-[20%] border-r-2 border-gray-600 h-screen sticky top-0 bg-black-200"
       }
     >
       <div className={"p-6 h-full flex flex-col"}>

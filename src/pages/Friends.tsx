@@ -1,101 +1,25 @@
 import Page from "../animation/Page.tsx";
 import type { DropdownOption, TabData } from "../types/types.ts";
-import { ArrowUpDown, Filter, UserPlus, Users, UserSearch } from "lucide-react";
+import {
+  ArrowUpDown,
+  Clock,
+  Filter,
+  UserPlus,
+  Users,
+  UserSearch,
+} from "lucide-react";
 import Tabs from "../components/tab/Tabs.tsx";
 import { useState } from "react";
 import Searchbar from "../components/input/Searchbar.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import FriendsList from "../components/list/FriendsList.tsx";
-import type { Friend, FriendRequest, FriendSuggest } from "../types/user.ts";
 import FriendRequestsList from "../components/list/FriendRequestsList.tsx";
 import SuggestedFriendsList from "../components/list/SuggestedFriendsList.tsx";
 import useUserFriendsQuery from "../hooks/queries/useUserFriendsQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
-
-const mockFriends: Friend[] = [
-  {
-    id: "1",
-    username: "alice_wonder",
-    email: "alice@example.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=AW",
-    status: "online" as const,
-    lastSeen: "2 minutes ago",
-    mutualFriends: 5,
-  },
-  {
-    id: "2",
-    username: "bob_builder",
-    email: "bob@example.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=BB",
-    status: "offline" as const,
-    lastSeen: "1 hour ago",
-    mutualFriends: 3,
-  },
-  {
-    id: "3",
-    username: "charlie_brown",
-    email: "charlie@example.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=CB",
-    status: "online" as const,
-    lastSeen: "Just now",
-    mutualFriends: 8,
-  },
-  {
-    id: "4",
-    username: "diana_prince",
-    email: "diana@example.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=DP",
-    status: "away" as const,
-    lastSeen: "30 minutes ago",
-    mutualFriends: 2,
-  },
-];
-
-const mockRequests: FriendRequest[] = [
-  {
-    id: "1",
-    type: "received" as const,
-    user: {
-      id: "5",
-      username: "eve_online",
-      email: "eve@example.com",
-      avatar: "/placeholder.svg?height=40&width=40&text=EO",
-      mutualFriends: 4,
-    },
-    createdAt: "2 hours ago",
-  },
-  {
-    id: "2",
-    type: "sent" as const,
-    user: {
-      id: "6",
-      username: "frank_castle",
-      email: "frank@example.com",
-      avatar: "/placeholder.svg?height=40&width=40&text=FC",
-      mutualFriends: 1,
-    },
-    createdAt: "1 day ago",
-  },
-];
-
-const mockSuggested: FriendSuggest[] = [
-  {
-    id: "7",
-    username: "grace_hopper",
-    email: "grace@example.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=GH",
-    mutualFriends: 6,
-    reason: "Works at TechCorp",
-  },
-  {
-    id: "8",
-    username: "henry_ford",
-    email: "henry@example.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=HF",
-    mutualFriends: 3,
-    reason: "Lives in New York",
-  },
-];
+import useUserPendingFriendRequests from "../hooks/queries/useUserPendingFriendRequests.ts";
+import useUserSentFriendRequestsQuery from "../hooks/queries/useUserSentFriendRequestsQuery.ts";
+import useUserSuggestedFriendsQuery from "../hooks/queries/useUserSuggestedFriendsQuery.ts";
 
 const filterOptions: DropdownOption[] = [
   { value: "all", label: "All Friends" },
@@ -116,10 +40,28 @@ const Friends = () => {
   const [sortBy, setSortBy] = useState("alphabetical");
 
   const { userFriendsData, fetchingUserFriendsData } = useUserFriendsQuery();
+  const {
+    userPendingFriendRequestsData,
+    fetchingUserPendingFriendRequestsData,
+  } = useUserPendingFriendRequests();
+  const { userSentFriendRequests, fetchingUserSentFriendRequests } =
+    useUserSentFriendRequestsQuery();
+  const { userSuggestedFriendsData, fetchingUserSuggestedFriendsData } =
+    useUserSuggestedFriendsQuery();
 
-  if (fetchingUserFriendsData || !userFriendsData) {
+  if (
+    fetchingUserFriendsData ||
+    !userFriendsData ||
+    fetchingUserPendingFriendRequestsData ||
+    fetchingUserSentFriendRequests ||
+    fetchingUserSuggestedFriendsData
+  ) {
     return <Spinner />;
   }
+
+  const totalRequests =
+    (userSentFriendRequests?.length ?? 0) +
+    (userPendingFriendRequestsData?.length ?? 0);
 
   const tabs: TabData[] = [
     {
@@ -132,13 +74,13 @@ const Friends = () => {
       id: "requests",
       label: "Requests",
       icon: <UserPlus className={"size-5"} />,
-      count: 2,
+      count: totalRequests,
     },
     {
       id: "suggested",
       label: "Suggested",
       icon: <UserSearch className={"size-5"} />,
-      count: 2,
+      count: userSuggestedFriendsData?.length ?? 0,
     },
   ];
 
@@ -194,11 +136,37 @@ const Friends = () => {
           )}
 
           {activeTab === "requests" && (
-            <FriendRequestsList requests={mockRequests} />
+            <>
+              {userPendingFriendRequestsData?.length == 0 &&
+              userSentFriendRequests?.length == 0 ? (
+                <div className="p-12 text-center">
+                  <div className="size-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Clock className="size-8 text-black-100" />
+                  </div>
+                  <h3 className="text-lg font-medium text-white-100 mb-2">
+                    No friend requests
+                  </h3>
+                  <p className="text-gray-400">
+                    When you receive friend requests, they'll appear here
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <FriendRequestsList
+                    type={"RECEIVED"}
+                    requests={userPendingFriendRequestsData ?? []}
+                  />
+                  <FriendRequestsList
+                    type={"SENT"}
+                    requests={userSentFriendRequests ?? []}
+                  />
+                </>
+              )}
+            </>
           )}
 
           {activeTab === "suggested" && (
-            <SuggestedFriendsList suggested={mockSuggested} />
+            <SuggestedFriendsList suggested={userSuggestedFriendsData ?? []} />
           )}
         </div>
       </div>

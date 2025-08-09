@@ -1,23 +1,17 @@
 import { motion } from "framer-motion";
-import type { FriendSuggest } from "../../types/user.ts";
+import type { UserItem } from "../../types/user.ts";
 import Avatar from "../img/Avatar.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import { Briefcase, MapPin, UserPlus, X } from "lucide-react";
+import { UserPlus, X } from "lucide-react";
 
 type SuggestedFriendCardProps = {
-  user: FriendSuggest;
+  user: UserItem;
 };
 
 const SuggestedFriendCard = ({ user }: SuggestedFriendCardProps) => {
-  const getReasonIcon = (reason?: string) => {
-    if (reason?.includes("Works")) return <Briefcase className="size-4" />;
-    if (reason?.includes("Lives")) return <MapPin className="size-4" />;
-    return <UserPlus className="size-4" />;
-  };
-
   return (
     <motion.div
-      key={user.id}
+      key={user.userId}
       whileHover={{
         boxShadow: "0 8px 24px rgba(20, 184, 166, 0.25)",
       }}
@@ -47,15 +41,10 @@ const SuggestedFriendCard = ({ user }: SuggestedFriendCardProps) => {
       </div>
 
       <div className={"flex flex-col gap-2"}>
-        <div className={"flex items-center gap-2 text-sm text-white-100"}>
-          {getReasonIcon(user?.reason)}
-          <span>{user.reason}</span>
-        </div>
-
-        {user.mutualFriends > 0 && (
+        {user.mutualFriendsCount > 0 && (
           <p className="text-sm text-gray-400">
-            {user.mutualFriends} mutual friend
-            {user.mutualFriends !== 1 ? "s" : ""}
+            {user.mutualFriendsCount} mutual friend
+            {user.mutualFriendsCount !== 1 ? "s" : ""}
           </p>
         )}
       </div>

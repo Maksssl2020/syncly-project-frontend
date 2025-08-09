@@ -59,12 +59,7 @@ const CommentCard = ({ comment, isReply = false }: CommentCardProps) => {
   });
 
   const onLikeComment = () => {
-    if (userId) {
-      likePostComment({
-        userId: userId,
-        commentId: comment.id,
-      });
-    }
+    likePostComment(comment.id);
   };
 
   const onAddCommentReply = async (content: string, parentId: number) => {

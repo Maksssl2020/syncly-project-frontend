@@ -4,7 +4,7 @@ export type UserRole = "ADMIN" | "MODERATOR" | "USER";
 export type UserStatus = "ACTIVE" | "BLOCKED" | "INACTIVE";
 
 export interface UserItem {
-  id: string;
+  userId: string;
   username: string;
   email: string;
   role: UserRole;
@@ -13,9 +13,9 @@ export interface UserItem {
   followersCount: number;
   joinedAt: string;
   lastActive: string;
-  avatar: string;
   isActive: boolean;
   userProfile: UserProfile;
+  mutualFriendsCount: number;
 }
 
 export interface UserSearchResult {
@@ -44,11 +44,4 @@ export interface FriendSuggest {
   avatar: string;
   mutualFriends: number;
   reason?: string;
-}
-
-export interface FriendRequest {
-  id: string;
-  type: "sent" | "received";
-  user: FriendSuggest;
-  createdAt: string;
 }

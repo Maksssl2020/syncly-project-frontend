@@ -1,13 +1,18 @@
 import { motion } from "framer-motion";
-import type { FriendRequest } from "../../types/user.ts";
 import Avatar from "../img/Avatar.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
+import type { FriendRequest } from "../../types/friends.ts";
+import { format } from "date-fns";
+import useDeleteFriendRequestMutation from "../../hooks/mutations/useDeleteFriendRequestMutation.ts";
 
 type SentFriendRequestCardProps = {
   request: FriendRequest;
 };
 
 const SentFriendRequestCard = ({ request }: SentFriendRequestCardProps) => {
+  const { deleteFriendRequest, deletingFriendRequest } =
+    useDeleteFriendRequestMutation();
+
   return (
     <motion.div
       key={request.id}
@@ -17,13 +22,15 @@ const SentFriendRequestCard = ({ request }: SentFriendRequestCardProps) => {
       className={"p-4 border-2 border-gray-600 rounded-lg"}
     >
       <div className={"flex items-center gap-3"}>
-        <Avatar size={"size-12"} />
+        <Avatar size={"size-12"} avatar={request.receiver.userProfile.avatar} />
         <div className={"flex-1 flex flex-col gap-1"}>
           <h4 className={"font-medium text-teal-100"}>
-            {request.user.username}
+            {request.receiver.username}
           </h4>
-          <p className={"text-sm text-gray-400"}>{request.user.email}</p>
-          <p className={"text-xs text-gray-400"}>Sent {request.createdAt}</p>
+          <p className={"text-sm text-gray-400"}>{request.receiver.email}</p>
+          <p className={"text-xs text-gray-400"}>
+            Sent {format(request.createdAt, "dd-MM-yyyy")}
+          </p>
         </div>
 
         <div className={"flex items-center gap-2"}>
@@ -34,9 +41,12 @@ const SentFriendRequestCard = ({ request }: SentFriendRequestCardProps) => {
           <AnimatedButton
             bgColor={"#222222"}
             borderColorHover={"#393939"}
+            q
             borderColor={"#222222"}
             bgColorHover={"#393939"}
             textColorHover={"#ef4444"}
+            loading={deletingFriendRequest}
+            onClick={() => deleteFriendRequest(request.receiver.userId)}
             className={"flex gap-2 items-center px-4 py-2 rounded-lg"}
           >
             Cancel

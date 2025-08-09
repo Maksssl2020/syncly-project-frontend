@@ -1,8 +1,9 @@
-import type { FriendRequest } from "../../types/user.ts";
 import { motion } from "framer-motion";
 import Avatar from "../img/Avatar.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
 import { Check, X } from "lucide-react";
+import type { FriendRequest } from "../../types/friends.ts";
+import useAcceptFriendRequestMutation from "../../hooks/mutations/useAcceptFriendRequestMutation.ts";
 
 type ReceivedFriendRequestCardProps = {
   request: FriendRequest;
@@ -11,6 +12,9 @@ type ReceivedFriendRequestCardProps = {
 const ReceivedFriendRequestCard = ({
   request,
 }: ReceivedFriendRequestCardProps) => {
+  const { acceptFriendRequest, acceptingFriendRequest } =
+    useAcceptFriendRequestMutation();
+
   return (
     <motion.div
       key={request.id}
@@ -20,17 +24,20 @@ const ReceivedFriendRequestCard = ({
       className={"p-4 border-2 border-gray-600 rounded-lg"}
     >
       <div className={"flex items-center gap-4"}>
-        <Avatar size={"size-12"} />
+        <Avatar
+          size={"size-12"}
+          avatar={request.requester.userProfile.avatar}
+        />
 
         <div className={"flex-1 flex flex-col gap-1"}>
           <h4 className={"font-medium text-teal-100"}>
-            {request.user.username}
+            {request.requester.username}
           </h4>
-          <p className={"text-sm text-gray-400"}>{request.user.email}</p>
-          {request.user.mutualFriends > 0 && (
+          <p className={"text-sm text-gray-400"}>{request.requester.email}</p>
+          {request.requester.mutualFriendsCount > 0 && (
             <p className={"text-xs text-gray-400"}>
-              {request.user.mutualFriends} mutual friend
-              {request.user.mutualFriends !== 1 ? "s" : ""}
+              {request.requester.mutualFriendsCount} mutual friend
+              {request.requester.mutualFriendsCount !== 1 ? "s" : ""}
             </p>
           )}
           <p className={"text-xs text-gray-400"}>{request.createdAt}</p>
@@ -44,6 +51,8 @@ const ReceivedFriendRequestCard = ({
             borderColorHover={"#0d9488"}
             textColor={"#111111"}
             textColorHover={"#111111"}
+            loading={acceptingFriendRequest}
+            onClick={() => acceptFriendRequest(request.id)}
             className={"flex gap-2 items-center px-4 py-2 rounded-lg"}
           >
             <Check className={"size-4"} />

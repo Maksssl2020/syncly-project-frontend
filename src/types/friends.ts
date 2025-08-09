@@ -1,6 +1,6 @@
 import type { UserItem } from "./user.ts";
 
-export interface Friend {
+export interface FriendRequest {
   id: string | number;
   requester: UserItem;
   receiver: UserItem;

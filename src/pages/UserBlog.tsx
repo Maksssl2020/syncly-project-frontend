@@ -23,6 +23,7 @@ import useAuthentication from "../hooks/useAuthentication.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
 import { format } from "date-fns";
 import usePostsByUserIdQuery from "../hooks/queries/usePostsByUserIdQuery.ts";
+import { useParams } from "react-router-dom";
 
 const filterOptions: TabData[] = [
   {
@@ -70,12 +71,20 @@ const viewOptions: ToggleOption[] = [
 type FilterType = "all" | "photo" | "video" | "music" | "quote";
 type ViewMode = "list" | "grid";
 
-const UserBlog = () => {
+type UserBlogProps = {
+  isSignedInUserBlog?: boolean;
+};
+
+const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
+  const { id } = useParams();
   const { userId } = useAuthentication();
 
-  const { userProfile, fetchingUserProfile } =
-    useUserProfileByUserIdQuery(userId);
-  const { userPosts, fetchingUserPosts } = usePostsByUserIdQuery(userId);
+  const { userProfile, fetchingUserProfile } = useUserProfileByUserIdQuery(
+    isSignedInUserBlog ? userId : id,
+  );
+  const { userPosts, fetchingUserPosts } = usePostsByUserIdQuery(
+    isSignedInUserBlog ? userId : id,
+  );
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [filterType, setFilterType] = useState<FilterType>("all");

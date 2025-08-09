@@ -1,19 +1,36 @@
 import axiosConfig from "../config/axiosConfig.ts";
 import type { UserItem } from "../types/user.ts";
-import type { Friend, FriendUser } from "../types/friends.ts";
+import type { FriendRequest, FriendUser } from "../types/friends.ts";
 
 export async function fetchUserFriends() {
   const response = await axiosConfig.get<FriendUser[]>("/friends");
   return response.data;
 }
 
+export async function fetchUserFriendIds() {
+  const response = await axiosConfig.get<number[]>("/ids");
+  return response.data;
+}
+
 export async function fetchUserPendingFriendRequests() {
-  const response = await axiosConfig.get<Friend[]>("/friends/pending");
+  const response = await axiosConfig.get<FriendRequest[]>("/friends/pending");
+  return response.data;
+}
+
+export async function fetchUserSentFriendRequests() {
+  const response = await axiosConfig.get<FriendRequest[]>("/friends/sent");
   return response.data;
 }
 
 export async function fetchUserSuggestedFriends() {
   const response = await axiosConfig.get<UserItem[]>("/friends/suggested");
+  return response.data;
+}
+
+export async function fetchFriendRequestStatus(receiverId: string | number) {
+  const response = await axiosConfig.get<string>(
+    `/friends/request/status/${receiverId}`,
+  );
   return response.data;
 }
 
@@ -71,5 +88,12 @@ export async function handleDeleteFriend(
       friendId,
     },
   });
+  return response.data;
+}
+
+export async function handleDeleteFriendRequest(receiverId: string | number) {
+  const response = await axiosConfig.delete(
+    `/friends/remove/request/${receiverId}`,
+  );
   return response.data;
 }

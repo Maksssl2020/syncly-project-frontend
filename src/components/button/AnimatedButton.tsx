@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
+import { type HTMLMotionProps, motion } from "framer-motion";
 import * as React from "react";
+import ComponentSpinner from "../spinner/ComponentSpinner.tsx";
 
 type AnimatedCustomButtonProps = {
   bgColorHover?: string;
@@ -11,10 +12,10 @@ type AnimatedCustomButtonProps = {
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
   loading?: boolean;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   children: React.ReactNode;
-};
+} & HTMLMotionProps<"button">;
 
 const AnimatedButton = ({
   textColorHover = "#0a0a0c",
@@ -29,6 +30,7 @@ const AnimatedButton = ({
   type,
   loading,
   disabled,
+  ...rest
 }: AnimatedCustomButtonProps) => {
   return (
     <motion.button
@@ -43,11 +45,12 @@ const AnimatedButton = ({
         borderColor: borderColor,
       }}
       className={`cursor-pointer border-2 ${className}`}
-      onClick={onClick}
+      onClick={(event) => onClick?.(event)}
       type={type}
       disabled={disabled}
+      {...rest}
     >
-      {children}
+      {loading ? <ComponentSpinner /> : <>{children}</>}
     </motion.button>
   );
 };

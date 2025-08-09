@@ -21,3 +21,32 @@ export interface Message {
   timestamp: string;
   read: boolean;
 }
+
+export interface ConversationResponse {
+  id: string | number;
+  conversationId: string;
+  senderUsername: string;
+  recipientUsername: string;
+  lastMessageContent: string;
+  lastMessageTimestamp: string;
+  lastMessageSenderId: number;
+  senderId: number;
+  recipientId: number;
+}
+
+export interface ConversationMessage {
+  id: number;
+  senderUserId: number;
+  recipientUserId: number;
+  conversationId: string;
+  senderUsername: string;
+  recipientUsername: string;
+  content: string;
+  timestamp: string;
+}
+
+export interface ConversationRequest {
+  senderUsername: string;
+  recipientUsername: string;
+  message: string;
+}

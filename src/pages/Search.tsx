@@ -15,20 +15,25 @@ import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
 import useFollowedTagsQuery from "../hooks/queries/useFollowedTagsQuery.ts";
 import useFollowTagMutation from "../hooks/mutations/useFollowTagMutation.ts";
 import useUnfollowTagMutation from "../hooks/mutations/useUnfollowTagMutation.ts";
+import useFollowedUsersQuery from "../hooks/queries/useFollowedUsersQuery.ts";
+import { useNavigate } from "react-router-dom";
 
 const Search = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [chosenTab, setChosenTab] = useState<string>("all");
-  const [followingUsers, setFollowingUsers] = useState<Set<string>>(
-    new Set(["anna_art", "michal_photo"]),
-  );
+
   const { searchedUsers, searchingUsers } = useSearchUsersByQuery(searchQuery);
   const { searchedTags, searchingTags } = useSearchTagsQuery(searchQuery);
   const { searchedPosts, searchingPosts } = useSearchPostsQuery(searchQuery);
   const { followedTags, fetchingFollowedTags } = useFollowedTagsQuery();
+  const { followedUsers, fetchingFollowedUsers } = useFollowedUsersQuery();
   const { followTag, followingTag } = useFollowTagMutation();
   const { unfollowTag, unfollowingTag } = useUnfollowTagMutation();
   const [followingTags, setFollowingTags] = useState<Set<string>>(new Set([]));
+  const [followingUsers, setFollowingUsers] = useState<Set<string>>(
+    new Set([]),
+  );
 
   useEffect(() => {
     if (followedTags && !fetchingFollowedTags) {
@@ -40,11 +45,24 @@ const Search = () => {
     }
   }, [fetchingFollowedTags, followedTags]);
 
+  useEffect(() => {
+    if (followedUsers && !fetchingFollowedUsers) {
+      const mappedUsers = followedUsers.map((userProfile) =>
+        userProfile.username.toLowerCase(),
+      );
+      const uniqueUsers = new Set(mappedUsers);
+      setFollowingUsers(uniqueUsers);
+
+      console.log(uniqueUsers);
+    }
+  }, [fetchingFollowedUsers, followedUsers]);
+
   if (
     searchingUsers ||
     searchingTags ||
     searchingPosts ||
-    fetchingFollowedTags
+    fetchingFollowedTags ||
+    fetchingFollowedUsers
   ) {
     return <Spinner />;
   }
@@ -158,7 +176,10 @@ const Search = () => {
                       {searchedUsers?.map((item, index) => (
                         <UserSearchCard
                           user={item}
-                          isFollowed={index % 2 === 0}
+                          isFollowed={followingUsers.has(
+                            item.username.toLowerCase(),
+                          )}
+                          onClick={() => navigate(`/blog/${item.userId}`)}
                         />
                       ))}
                     </div>

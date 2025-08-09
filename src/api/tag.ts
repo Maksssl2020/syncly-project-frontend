@@ -1,4 +1,4 @@
-import type { MainTag, MainTagRequest } from "../types/tags.ts";
+import type { MainTag, MainTagRequest, TagUsage } from "../types/tags.ts";
 import axiosConfig from "../config/axiosConfig.ts";
 
 export async function handleCreateMainTag(data: MainTagRequest) {
@@ -8,6 +8,24 @@ export async function handleCreateMainTag(data: MainTagRequest) {
 
 export async function fetchAllTags() {
   const response = await axiosConfig.get<MainTag[]>("/tags");
+  return response.data;
+}
+
+export async function fetchPopularTags(limit: number) {
+  const response = await axiosConfig.get<TagUsage[]>("/tags/popular", {
+    params: {
+      limit,
+    },
+  });
+  return response.data;
+}
+
+export async function fetchTrendingTags(limit: number) {
+  const response = await axiosConfig.get<TagUsage[]>("/tags/trending", {
+    params: {
+      limit,
+    },
+  });
   return response.data;
 }
 

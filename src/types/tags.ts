@@ -11,6 +11,12 @@ export interface MainTag {
   createdAt: string;
 }
 
+export interface TagUsage {
+  id: string | number;
+  name: string;
+  usageCount: number;
+}
+
 export type TagType = "MAIN" | "COMMON";
 
 export interface MainTagRequest {

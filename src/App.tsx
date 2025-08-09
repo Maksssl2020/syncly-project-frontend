@@ -27,8 +27,19 @@ import Conversations from "./pages/Conversations.tsx";
 import { Conversation } from "./pages/Conversation.tsx";
 import Friends from "./pages/Friends.tsx";
 import ProtectedSignedInRoute from "./routes/ProtectedSignedInRoute.tsx";
+import useAuthentication from "./hooks/useAuthentication.ts";
+import { useEffect } from "react";
+import { connectStomp } from "./config/stompClient.ts";
 
 function App() {
+  const { accessToken, userId } = useAuthentication();
+
+  useEffect(() => {
+    if (accessToken) {
+      connectStomp(accessToken);
+    }
+  }, [accessToken]);
+
   return (
     <AnimatePresence mode={"wait"}>
       <BrowserRouter>
@@ -39,8 +50,11 @@ function App() {
           </Route>
           <Route element={<ProtectedSignedInRoute />}>
             <Route element={<DashboardLayout />}>
-              <Route path="/blog" element={<UserBlog />} />
-              <Route path="/blog/:userId" element={<UserBlog />} />
+              <Route
+                path="/my-blog"
+                element={<UserBlog isSignedInUserBlog={true} />}
+              />
+              <Route path="/blog/:id" element={<UserBlog />} />
               <Route path="/saved-posts" element={<SavedPosts />} />
               <Route path="/tags" element={<Tags />} />
               <Route path="/tags/:tag" element={<Tag />} />
@@ -48,7 +62,7 @@ function App() {
               <Route path="/conversations" element={<Conversations />} />
               <Route path="/friends" element={<Friends />} />
               <Route
-                path="/conversation/:conversationId"
+                path="/conversation/:receiverId/:receiverUsername"
                 element={<Conversation />}
               />
               <Route path="/search" element={<Search />} />

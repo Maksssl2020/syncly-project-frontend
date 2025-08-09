@@ -1,6 +1,5 @@
 import type { VideoPost } from "../../types/post.ts";
 import { useState } from "react";
-import { Video } from "lucide-react";
 import { extractYoutubeId } from "../../utils/youtube.ts";
 
 type VideoPostCardProps = {
@@ -13,24 +12,6 @@ const VideoPostCard = ({ post, className }: VideoPostCardProps) => {
 
   return (
     <div className={`w-full flex flex-col gap-4 ${className}`}>
-      <div className="flex items-center gap-2">
-        <div
-          className="w-6 h-6 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "var(--color-cyan-200)" }}
-        >
-          <Video
-            className="size-3"
-            style={{ color: "var(--color-black-400)" }}
-          />
-        </div>
-        <span
-          className="text-xs font-medium"
-          style={{ color: "var(--color-cyan-200)" }}
-        >
-          Video Post
-        </span>
-      </div>
-
       {post.description && (
         <p className="text-lg" style={{ color: "var(--color-white-100)" }}>
           {post.description}

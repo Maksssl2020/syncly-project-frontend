@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { PhotoPost } from "../../types/post.ts";
-import { Camera } from "lucide-react";
 
 type PhotoPostCardProps = {
   post: PhotoPost;
@@ -13,13 +12,6 @@ const PhotoPostCard = ({ post, className }: PhotoPostCardProps) => {
 
   return (
     <div className={`w-full flex flex-col gap-4 ${className}`}>
-      <div className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded-full flex items-center justify-center bg-teal-200">
-          <Camera className="size-3 text-black-400" />
-        </div>
-        <span className="text-xs font-medium text-teal-200">Photo Post</span>
-      </div>
-
       {post.caption && <p className="text-lg text-white-100">{post.caption}</p>}
 
       {images.length > 0 && (

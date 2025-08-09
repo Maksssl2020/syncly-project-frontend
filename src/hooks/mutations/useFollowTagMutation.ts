@@ -1,6 +1,6 @@
 import useAuthentication from "../useAuthentication.ts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { handleFollowTag } from "../../api/usersTags.ts";
+import { handleFollowTag } from "../../api/follow.ts";
 import type { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../../types/types.ts";
 import toast from "react-hot-toast";

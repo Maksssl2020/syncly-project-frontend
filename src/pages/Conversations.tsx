@@ -4,13 +4,23 @@ import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import { useState } from "react";
 import NewMessageModal from "../components/modal/NewMessageModal.tsx";
 import ConversationsSidebar from "../components/sidebar/ConversationsSidebar.tsx";
+import useAllConversationsByUserQuery from "../hooks/queries/useAllConversationsByUserQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
 
 const Conversations = () => {
+  const { allConversationsByUserData, fetchingAllConversationsByUser } =
+    useAllConversationsByUserQuery();
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
+
+  if (fetchingAllConversationsByUser) {
+    return <Spinner />;
+  }
 
   return (
     <Page className={"w-full flex overflow-hidden items-center"}>
-      <ConversationsSidebar />
+      <ConversationsSidebar
+        conversationsData={allConversationsByUserData ?? []}
+      />
 
       <main className="flex-1 flex flex-col max-md:min-h-[90vh]  items-center justify-center ">
         <div

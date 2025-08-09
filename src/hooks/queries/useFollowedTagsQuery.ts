@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import useAuthentication from "../useAuthentication.ts";
-import { fetchUserFollowedTags } from "../../api/usersTags.ts";
+import { fetchUserFollowedTags } from "../../api/follow.ts";
 
 function useFollowedTagsQuery() {
   const { userId } = useAuthentication();

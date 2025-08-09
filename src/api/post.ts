@@ -35,6 +35,47 @@ export async function fetchPostsForUserDashboard(userId: string | number) {
   return response.data.map(mapToPostType);
 }
 
+export async function fetchPostsForUserDashboardInfinity(
+  userId: number | string,
+  offset: number = 0,
+  limit: number = 10,
+) {
+  const response = await axiosConfig.get<Post[]>(
+    `/posts/user/dashboard/${userId}`,
+    {
+      params: {
+        offset,
+        limit,
+      },
+    },
+  );
+  return response.data.map(mapToPostType);
+}
+
+export async function fetchFollowedFeedPosts(userId: string | number) {
+  const response = await axiosConfig.get<Post[]>(
+    `posts/user/${userId}/feed/following`,
+  );
+  return response.data.map(mapToPostType);
+}
+
+export async function fetchFollowedFeedPostsInfinity(
+  userId: number | string,
+  offset: number = 0,
+  limit: number = 10,
+) {
+  const response = await axiosConfig.get<Post[]>(
+    `posts/user/${userId}/feed/following`,
+    {
+      params: {
+        offset,
+        limit,
+      },
+    },
+  );
+  return response.data.map(mapToPostType);
+}
+
 export async function fetchAllSavedPostsByUser(userId: string | number) {
   const response = await axiosConfig.get<Post[]>(
     `posts/user/saved-posts/${userId}`,

@@ -8,13 +8,7 @@ function useLikePostCommentMutation(onSuccess?: () => void) {
   const { mutate: likePostComment, isPending: likingPostComment } = useMutation(
     {
       mutationKey: ["likePost"],
-      mutationFn: ({
-        userId,
-        commentId,
-      }: {
-        userId: string | number;
-        commentId: string | number;
-      }) => handleLikeComment(userId, commentId),
+      mutationFn: (commentId: string | number) => handleLikeComment(commentId),
       onSuccess: () => {
         onSuccess?.();
       },

@@ -7,13 +7,7 @@ import toast from "react-hot-toast";
 function useLikePostMutation(onSuccess?: () => void) {
   const { mutate: likePost, isPending: likingPost } = useMutation({
     mutationKey: ["likePost"],
-    mutationFn: ({
-      userId,
-      postId,
-    }: {
-      userId: string | number;
-      postId: string | number;
-    }) => handleLikePost(userId, postId),
+    mutationFn: (postId: string | number) => handleLikePost(postId),
     onSuccess: () => {
       onSuccess?.();
     },
