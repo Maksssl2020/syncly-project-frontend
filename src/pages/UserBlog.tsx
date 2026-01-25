@@ -2,82 +2,57 @@ import Page from "../animation/Page.tsx";
 import Avatar from "../components/img/Avatar.tsx";
 import {
   Calendar,
+  ExternalLinkIcon,
   Grid3X3,
   ImageIcon,
   LinkIcon,
-  List,
   MapPin,
-  Music,
   Quote,
+  TextIcon,
   Video,
 } from "lucide-react";
-import { useState } from "react";
-import type { TabData, ToggleOption } from "../types/types.ts";
+import { useEffect, useMemo, useState } from "react";
+import type { TabData } from "../types/types.ts";
 import Tabs from "../components/tab/Tabs.tsx";
-import ViewToggle from "../components/toggle/ViewToggle.tsx";
 import { motion } from "framer-motion";
 import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
-import DashboardPostGridCard from "../components/card/DashboardPostGridCard.tsx";
 import useUserProfileByUserIdQuery from "../hooks/queries/useUserProfileByUserIdQuery.ts";
 import useAuthentication from "../hooks/useAuthentication.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
 import { format } from "date-fns";
 import usePostsByUserIdQuery from "../hooks/queries/usePostsByUserIdQuery.ts";
 import { useParams } from "react-router-dom";
+import useSharedPostsByUserIdQuery from "../hooks/queries/useSharedPostsByUserIdQuery.ts";
+import type { PostUnion } from "../types/post.ts";
+import type { UserItem } from "../types/user.ts";
+import SharedPostCard from "../components/card/SharedPostCard.tsx";
+import useUserSettingsByUserIdQuery from "../hooks/queries/useUserSettingsByUserIdQuery.ts";
 
-const filterOptions: TabData[] = [
-  {
-    id: "all",
-    label: "All",
-    icon: <Grid3X3 className="size-4" />,
-    count: 127,
-    color: "#14b8a6",
-  },
-  {
-    id: "photo",
-    label: "Photos",
-    icon: <ImageIcon className="size-4" />,
-    count: 45,
-    color: "#14b8a6",
-  },
-  {
-    id: "video",
-    label: "Videos",
-    icon: <Video className="size-4" />,
-    count: 23,
-    color: "#22d3ee",
-  },
-  {
-    id: "music",
-    label: "Music",
-    icon: <Music className="size-4" />,
-    count: 31,
-    color: "#0d9488",
-  },
-  {
-    id: "quote",
-    label: "Quotes",
-    icon: <Quote className="size-4" />,
-    count: 28,
-    color: "#06b6d4",
-  },
-];
-
-const viewOptions: ToggleOption[] = [
-  { value: "list", icon: <List className="size-5" /> },
-  { value: "grid", icon: <Grid3X3 className="size-5" /> },
-];
-
-type FilterType = "all" | "photo" | "video" | "music" | "quote";
-type ViewMode = "list" | "grid";
+type FilterType =
+  | "ALL"
+  | "TEXT"
+  | "QUOTE"
+  | "VIDEO"
+  | "LINK"
+  | "PHOTO"
+  | "SHARED";
 
 type UserBlogProps = {
   isSignedInUserBlog?: boolean;
 };
 
+type UserBlogPost = {
+  sharedBy: UserItem | undefined;
+  postDate: string;
+  isShared: boolean;
+  post: PostUnion;
+};
+
 const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
   const { id } = useParams();
   const { userId } = useAuthentication();
+  const [chosenFilter, setChosenFilter] = useState<FilterType>("ALL");
+  const [userBlogPosts, setUserBlogPosts] = useState<UserBlogPost[]>([]);
 
   const { userProfile, fetchingUserProfile } = useUserProfileByUserIdQuery(
     isSignedInUserBlog ? userId : id,
@@ -85,13 +60,130 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
   const { userPosts, fetchingUserPosts } = usePostsByUserIdQuery(
     isSignedInUserBlog ? userId : id,
   );
+  const { userSettings, fetchingUserSettings } = useUserSettingsByUserIdQuery(
+    isSignedInUserBlog ? userId : id,
+  );
 
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [filterType, setFilterType] = useState<FilterType>("all");
+  const { sharedPostsByUserId, fetchingSharedPostsByUserId } =
+    useSharedPostsByUserIdQuery(isSignedInUserBlog ? userId : id);
 
-  if (fetchingUserProfile || !userProfile || fetchingUserPosts) {
+  useEffect(() => {
+    if (userPosts && !fetchingUserPosts) {
+      const mappedUserPosts: UserBlogPost[] = userPosts.map((post) => ({
+        sharedBy: undefined,
+        postDate: post.createdAt,
+        isShared: false,
+        post: post,
+      }));
+
+      setUserBlogPosts(mappedUserPosts);
+    }
+  }, [fetchingUserPosts, userPosts]);
+
+  useEffect(() => {
+    if (sharedPostsByUserId && !fetchingSharedPostsByUserId) {
+      const mappedUserPosts: UserBlogPost[] = sharedPostsByUserId.map(
+        (post) => ({
+          sharedBy: post.sharedBy,
+          isShared: true,
+          post: post.originalPost,
+          postDate: post.sharedAt,
+        }),
+      );
+
+      setUserBlogPosts((prevState) => [...prevState, ...mappedUserPosts]);
+    }
+  }, [fetchingSharedPostsByUserId, sharedPostsByUserId]);
+
+  const filteredPosts = useMemo(() => {
+    return [...userBlogPosts].filter((post) => {
+      if (chosenFilter === "ALL") {
+        return post;
+      } else if (chosenFilter === "SHARED") {
+        return post.isShared;
+      } else {
+        return post.post.postType === chosenFilter && !post.isShared;
+      }
+    });
+  }, [chosenFilter, userBlogPosts]);
+
+  const sortedPosts = useMemo(() => {
+    return [...filteredPosts].sort(
+      (a, b) => new Date(b.postDate).getTime() - new Date(a.postDate).getTime(),
+    );
+  }, [filteredPosts]);
+
+  if (
+    fetchingUserProfile ||
+    !userProfile ||
+    fetchingUserPosts ||
+    fetchingSharedPostsByUserId ||
+    fetchingUserSettings
+  ) {
     return <Spinner />;
   }
+
+  const filterOptions: TabData[] = [
+    {
+      id: "ALL",
+      label: "All",
+      icon: <Grid3X3 className="size-4" />,
+      count: userBlogPosts.length,
+      color: "#14b8a6",
+    },
+    {
+      id: "SHARED",
+      label: "Shared",
+      icon: <ExternalLinkIcon className="size-4" />,
+      count: userBlogPosts.filter((userPost) => userPost.isShared).length,
+      color: "#14b8a6",
+    },
+    {
+      id: "TEXT",
+      label: "Text",
+      icon: <TextIcon className="size-4" />,
+      count: userBlogPosts.filter(
+        (userPost) => userPost.post.postType === "TEXT" && !userPost.isShared,
+      ).length,
+      color: "#0d9488",
+    },
+    {
+      id: "LINK",
+      label: "Link",
+      icon: <LinkIcon className="size-4" />,
+      count: userBlogPosts.filter(
+        (userPost) => userPost.post.postType === "LINK" && !userPost.isShared,
+      ).length,
+      color: "#0d9488",
+    },
+    {
+      id: "PHOTO",
+      label: "Photos",
+      icon: <ImageIcon className="size-4" />,
+      count: userBlogPosts.filter(
+        (userPost) => userPost.post.postType === "PHOTO" && !userPost.isShared,
+      ).length,
+      color: "#14b8a6",
+    },
+    {
+      id: "VIDEO",
+      label: "Videos",
+      icon: <Video className="size-4" />,
+      count: userBlogPosts.filter(
+        (userPost) => userPost.post.postType === "VIDEO" && !userPost.isShared,
+      ).length,
+      color: "#22d3ee",
+    },
+    {
+      id: "QUOTE",
+      label: "Quotes",
+      icon: <Quote className="size-4" />,
+      count: userBlogPosts.filter(
+        (userPost) => userPost.post.postType === "QUOTE" && !userPost.isShared,
+      ).length,
+      color: "#06b6d4",
+    },
+  ];
 
   const {
     displayName,
@@ -116,7 +208,7 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
     },
   ];
 
-  console.log(userPosts);
+  console.log("userBlogPosts", userBlogPosts);
 
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
@@ -143,7 +235,7 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
               ))}
             </div>
             <div className={"flex flex-wrap gap-4 text-gray-300"}>
-              {location && (
+              {userSettings?.showLocation && location && (
                 <div className={"flex items-center gap-2"}>
                   <MapPin className={"size-4"} />
                   <span>{location}</span>
@@ -157,7 +249,7 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
                 <div className={"flex items-center gap-2"}>
                   <LinkIcon className={"size-4"} />
                   <a href={"#"} className={"hover:underline text-teal-100"}>
-                    annakowalska.com
+                    {website}
                   </a>
                 </div>
               )}
@@ -178,41 +270,32 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
           >
             <Tabs
               data={filterOptions}
-              activeTabId={filterType}
-              onClick={(id) => setFilterType(id as FilterType)}
-            />
-            <ViewToggle
-              options={viewOptions}
-              value={viewMode}
-              onChange={(value) => setViewMode(value as ViewMode)}
+              activeTabId={chosenFilter}
+              onClick={(id) => setChosenFilter(id as FilterType)}
             />
           </div>
         </div>
 
-        <motion.div
-          layout
-          className={
-            viewMode === "grid"
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              : "space-y-6"
-          }
-        >
-          {viewMode === "list" ? (
-            <>{userPosts?.map((post) => <DashboardPostCard post={post} />)}</>
-          ) : (
-            <>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-                <motion.div
-                  layout
-                  whileHover={{ y: -5 }}
-                  key={item}
-                  className="rounded-lg bg-black-200 border-gray-600 overflow-hidden group cursor-pointer border-2"
-                >
-                  <DashboardPostGridCard />
-                </motion.div>
-              ))}
-            </>
-          )}
+        <motion.div className={"space-y-6"}>
+          {sortedPosts?.map((post, index) => (
+            <motion.div
+              key={post.post.id ?? index}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              {post.isShared ? (
+                <SharedPostCard
+                  sharedBy={post.sharedBy!}
+                  post={post.post}
+                  sharedAt={post.postDate}
+                />
+              ) : (
+                <DashboardPostCard post={post.post} />
+              )}
+              ,
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </Page>

@@ -1,5 +1,4 @@
 import type {
-  AudioPost,
   LinkPost,
   PhotoPost,
   PostUnion,
@@ -18,10 +17,6 @@ export function isQuotePost(post: PostUnion): post is QuotePost {
 
 export function isPhotoPost(post: PostUnion): post is PhotoPost {
   return post.postType.toLowerCase() === "photo";
-}
-
-export function isAudioPost(post: PostUnion): post is AudioPost {
-  return post.postType.toLowerCase() === "audio";
 }
 
 export function isVideoPost(post: PostUnion): post is VideoPost {

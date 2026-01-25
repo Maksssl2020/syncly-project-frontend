@@ -1,25 +1,61 @@
-import type { ConversationResponse } from "../../types/conversation.ts";
+import type {
+  ConversationResponse,
+  SelectedConversation,
+} from "../../types/conversation.ts";
 import { motion } from "framer-motion";
 import Avatar from "../img/Avatar.tsx";
-import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import useAuthentication from "../../hooks/useAuthentication.ts";
+import useUserProfileAvatarByUserIdQuery from "../../hooks/queries/useUserProfileAvatarByUserIdQuery.ts";
+import ComponentSpinner from "../spinner/ComponentSpinner.tsx";
+import { useUserPresence } from "../../hooks/useUserPresence.ts";
+import { usePresenceStore } from "../../store/presenceStore.ts";
 
 type ConversationCardProps = {
   conversation: ConversationResponse;
   isActive: boolean;
+  onSelect: (data: SelectedConversation) => void;
 };
 
 const ConversationCard = ({
   conversation,
   isActive,
+  onSelect,
 }: ConversationCardProps) => {
   const { userId } = useAuthentication();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
+  useUserPresence(conversation.recipientId);
+  const userPresence = usePresenceStore(
+    (state) => state.presenceMap[conversation.recipientId] || null,
+  );
+
+  const { userProfileAvatar, fetchingUserProfileAvatar } =
+    useUserProfileAvatarByUserIdQuery(conversation.recipientId);
+
+  if (fetchingUserProfileAvatar) {
+    return (
+      <div
+        className={
+          "flex items-center cursor-pointer gap-3 p-2 rounded-lg border-l-4 w-full h-auto"
+        }
+      >
+        <ComponentSpinner />
+      </div>
+    );
+  }
 
   return (
     <motion.div
-      onClick={() => navigate(`/conversation/${conversation.id}`)}
+      onClick={() => {
+        // navigate(
+        //   `/conversation/${conversation.recipientId}/${conversation.recipientUsername}`,
+        // );
+        onSelect({
+          conversationId: conversation.id,
+          recipientId: conversation.recipientId,
+          recipientUsername: conversation.recipientUsername,
+        });
+      }}
       key={conversation.id}
       className={
         "flex items-center cursor-pointer gap-3 p-2 rounded-lg border-l-4 w-full h-auto"
@@ -33,14 +69,14 @@ const ConversationCard = ({
       }}
     >
       <div className={"relative"}>
-        <Avatar size={"size-12"} />
-        {/*{participant.isActive && (*/}
-        {/*  <span*/}
-        {/*    className={*/}
-        {/*      "absolute bottom-0 right-0 size-3 rounded-full bg-teal-100 "*/}
-        {/*    }*/}
-        {/*  />*/}
-        {/*)}*/}
+        <Avatar avatar={userProfileAvatar} size={"size-12"} />
+        {userPresence?.status && (
+          <span
+            className={
+              "absolute bottom-0 right-0 size-3 rounded-full bg-teal-100 "
+            }
+          />
+        )}
       </div>
 
       <div className={"flex flex-col gap-2 overflow-hidden"}>

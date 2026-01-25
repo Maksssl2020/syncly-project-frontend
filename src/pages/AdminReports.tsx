@@ -1,173 +1,16 @@
 import { AlertCircle, Flag } from "lucide-react";
 import Page from "../animation/Page";
 import AdminManagementPanelHeader from "../components/header/AdminManagementPanelHeader.tsx";
-import type { Report, ReportStatus, ReportType } from "../types/report.ts";
+import type { ReportStatus, ReportType, ReportUnion } from "../types/report.ts";
 import Searchbar from "../components/input/Searchbar.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DropdownOption } from "../types/types.ts";
 import ReportCardList from "../components/card/ReportCardList.tsx";
 import ReportDetailsModal from "../components/modal/ReportDetailsModal.tsx";
-
-const MOCK_REPORTS: Report[] = [
-  {
-    id: "1",
-    type: "POST",
-    targetId: "post123",
-    targetTitle: "Inappropriate content",
-    targetContent:
-      "This post contains content that violates community guidelines...",
-    targetImage: "/placeholder.svg?height=200&width=300",
-    reportedBy: {
-      id: "user1",
-      username: "concerned_user",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "INAPPROPRIATE",
-    description: "This post contains explicit content that should be removed.",
-    status: "PENDING",
-    createdAt: "2023-06-03T14:25:00Z",
-  },
-  {
-    id: "2",
-    type: "USER",
-    targetId: "user456",
-    targetTitle: "Spammer account",
-    targetContent: "This user is posting spam across multiple threads...",
-    reportedBy: {
-      id: "user2",
-      username: "moderator_helper",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "SPAM",
-    description:
-      "This account is posting the same promotional content across multiple threads.",
-    status: "RESOLVED",
-    createdAt: "2023-06-02T10:15:00Z",
-    resolvedAt: "2023-06-02T15:30:00Z",
-    resolvedBy: {
-      id: "admin1",
-      username: "admin",
-    },
-  },
-  {
-    id: "3",
-    type: "COMMENT",
-    targetId: "comment789",
-    targetTitle: "Harassment in comments",
-    targetContent: "You're an idiot and nobody likes your content...",
-    reportedBy: {
-      id: "user3",
-      username: "victim_user",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "HARASSMENT",
-    description: "This user is targeting me with insulting comments.",
-    status: "PENDING",
-    createdAt: "2023-06-04T09:45:00Z",
-  },
-  {
-    id: "4",
-    type: "POST",
-    targetId: "post234",
-    targetTitle: "Violent content",
-    targetContent: "How to harm others tutorial...",
-    targetImage: "/placeholder.svg?height=200&width=300",
-    reportedBy: {
-      id: "user4",
-      username: "safety_first",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "VIOLENCE",
-    description: "This post contains instructions for harming others.",
-    status: "RESOLVED",
-    createdAt: "2023-06-01T16:20:00Z",
-    resolvedAt: "2023-06-01T18:45:00Z",
-    resolvedBy: {
-      id: "admin1",
-      username: "admin",
-    },
-  },
-  {
-    id: "5",
-    type: "COMMENT",
-    targetId: "comment345",
-    targetTitle: "Spam in comments",
-    targetContent:
-      "Check out my website at www.spam-site.com for amazing deals...",
-    reportedBy: {
-      id: "user5",
-      username: "thread_owner",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "SPAM",
-    description: "This comment is just spam advertising.",
-    status: "REJECTED",
-    createdAt: "2023-06-02T11:30:00Z",
-    resolvedAt: "2023-06-02T14:15:00Z",
-    resolvedBy: {
-      id: "admin1",
-      username: "admin",
-    },
-  },
-  {
-    id: "6",
-    type: "USER",
-    targetId: "user567",
-    targetTitle: "Impersonation account",
-    targetContent: "This user is pretending to be a famous person...",
-    reportedBy: {
-      id: "user6",
-      username: "real_celebrity",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "OTHER",
-    description:
-      "This account is impersonating me and trying to scam my followers.",
-    status: "PENDING",
-    createdAt: "2023-06-03T20:10:00Z",
-  },
-  {
-    id: "7",
-    type: "POST",
-    targetId: "post456",
-    targetTitle: "Copyright infringement",
-    targetContent: "Here's the full movie download...",
-    targetImage: "/placeholder.svg?height=200&width=300",
-    reportedBy: {
-      id: "user7",
-      username: "rights_holder",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "OTHER",
-    description: "This post is sharing copyrighted content without permission.",
-    status: "PENDING",
-    createdAt: "2023-06-04T08:30:00Z",
-  },
-  {
-    id: "8",
-    type: "COMMENT",
-    targetId: "comment567",
-    targetTitle: "Inappropriate language",
-    targetContent: "This comment contains offensive language...",
-    reportedBy: {
-      id: "user8",
-      username: "parent_user",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    reason: "INAPPROPRIATE",
-    description:
-      "This comment uses extremely offensive language in a thread marked as family-friendly.",
-    status: "RESOLVED",
-    createdAt: "2023-06-03T15:40:00Z",
-    resolvedAt: "2023-06-03T17:20:00Z",
-    resolvedBy: {
-      id: "admin1",
-      username: "admin",
-    },
-  },
-];
+import useReportsQuery from "../hooks/queries/useReportsQuery.ts";
+import useResolveReportMutation from "../hooks/mutations/useResolveReportMutation.ts";
 
 const typeFilterOptions: DropdownOption[] = [
   {
@@ -208,24 +51,39 @@ const statusFilterOptions: DropdownOption[] = [
 ];
 
 const AdminReports = () => {
-  const [reports, setReports] = useState<Report[]>(MOCK_REPORTS);
+  const [reports, setReports] = useState<ReportUnion[]>([]);
   const [activeTab, setActiveTab] = useState<ReportType | "ALL">("ALL");
   const [statusFilter, setStatusFilter] = useState<ReportStatus | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportUnion | null>(
+    null,
+  );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+  const { reportsData, fetchingReportsData } = useReportsQuery();
+  const { resolveReport, resolvingReport } = useResolveReportMutation(() => {
+    if (isDetailModalOpen) {
+      setIsDetailModalOpen(false);
+    }
+  });
+
+  useEffect(() => {
+    if (!fetchingReportsData && reportsData) {
+      setReports(reportsData);
+    }
+  }, [fetchingReportsData, reportsData]);
+
   const filteredReports = reports.filter((report) => {
-    const matchesTab = activeTab === "ALL" || report.type === activeTab;
+    const matchesTab = activeTab === "ALL" || report.reportType === activeTab;
     const matchesStatus =
-      statusFilter === "ALL" || report.status === statusFilter;
+      statusFilter === "ALL" || report.reportStatus === statusFilter;
     const matchesSearch =
       searchQuery === "" ||
-      report.targetTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       report.reportedBy.username
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      report.description.toLowerCase().includes(searchQuery.toLowerCase());
+      report.reason.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesTab && matchesStatus && matchesSearch;
   });
@@ -294,6 +152,8 @@ const AdminReports = () => {
               setSelectedReport(report);
               setIsDetailModalOpen(true);
             }}
+            isResolving={resolvingReport}
+            onResolveReport={(data) => resolveReport(data)}
           />
         ))}
 
@@ -309,6 +169,8 @@ const AdminReports = () => {
         isOpen={isDetailModalOpen}
         report={selectedReport}
         onClose={() => setIsDetailModalOpen(false)}
+        onResolveReport={(data) => resolveReport(data)}
+        isResolving={resolvingReport}
       />
     </Page>
   );

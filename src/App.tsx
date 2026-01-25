@@ -32,13 +32,13 @@ import { useEffect } from "react";
 import { connectStomp } from "./config/stompClient.ts";
 
 function App() {
-  const { accessToken, userId } = useAuthentication();
+  const { accessToken, username } = useAuthentication();
 
   useEffect(() => {
-    if (accessToken) {
-      connectStomp(accessToken);
+    if (accessToken && username) {
+      connectStomp(accessToken, username);
     }
-  }, [accessToken]);
+  }, [accessToken, username]);
 
   return (
     <AnimatePresence mode={"wait"}>

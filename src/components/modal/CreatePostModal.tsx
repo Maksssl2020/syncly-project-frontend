@@ -1,5 +1,4 @@
 import type {
-  AudioPostRequest,
   LinkPostRequest,
   PhotoPostRequest,
   PostType,
@@ -14,7 +13,6 @@ import {
   Camera,
   FileText,
   LinkIcon,
-  Music,
   Quote,
   Send,
   Video,
@@ -24,7 +22,6 @@ import AnimatedButton from "../button/AnimatedButton.tsx";
 import QuotePostForm from "../form/QuotePostForm.tsx";
 import PhotoPostForm from "../form/PhotoPostForm.tsx";
 import VideoPostForm from "../form/VideoPostForm.tsx";
-import AudioPostForm from "../form/AudioPostForm.tsx";
 import LinkPostForm from "../form/LinkPostForm.tsx";
 
 type CreatePostModalProps = {
@@ -37,7 +34,6 @@ type CreatePostModalProps = {
       | QuotePostRequest
       | PhotoPostRequest
       | VideoPostRequest
-      | AudioPostRequest
       | LinkPostRequest,
   ) => void;
 };
@@ -50,37 +46,32 @@ type ModalConfig = {
 
 const modalConfig = (postType: PostType | null): ModalConfig => {
   switch (postType) {
-    case "text":
+    case "TEXT":
       return {
         title: "Create Text Post",
         icon: FileText,
         color: "#14b8a6",
       };
-    case "quote":
+    case "QUOTE":
       return {
         title: "Create Quote Post",
         icon: Quote,
         color: "#22d3ee",
       };
-    case "photo":
+    case "PHOTO":
       return {
         title: "Create Photo Post",
         icon: Camera,
         color: "#0d9488",
       };
-    case "video":
+    case "VIDEO":
       return {
         title: "Create Video Post",
         icon: Video,
         color: "#06b6d4",
       };
-    case "audio":
-      return {
-        title: "Create Music Post",
-        icon: Music,
-        color: "#14b8a6",
-      };
-    case "link":
+
+    case "LINK":
       return {
         title: "Create Link Post",
         icon: LinkIcon,
@@ -114,7 +105,6 @@ const CreatePostModal = ({
       | QuotePostRequest
       | PhotoPostRequest
       | VideoPostRequest
-      | AudioPostRequest
       | LinkPostRequest,
   ) => {
     onSubmit(data);
@@ -122,42 +112,35 @@ const CreatePostModal = ({
 
   const section = (postType: PostType | null) => {
     switch (postType) {
-      case "text":
+      case "TEXT":
         return (
           <TextPostForm
             ref={formRef}
             onSubmit={(data) => handleFormSubmit(data)}
           />
         );
-      case "quote":
+      case "QUOTE":
         return (
           <QuotePostForm
             ref={formRef}
             onSubmit={(data) => handleFormSubmit(data)}
           />
         );
-      case "photo":
+      case "PHOTO":
         return (
           <PhotoPostForm
             ref={formRef}
             onSubmit={(data) => handleFormSubmit(data)}
           />
         );
-      case "video":
+      case "VIDEO":
         return (
           <VideoPostForm
             ref={formRef}
             onSubmit={(data) => handleFormSubmit(data)}
           />
         );
-      case "audio":
-        return (
-          <AudioPostForm
-            ref={formRef}
-            onSubmit={(data) => handleFormSubmit(data)}
-          />
-        );
-      case "link":
+      case "LINK":
         return (
           <LinkPostForm
             ref={formRef}

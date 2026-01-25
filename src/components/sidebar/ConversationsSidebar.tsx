@@ -1,19 +1,32 @@
 import Searchbar from "../input/Searchbar.tsx";
 import ConversationList from "../list/ConversationList.tsx";
-import type { ConversationResponse } from "../../types/conversation.ts";
+import type {
+  ConversationResponse,
+  SelectedConversation,
+} from "../../types/conversation.ts";
 import AnimatedButton from "../button/AnimatedButton.tsx";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 type ConversationsSidebarProps = {
   conversationsData: ConversationResponse[];
-  selectedConversationId?: string;
+  onSelect: (data: SelectedConversation) => void;
+  selectedConversationId?: string | number;
 };
 
 const ConversationsSidebar = ({
   conversationsData,
+  onSelect,
   selectedConversationId,
 }: ConversationsSidebarProps) => {
   const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+
+  const filteredConversations = conversationsData.filter((conversationData) => {
+    return conversationData.recipientUsername
+      .toLowerCase()
+      .includes(query.toLowerCase());
+  });
 
   return (
     <aside
@@ -22,15 +35,18 @@ const ConversationsSidebar = ({
       }
     >
       <div className={"flex-1 flex flex-col min-h-[87.5vh] w-full gap-8"}>
-        <Searchbar
-          onChange={() => {}}
-          value={""}
-          placeholder={"Search conversations..."}
-        />
+        {conversationsData.length > 0 && (
+          <Searchbar
+            onChange={(value) => setQuery(value)}
+            placeholder={"Search conversations..."}
+            value={query}
+          />
+        )}
         <div className={"w-full h-auto overflow-y-auto"}>
           <ConversationList
-            conversations={conversationsData}
-            activeConversationId={selectedConversationId}
+            conversations={filteredConversations}
+            onSelect={onSelect}
+            selectedConversationId={selectedConversationId}
           />
         </div>
         <AnimatedButton

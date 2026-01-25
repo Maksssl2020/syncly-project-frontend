@@ -151,12 +151,6 @@ const UserSearchCard = ({
     }
   };
 
-  // PENDING,
-  //   ACCEPTED,
-  //   BLOCKED,
-  //   DECLINED,
-  //   NONE
-
   return (
     <motion.div
       onClick={onClick}
@@ -184,7 +178,7 @@ const UserSearchCard = ({
         <div className={"flex items-center gap-6"}>
           <div className={"flex items-center gap-2 text-gray-400"}>
             <FileText className={"size-5 "} />
-            <span className={"text-sm"}>0posts</span>
+            <span className={"text-sm"}>0 posts</span>
           </div>
           <div className={"flex items-center gap-2 text-gray-400"}>
             <Users className={"size-5 "} />

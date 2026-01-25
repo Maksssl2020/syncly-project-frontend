@@ -53,7 +53,9 @@ const Dropdown = ({
                   option.onClick?.();
                   onClose();
                 }}
-                whileHover={{ backgroundColor: "#2c2c2e" }}
+                whileHover={{
+                  backgroundColor: "#2c2c2e",
+                }}
                 animate={{
                   color: getTextColor(option.value),
                   backgroundColor: getBackgroundColor(option.value),

@@ -1,13 +1,10 @@
-import { formatDate } from "../../utils/dateUtils.ts";
 import AnimatedButton from "../button/AnimatedButton.tsx";
 import { Edit, Trash2 } from "lucide-react";
 import type { UserItem } from "../../types/user.ts";
 import Avatar from "../img/Avatar.tsx";
-import {
-  getUserRoleBadgeColor,
-  getUserStatusBadgeColor,
-} from "../../utils/colorUtils.ts";
+import { getUserRoleBadgeColor, getUserStatusBadgeColor } from "../../utils/colorUtils.ts";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 
 type UsersTableRowProps = {
   user: UserItem;
@@ -17,8 +14,10 @@ type UsersTableRowProps = {
 const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
   const navigate = useNavigate();
 
+  console.log(user.lastActive);
+
   return (
-    <tr key={user.id} className={"border-t border-gray-600 bg-black-300"}>
+    <tr key={user.userId} className={"border-t border-gray-600 bg-black-300"}>
       <td className={"px-4 py-3"}>
         <div className={"flex items-center gap-3"}>
           <Avatar size={"size-10"} />
@@ -32,7 +31,7 @@ const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
         <span
           className={"inline-block px-2 py-1  rounded text-xs font-medium"}
           style={{
-            color: user.role === "USER" ? "#e6e6e6" : "#111111",
+            color: user.role === "REGISTERED" ? "#e6e6e6" : "#111111",
             backgroundColor: getUserRoleBadgeColor(user.role),
           }}
         >
@@ -52,10 +51,16 @@ const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
         </span>
       </td>
       <td className={"px-4 py-3 text-white-100"}>{user.postCount}</td>
-      <td className={"px-4 py-3 text-white-100"}>{user.followersCount}</td>
-      <td className={"px-4 py-3 text-gray-400"}>{formatDate(user.joinedAt)}</td>
+      <td className={"px-4 py-3 text-white-100"}>
+        {user.userProfile.followersCount}
+      </td>
       <td className={"px-4 py-3 text-gray-400"}>
-        {formatDate(user.lastActive)}
+        {format(user.createdAt, "dd-MM-yyyy")}
+      </td>
+      <td className={"px-4 py-3 text-gray-400"}>
+        {user.lastActive !== undefined && user.lastActive !== ""
+          ? format(user!.lastActive, "dd-MM-yyyy")
+          : ""}
       </td>
       <td className={"px-4 py-3"}>
         <div className={"flex gap-2"}>
@@ -65,7 +70,7 @@ const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
             borderColorHover={"171719"}
             textColor={"#14b8a6"}
             className={"p-1 rounded"}
-            onClick={() => navigate(`/admin/panel/users/edit/${user.id}`)}
+            onClick={() => navigate(`/admin/panel/users/edit/${user.userId}`)}
           >
             <Edit />
           </AnimatedButton>

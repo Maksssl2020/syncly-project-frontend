@@ -5,12 +5,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import TagSelectionCard from "../card/TagSelectionCard.tsx";
 import { Hash, Plus, Search, Trash2 } from "lucide-react";
 import AnimatedButton from "../button/AnimatedButton.tsx";
+import type { Tag } from "../../types/tags.ts";
 
 type TagSelectorProps = {
+  initialTags?: Tag[];
   onSelectTag: (value: string[]) => void;
 };
 
-const TagSelector = ({ onSelectTag }: TagSelectorProps) => {
+const TagSelector = ({ onSelectTag, initialTags }: TagSelectorProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { ref, isOpen, setIsOpen } = useClickOutside(false);
   const {
@@ -22,7 +24,7 @@ const TagSelector = ({ onSelectTag }: TagSelectorProps) => {
     setSearchQuery,
     searchQuery,
     fetchingAllTagsData,
-  } = useTagSelection();
+  } = useTagSelection(initialTags);
 
   console.log(selectedTags);
 

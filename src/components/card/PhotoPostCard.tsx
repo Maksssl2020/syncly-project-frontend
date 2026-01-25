@@ -19,11 +19,13 @@ const PhotoPostCard = ({ post, className }: PhotoPostCardProps) => {
           <div className="aspect-video rounded-lg overflow-hidden bg-black-100">
             <img
               src={
-                images[currentImageIndex] ||
+                (URL.canParse(images[currentImageIndex])
+                  ? images[currentImageIndex]
+                  : `data:JPG;base64,${images[currentImageIndex]}`) ||
                 "/placeholder.svg?height=400&width=600"
               }
               alt={`Photo ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover"
+              className="w-auto h-full object-cover mx-auto"
             />
           </div>
 

@@ -3,6 +3,7 @@ import type {
   Comment,
   PostCommentReplyRequest,
   PostCommentRequest,
+  UpdateCommentRequest,
 } from "../types/comment.ts";
 
 export async function fetchCommentsForPost(
@@ -25,5 +26,19 @@ export async function handleAddCommentReply(data: PostCommentReplyRequest) {
     "/comments/add-comment-reply",
     data,
   );
+  return response.data;
+}
+
+export async function handleDeleteComment(commentId: number | string) {
+  const response = await axiosConfig.delete(`/comments/delete-comment`, {
+    params: {
+      commentId,
+    },
+  });
+  return response.data;
+}
+
+export async function handleUpdateComment(data: UpdateCommentRequest) {
+  const response = await axiosConfig.patch(`/comments/update`, data);
   return response.data;
 }

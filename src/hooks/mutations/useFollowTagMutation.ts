@@ -11,14 +11,25 @@ function useFollowTagMutation() {
 
   const { mutate: followTag, isPending: followingTag } = useMutation({
     mutationKey: ["followTag"],
-    mutationFn: async (tagId: string | number) => {
+
+    mutationFn: async ({
+      tagId,
+      // @ts-ignore
+      tagName,
+    }: {
+      tagId: string | number;
+      tagName: string;
+    }) => {
       if (userId) {
         return await handleFollowTag(userId, tagId);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["followedTags", userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tagDataByTagName", variables.tagName],
       });
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {

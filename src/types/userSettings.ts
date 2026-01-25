@@ -1,5 +1,5 @@
 export interface UserSettings {
-  userSettingsId: number;
+  userSettingsId: string | number;
   publicProfile: boolean;
   showEmail: boolean;
   showLocation: boolean;

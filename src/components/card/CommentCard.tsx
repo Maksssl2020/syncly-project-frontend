@@ -3,33 +3,39 @@ import type { Comment } from "../../types/comment.ts";
 import Avatar from "../img/Avatar.tsx";
 import { formatTimeAgo } from "../../utils/dateUtils.ts";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import {
-  ChevronDown,
-  ChevronUp,
-  Heart,
-  MoreHorizontal,
-  Reply,
-  Send,
-} from "lucide-react";
+import { CheckIcon, ChevronDown, ChevronUp, Heart, Reply, Send, XIcon } from "lucide-react";
 import { useState } from "react";
 import useAuthentication from "../../hooks/useAuthentication.ts";
 import useAddPostCommentReplyMutation from "../../hooks/mutations/useAddPostCommentReplyMutation.ts";
 import { useForm } from "react-hook-form";
 import FormInput from "../input/FormInput.tsx";
 import useLikePostCommentMutation from "../../hooks/mutations/useLikePostCommentMutation.ts";
+import useUnlikePostCommentMutation from "../../hooks/mutations/useUnlikePostCommentMutation.ts";
+import CommentOptionsDropdown from "../dropdown/CommentOptionsDropdown.tsx";
 
 type CommentCardProps = {
   comment: Comment;
   isReply: boolean;
+  onDelete: (commentId: string | number) => void;
+  onUpdate: (commentId: string | number, content: string) => void;
+  onReport: (comment: Comment) => void;
 };
 
-const CommentCard = ({ comment, isReply = false }: CommentCardProps) => {
+const CommentCard = ({
+  comment,
+  isReply = false,
+  onDelete,
+  onUpdate,
+  onReport,
+}: CommentCardProps) => {
   const { userId } = useAuthentication();
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, watch } = useForm({
     defaultValues: {
       content: "",
+      newContent: comment.content,
     },
   });
+  const [isEditing, setIsEditing] = useState(false);
 
   const {
     authorImage,
@@ -57,9 +63,17 @@ const CommentCard = ({ comment, isReply = false }: CommentCardProps) => {
     setLikes((prevState) => prevState + 1);
     setIsLiked(true);
   });
+  const { unlikePostComment } = useUnlikePostCommentMutation(() => {
+    setLikes((prevState) => prevState - 1);
+    setIsLiked(false);
+  });
 
   const onLikeComment = () => {
-    likePostComment(comment.id);
+    if (!isLiked) {
+      likePostComment(comment.id);
+    } else {
+      unlikePostComment(comment.id);
+    }
   };
 
   const onAddCommentReply = async (content: string, parentId: number) => {
@@ -75,6 +89,12 @@ const CommentCard = ({ comment, isReply = false }: CommentCardProps) => {
     });
 
     setReplyingTo(null);
+  };
+
+  const onUpdateComment = () => {
+    const newCommentContent = watch("newContent");
+    onUpdate(comment.id, newCommentContent);
+    setIsEditing(false);
   };
 
   const toggleReplies = (commentId: number) => {
@@ -108,7 +128,45 @@ const CommentCard = ({ comment, isReply = false }: CommentCardProps) => {
               {formatTimeAgo(createdAt)}
             </span>
           </div>
-          <p className="text-white-100 text-sm leading-relaxed">{content}</p>
+          {isEditing ? (
+            <div className={"flex w-full gap-4"}>
+              <input
+                className={
+                  "w-full px-2 h-[35px] outline-none text-white-100 text-sm leading-relaxed border border-gray-600 rounded-lg"
+                }
+                {...register("newContent")}
+              />
+              <div className={"flex gap-1"}>
+                <AnimatedButton
+                  borderColor={"#22c55e"}
+                  borderColorHover={"#22c55e"}
+                  textColor={"#22c55e"}
+                  bgColorHover={"#22c55e"}
+                  onClick={onUpdateComment}
+                  disabled={watch("newContent").length === 0}
+                  className={
+                    "size-8 rounded-full flex items-center justify-center border"
+                  }
+                >
+                  <CheckIcon className={"size-4"} />
+                </AnimatedButton>
+                <AnimatedButton
+                  onClick={() => setIsEditing(false)}
+                  borderColor={"#ef4444"}
+                  borderColorHover={"#ef4444"}
+                  textColor={"#ef4444"}
+                  bgColorHover={"#ef4444"}
+                  className={
+                    "size-8 rounded-full flex items-center justify-center border"
+                  }
+                >
+                  <XIcon className={"size-4"} />
+                </AnimatedButton>
+              </div>
+            </div>
+          ) : (
+            <p className="text-white-100 text-sm leading-relaxed">{content}</p>
+          )}
         </div>
 
         <div className="flex items-center gap-4 mt-2 ml-2">
@@ -140,16 +198,12 @@ const CommentCard = ({ comment, isReply = false }: CommentCardProps) => {
             </AnimatedButton>
           )}
 
-          <AnimatedButton
-            className="text-xs"
-            bgColor="transparent"
-            bgColorHover="transparent"
-            borderColor={"transparent"}
-            textColor="#9ca3af"
-            textColorHover="#14b8a6"
-          >
-            <MoreHorizontal className="size-4" />
-          </AnimatedButton>
+          <CommentOptionsDropdown
+            authorId={comment.authorId}
+            onDeleteClick={() => onDelete(comment.id)}
+            onEditClick={() => setIsEditing(true)}
+            onReportClick={() => onReport(comment)}
+          />
         </div>
 
         {replyingTo === comment.id && (
@@ -239,6 +293,9 @@ const CommentCard = ({ comment, isReply = false }: CommentCardProps) => {
                       key={reply.id}
                       comment={reply}
                       isReply={true}
+                      onDelete={onDelete}
+                      onUpdate={onUpdate}
+                      onReport={onReport}
                     />
                   ))}
                 </motion.div>

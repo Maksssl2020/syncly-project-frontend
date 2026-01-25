@@ -1,14 +1,19 @@
-import type { ConversationResponse } from "../../types/conversation.ts";
+import type {
+  ConversationResponse,
+  SelectedConversation,
+} from "../../types/conversation.ts";
 import ConversationCard from "../card/ConversationCard.tsx";
 
 interface ConversationListProps {
   conversations: ConversationResponse[];
-  activeConversationId?: string;
+  selectedConversationId?: string | number;
+  onSelect: (data: SelectedConversation) => void;
 }
 
 const ConversationList = ({
-  activeConversationId,
   conversations,
+  onSelect,
+  selectedConversationId,
 }: ConversationListProps) => {
   const sortedConversations = [...conversations].sort(
     (a, b) =>
@@ -19,10 +24,14 @@ const ConversationList = ({
   return (
     <div className={"flex flex-col gap-2"}>
       {sortedConversations.map((conversation) => {
-        const isActive = activeConversationId === conversation.id;
+        const isActive = selectedConversationId === conversation.id;
 
         return (
-          <ConversationCard isActive={isActive} conversation={conversation} />
+          <ConversationCard
+            onSelect={onSelect}
+            isActive={isActive}
+            conversation={conversation}
+          />
         );
       })}
     </div>

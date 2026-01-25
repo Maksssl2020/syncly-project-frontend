@@ -64,7 +64,8 @@ const SavePostInCollectionModal = ({
             >
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {userPostCollections?.map((collection) => (
-                  <motion.button
+                  <AnimatedButton
+                    loading={savingPost}
                     key={collection.id}
                     whileHover={{
                       borderColor: collection.color,
@@ -91,7 +92,7 @@ const SavePostInCollectionModal = ({
                       </p>
                     </div>
                     <Bookmark className="size-5 text-gray-400" />
-                  </motion.button>
+                  </AnimatedButton>
                 ))}
               </div>
 

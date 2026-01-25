@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import UsersTableRow from "../row/UsersTableRow.tsx";
 import type { UserItem } from "../../types/user.ts";
@@ -17,13 +17,12 @@ type SortConfig = {
 const UsersTable = ({ users }: UsersTableProps) => {
   const [userToDelete, setUserToDelete] = useState<UserItem | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [sortedUsers, setSortedUsers] = useState<UserItem[]>(users);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: null,
     direction: "asc",
   });
 
-  useEffect(() => {
+  const sortedUsers = useMemo(() => {
     const result = [...users];
 
     if (sortConfig.key) {
@@ -31,17 +30,16 @@ const UsersTable = ({ users }: UsersTableProps) => {
         const aValue = a[sortConfig.key as keyof UserItem];
         const bValue = b[sortConfig.key as keyof UserItem];
 
-        if (aValue < bValue) {
-          return sortConfig.direction === "asc" ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === "asc" ? 1 : -1;
-        }
+        if (!aValue) return -1;
+        if (!bValue) return 1;
+
+        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
       });
     }
 
-    setSortedUsers(result);
+    return result;
   }, [users, sortConfig]);
 
   const handleSort = (key: keyof UserItem) => {
@@ -113,28 +111,32 @@ const UsersTable = ({ users }: UsersTableProps) => {
             </th>
             <th
               className="px-4 py-3 text-left cursor-pointer"
+              // @ts-ignore
               onClick={() => handleSort("followersCount")}
             >
               <div className="flex items-center">
                 Followers
-                {sortConfig.key === "followersCount" && (
-                  <span className="ml-1">
-                    {sortConfig.direction === "asc" ? (
-                      <ChevronUp className="size-4" />
-                    ) : (
-                      <ChevronDown className="size-4" />
-                    )}
-                  </span>
-                )}
+                {
+                  // @ts-ignore
+                  sortConfig.key === "followersCount" && (
+                    <span className="ml-1">
+                      {sortConfig.direction === "asc" ? (
+                        <ChevronUp className="size-4" />
+                      ) : (
+                        <ChevronDown className="size-4" />
+                      )}
+                    </span>
+                  )
+                }
               </div>
             </th>
             <th
               className="px-4 py-3 text-left cursor-pointer"
-              onClick={() => handleSort("joinedAt")}
+              onClick={() => handleSort("createdAt")}
             >
               <div className="flex items-center">
                 Joined
-                {sortConfig.key === "joinedAt" && (
+                {sortConfig.key === "createdAt" && (
                   <span className="ml-1">
                     {sortConfig.direction === "asc" ? (
                       <ChevronUp className="size-4" />

@@ -1,5 +1,4 @@
 import type {
-  AudioPost,
   LinkPost,
   PhotoPost,
   Post,
@@ -11,17 +10,15 @@ import type {
 
 export function mapToPostType(post: Post): PostUnion {
   switch (post.postType) {
-    case "text":
+    case "TEXT":
       return post as TextPost;
-    case "photo":
+    case "PHOTO":
       return post as PhotoPost;
-    case "video":
+    case "VIDEO":
       return post as VideoPost;
-    case "audio":
-      return post as AudioPost;
-    case "quote":
+    case "QUOTE":
       return post as QuotePost;
-    case "link":
+    case "LINK":
       return post as LinkPost;
     default:
       return post;

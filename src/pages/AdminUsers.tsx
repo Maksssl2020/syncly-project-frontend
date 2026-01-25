@@ -1,112 +1,15 @@
 import Page from "../animation/Page.tsx";
 import Searchbar from "../components/input/Searchbar.tsx";
-import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import type { DropdownOption } from "../types/types.ts";
-import { Shield, User } from "lucide-react";
 import type { UserItem, UserRole, UserStatus } from "../types/user.ts";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import UsersTable from "../components/table/UsersTable.tsx";
 import AdminManagementPanelHeader from "../components/header/AdminManagementPanelHeader.tsx";
-
-const MOCK_USERS: UserItem[] = [
-  {
-    id: "1",
-    username: "admin",
-    email: "admin@example.com",
-    role: "ADMIN",
-    status: "ACTIVE",
-    postCount: 45,
-    followersCount: 1250,
-    joinedAt: "2023-01-15T10:30:00Z",
-    lastActive: "2023-06-04T15:20:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    username: "moderator1",
-    email: "mod1@example.com",
-    role: "MODERATOR",
-    status: "ACTIVE",
-    postCount: 32,
-    followersCount: 850,
-    joinedAt: "2023-02-10T14:20:00Z",
-    lastActive: "2023-06-03T18:45:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    username: "john_doe",
-    email: "john@example.com",
-    role: "USER",
-    status: "ACTIVE",
-    postCount: 87,
-    followersCount: 2340,
-    joinedAt: "2023-01-20T09:15:00Z",
-    lastActive: "2023-06-04T12:30:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    username: "jane_smith",
-    email: "jane@example.com",
-    role: "USER",
-    status: "ACTIVE",
-    postCount: 65,
-    followersCount: 1890,
-    joinedAt: "2023-02-05T11:45:00Z",
-    lastActive: "2023-06-02T20:15:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    username: "blocked_user",
-    email: "blocked@example.com",
-    role: "USER",
-    status: "BLOCKED",
-    postCount: 12,
-    followersCount: 230,
-    joinedAt: "2023-03-10T16:20:00Z",
-    lastActive: "2023-05-15T10:10:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "6",
-    username: "new_user",
-    email: "new@example.com",
-    role: "USER",
-    status: "ACTIVE",
-    postCount: 3,
-    followersCount: 45,
-    joinedAt: "2023-05-28T08:30:00Z",
-    lastActive: "2023-06-04T09:20:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "7",
-    username: "inactive_user",
-    email: "inactive@example.com",
-    role: "USER",
-    status: "INACTIVE",
-    postCount: 28,
-    followersCount: 760,
-    joinedAt: "2023-02-18T13:40:00Z",
-    lastActive: "2023-04-10T14:25:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "8",
-    username: "popular_creator",
-    email: "creator@example.com",
-    role: "USER",
-    status: "ACTIVE",
-    postCount: 156,
-    followersCount: 12500,
-    joinedAt: "2023-01-05T10:10:00Z",
-    lastActive: "2023-06-04T16:50:00Z",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-];
+import useAllUsersQuery from "../hooks/queries/useAllUsersQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import { Shield, User } from "lucide-react";
+import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 
 const roleFilterOptions: DropdownOption[] = [
   {
@@ -153,8 +56,10 @@ type FilterConfig = {
 };
 
 const AdminUsers = () => {
-  const [users, setUsers] = useState<UserItem[]>(MOCK_USERS);
-  const [filteredUsers, setFilteredUsers] = useState<UserItem[]>(MOCK_USERS);
+  const [users, setUsers] = useState<UserItem[]>([]);
+
+  const { allUsersData, fetchingAllUsersData } = useAllUsersQuery();
+  const [inputValue, setInputValue] = useState("");
 
   const [filterConfig, setFilterConfig] = useState<FilterConfig>({
     role: "ALL",
@@ -163,6 +68,12 @@ const AdminUsers = () => {
   });
 
   useEffect(() => {
+    if (!fetchingAllUsersData && allUsersData) {
+      setUsers(allUsersData);
+    }
+  }, [allUsersData, fetchingAllUsersData]);
+
+  const filteredUsers = useMemo(() => {
     let result = [...users];
 
     if (filterConfig.role !== "ALL") {
@@ -182,7 +93,7 @@ const AdminUsers = () => {
       );
     }
 
-    setFilteredUsers(result);
+    return result;
   }, [users, filterConfig]);
 
   const handleRoleFilter = (role: UserRole | "ALL") => {
@@ -197,6 +108,15 @@ const AdminUsers = () => {
     setFilterConfig((prev) => ({ ...prev, search: search }));
   };
 
+  useEffect(() => {
+    const id = setTimeout(() => handleSearch(inputValue), 500);
+    return () => clearTimeout(id);
+  }, [inputValue]);
+
+  if (fetchingAllUsersData || !allUsersData) {
+    return <Spinner />;
+  }
+
   return (
     <Page className={"min-h-screen p-6 flex flex-col gap-8 w-full"}>
       <AdminManagementPanelHeader
@@ -210,8 +130,8 @@ const AdminUsers = () => {
         }
       >
         <Searchbar
-          onChange={(value) => handleSearch(value)}
-          value={filterConfig.search}
+          onChange={(value) => setInputValue(value)}
+          value={inputValue}
           placeholder={""}
         />
         <DropdownMenu

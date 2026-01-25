@@ -7,12 +7,20 @@ type SavedPostsSidebarProps = {
   userPostCollections: PostCollection[];
   selectedCategoryId: string;
   onChange: (id: string) => void;
+  onMostLikedClick: () => void;
+  onMostCommentedClick: () => void;
+  onClearAllClick: () => void;
+  selectedQuickAction: "MOST_LIKED" | "MOST_COMMENTED" | "";
 };
 
 const SavedPostsSidebar = ({
   userPostCollections,
   selectedCategoryId,
   onChange,
+  onMostLikedClick,
+  onMostCommentedClick,
+  onClearAllClick,
+  selectedQuickAction,
 }: SavedPostsSidebarProps) => {
   return (
     <div className={"lg:col-span-1 space-y-6"}>
@@ -49,8 +57,11 @@ const SavedPostsSidebar = ({
           <AnimatedButton
             className={"w-full flex items-center gap-3 p-3 rounded-lg"}
             bgColor={"#222222"}
+            borderColor={"#222222"}
             bgColorHover={"#2c2c2e"}
             textColorHover={"#14b8a6"}
+            onClick={onMostLikedClick}
+            isSelected={selectedQuickAction === "MOST_LIKED"}
           >
             <Heart className={"size-4"} />
             Most Liked
@@ -58,8 +69,11 @@ const SavedPostsSidebar = ({
           <AnimatedButton
             bgColor={"#222222"}
             bgColorHover={"#2c2c2e"}
+            borderColor={"#222222"}
             textColorHover={"#14b8a6"}
             className={"w-full flex items-center gap-3 p-3 rounded-lg"}
+            onClick={onMostCommentedClick}
+            isSelected={selectedQuickAction === "MOST_COMMENTED"}
           >
             <MessageCircle className={"size-4"} />
             Most Commented
@@ -67,8 +81,10 @@ const SavedPostsSidebar = ({
           <AnimatedButton
             bgColor={"#222222"}
             bgColorHover={"#2c2c2e"}
+            borderColor={"#222222"}
             textColorHover={"#ef4444"}
             className={"w-full flex items-center gap-3 p-3 rounded-lg"}
+            onClick={onClearAllClick}
           >
             <Trash2 className={"size-4"} />
             Clear All

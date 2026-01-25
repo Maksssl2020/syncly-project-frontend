@@ -4,6 +4,7 @@ import type {
   UserProfileUpdateRequest,
 } from "../types/userProfile.ts";
 import { dataURLtoFile } from "../utils/base64Utils.ts";
+import type { Image } from "../types/image.ts";
 
 export async function fetchUserProfileByUserId(userId: string | number) {
   const response = await axiosConfig.get<UserProfile>(
@@ -12,6 +13,13 @@ export async function fetchUserProfileByUserId(userId: string | number) {
 
   console.log(response.data);
 
+  return response.data;
+}
+
+export async function fetchUserProfileAvatarByUserId(userId: string | number) {
+  const response = await axiosConfig.get<Image>(
+    `/users-profiles/${userId}/avatar`,
+  );
   return response.data;
 }
 

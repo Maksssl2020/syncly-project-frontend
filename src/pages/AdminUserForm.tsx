@@ -19,12 +19,22 @@ import {
 import type { DropdownOption } from "../types/types.ts";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import FormTextArea from "../components/input/FormTextarea.tsx";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import useUserByIdQuery from "../hooks/queries/useUserByIdQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import type { UserItem, UserRole, UserStatus } from "../types/user.ts";
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { useForm } from "react-hook-form";
+import type { AdminUserFormData } from "../types/admin.ts";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { adminUserFormValidator } from "../validators/adminUserFormValidator.ts";
+import useUpdateUserAsAdminMutation from "../hooks/mutations/useUpdateUserAsAdminMutation.ts";
 
 const userRolesDropdownOptions: DropdownOption[] = [
   {
-    label: "USER",
-    value: "USER",
+    label: "REGISTERED",
+    value: "REGISTERED",
   },
   {
     label: "MODERATOR",
@@ -38,21 +48,71 @@ const userRolesDropdownOptions: DropdownOption[] = [
 
 const userStatusesDropdownOptions: DropdownOption[] = [
   {
-    label: "Active",
-    value: "ACTIVE",
+    label: "Online",
+    value: "ONLINE",
   },
   {
     label: "Blocked",
     value: "BLOCKED",
   },
   {
-    label: "Inactive",
-    value: "INACTIVE",
+    label: "Offline",
+    value: "OFFLINE",
   },
 ];
 
 const AdminUserForm = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [initialUserData, setInitialUserData] = useState<UserItem | undefined>(
+    undefined,
+  );
+
+  const { userDataById, fetchingUserData } = useUserByIdQuery(id);
+  const { updateUserAsAdmin, updatingUserAsAdmin } =
+    useUpdateUserAsAdminMutation();
+
+  const {
+    register,
+    setValue,
+    watch,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AdminUserFormData>({
+    resolver: yupResolver(adminUserFormValidator),
+  });
+
+  useEffect(() => {
+    if (!fetchingUserData && userDataById) {
+      setInitialUserData(userDataById);
+    }
+  }, [fetchingUserData, userDataById]);
+
+  useEffect(() => {
+    if (initialUserData) {
+      setValue("status", initialUserData.status);
+      setValue("role", initialUserData.role);
+      setValue("bio", initialUserData.userProfile.bio);
+    }
+  }, [initialUserData, setValue]);
+
+  if (fetchingUserData || !initialUserData) {
+    return <Spinner />;
+  }
+
+  const onSubmitClick = (data: AdminUserFormData) => {
+    console.log("SUBMIT");
+
+    if (initialUserData && id) {
+      updateUserAsAdmin({
+        userId: id,
+        initialUserData: initialUserData,
+        updatedUserData: data,
+      });
+    }
+  };
+
+  console.log(errors);
 
   return (
     <Page className={"min-h-screen p-6 flex flex-col gap-8 w-full"}>
@@ -87,14 +147,17 @@ const AdminUserForm = () => {
               }
             >
               <div className={"flex justify-center"}>
-                <Avatar size={"size-20"} />
+                <Avatar
+                  size={"size-20"}
+                  avatar={initialUserData.userProfile.avatar}
+                />
               </div>
               <div className={"flex flex-col gap-2"}>
                 <p className={"text-xl font-bold text-center text-white-100"}>
-                  john_doe
+                  {initialUserData.userProfile.displayName}
                 </p>
                 <h3 className={"text-sm  text-center text-white-100"}>
-                  john@example.com
+                  {initialUserData.username}
                 </h3>
               </div>
               <div className={"flex justify-center gap-2"}>
@@ -103,18 +166,22 @@ const AdminUserForm = () => {
                     "px-2 py-1 rounded text-xs font-medium text-black-100"
                   }
                   style={{
-                    backgroundColor: getUserRoleBadgeColor("USER"),
+                    backgroundColor: getUserRoleBadgeColor(
+                      initialUserData.role,
+                    ),
                   }}
                 >
-                  USER
+                  {initialUserData.role}
                 </span>
                 <span
                   className="px-2 py-1 rounded text-xs font-medium text-black-100"
                   style={{
-                    backgroundColor: getUserStatusBadgeColor("ACTIVE"),
+                    backgroundColor: getUserStatusBadgeColor(
+                      initialUserData.status,
+                    ),
                   }}
                 >
-                  ACTIVE
+                  {initialUserData.status}
                 </span>
               </div>
 
@@ -123,14 +190,18 @@ const AdminUserForm = () => {
                   <Activity className={"size-5 text-teal-100"} />
                   <div>
                     <p className={"text-sm text-gray-400"}>Posts</p>
-                    <p className={"font-semibold text-white-100"}>2344</p>
+                    <p className={"font-semibold text-white-100"}>
+                      {initialUserData.postCount ?? 0}
+                    </p>
                   </div>
                 </div>
                 <div className={"flex items-center gap-3"}>
                   <User className={"size-5 text-cyan-100"} />
                   <div>
                     <p className={"text-sm text-gray-400"}>Followers</p>
-                    <p className={"font-semibold text-white-100"}>2344</p>
+                    <p className={"font-semibold text-white-100"}>
+                      {initialUserData.userProfile.followersCount}
+                    </p>
                   </div>
                 </div>
                 <div className={"flex items-center gap-3"}>
@@ -138,7 +209,10 @@ const AdminUserForm = () => {
                   <div>
                     <p className={"text-sm text-gray-400"}>Joined</p>
                     <p className={"font-semibold text-white-100"}>
-                      {new Date().toLocaleString()}
+                      {format(
+                        initialUserData.createdAt,
+                        "dd-MM-yyyy, HH:mm:ss",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -169,20 +243,29 @@ const AdminUserForm = () => {
               </div>
             </header>
 
-            <form className={"p-6 flex flex-col gap-6"}>
+            <form
+              onSubmit={handleSubmit((data) => onSubmitClick(data))}
+              className={"p-6 flex flex-col gap-6"}
+            >
               <DropdownMenu
                 options={userRolesDropdownOptions}
-                onChange={() => {}}
-                value={"USER"}
+                onChange={(value) => setValue("role", value as UserRole)}
+                value={watch("role") ?? initialUserData.role}
                 placeholderChildren={<div>ROLE:</div>}
               />
               <DropdownMenu
                 options={userStatusesDropdownOptions}
-                onChange={() => {}}
-                value={"ACTIVE"}
+                onChange={(value) => setValue("status", value as UserStatus)}
+                value={watch("status") ?? initialUserData.status}
                 placeholderChildren={<div>STATUS:</div>}
               />
-              <FormTextArea title={"Bio"} rows={4} canAdminManage={true} />
+              <FormTextArea
+                onReset={() => setValue("bio", "")}
+                title={"Bio"}
+                rows={4}
+                canAdminManage={true}
+                register={register("bio")}
+              />
 
               <div className={"w-full flex gap-6"}>
                 <AnimatedButton
@@ -204,6 +287,7 @@ const AdminUserForm = () => {
                   borderColor={"#14b8a6"}
                   borderColorHover={"#14b8a6"}
                   type={"submit"}
+                  loading={updatingUserAsAdmin}
                   className={
                     "w-full h-[50px] rounded-lg flex items-center justify-center gap-2"
                   }

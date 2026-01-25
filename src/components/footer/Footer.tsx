@@ -39,6 +39,7 @@ const Footer = () => {
           >
             {footerNavData.map((item, index) => (
               <AnimatedButton
+                borderColor={"#171719"}
                 textColorHover={"#e6e6e6"}
                 bgColor={"#171719"}
                 bgColorHover={"#171719"}

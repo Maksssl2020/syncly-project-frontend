@@ -4,7 +4,6 @@ import { useState } from "react";
 import FloatingButton from "../components/button/FloatingButton.tsx";
 import CreatePostOptionList from "../components/list/CreatePostOptionList.tsx";
 import type {
-  AudioPostRequest,
   LinkPostRequest,
   PhotoPostRequest,
   PostType,
@@ -43,11 +42,11 @@ const Dashboard = () => {
       | QuotePostRequest
       | PhotoPostRequest
       | VideoPostRequest
-      | AudioPostRequest
       | LinkPostRequest,
   ) => {
     if (selectedPostType) {
       createPost({ data, type: selectedPostType });
+      setIsCreatePostModalOpen(false);
     }
   };
 

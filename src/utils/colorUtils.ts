@@ -38,7 +38,7 @@ export const getUserRoleBadgeColor = (role: UserRole) => {
     case "MODERATOR":
       return "#22d3ee";
     default:
-      return "#2c2c2e";
+      return "#eab308";
   }
 };
 
@@ -48,7 +48,7 @@ export const getUserStatusBadgeColor = (status: UserStatus) => {
       return "#22c55e";
     case "BLOCKED":
       return "#ef4444";
-    case "INACTIVE":
+    case "OFFLINE":
       return "#eab308";
     default:
       return "#2c2c2e";

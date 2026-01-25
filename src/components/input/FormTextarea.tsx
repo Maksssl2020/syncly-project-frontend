@@ -7,8 +7,6 @@ type FormTextAreaProps = {
   title: string;
   error?: string;
   register?: UseFormRegisterReturn<string>;
-  width?: string;
-  height?: string;
   onChange?: (value: string) => void;
   required?: boolean;
   placeholder?: string;

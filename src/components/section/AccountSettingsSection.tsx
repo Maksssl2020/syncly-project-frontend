@@ -7,16 +7,20 @@ import useChangePasswordMutation from "../../hooks/mutations/useChangePasswordMu
 import { yupResolver } from "@hookform/resolvers/yup";
 import { changePasswordValidator } from "../../validators/changePasswordValidator.ts";
 import { useEffect, useState } from "react";
+import useUpdateUserSettingsMutation from "../../hooks/mutations/useUpdateUserSettingsMutation.ts";
+import type { UserSettings } from "../../types/userSettings.ts";
 
 type AccountSettingsSectionProps = {
-  isTwoFactorAuthentication: boolean;
+  userSettings: UserSettings;
 };
 
 const AccountSettingsSection = ({
-  isTwoFactorAuthentication,
+  userSettings,
 }: AccountSettingsSectionProps) => {
   const [isChangePasswordActive, setIsChangePasswordActive] = useState(false);
   const { changePassword, changingPassword } = useChangePasswordMutation();
+  const { updateUserSettings, updatingUserSettings } =
+    useUpdateUserSettingsMutation();
 
   const {
     register,
@@ -29,12 +33,16 @@ const AccountSettingsSection = ({
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-      twoFactorAuthentication: isTwoFactorAuthentication,
+      twoFactorAuthentication: userSettings.twoFactorAuthentication,
     },
     resolver: yupResolver(changePasswordValidator),
   });
 
   const watchedValues = watch();
+  const twoFactorAuthenticationValue = watch("twoFactorAuthentication");
+  const isChange =
+    twoFactorAuthenticationValue !== userSettings.twoFactorAuthentication;
+
   useEffect(() => {
     const isChangePassword =
       watchedValues.currentPassword !== "" ||
@@ -43,6 +51,13 @@ const AccountSettingsSection = ({
 
     setIsChangePasswordActive(isChangePassword);
   }, [watchedValues]);
+
+  const onUpdate = () => {
+    updateUserSettings({
+      ...userSettings,
+      twoFactorAuthentication: twoFactorAuthenticationValue,
+    });
+  };
 
   return (
     <div className={"space-y-12"}>
@@ -102,8 +117,36 @@ const AccountSettingsSection = ({
           label={"Two-Factor Authentication"}
           description={"Add an extra layer of security to your account"}
           onChange={(checked) => setValue("twoFactorAuthentication", checked)}
-          checked={watch("twoFactorAuthentication")}
+          checked={twoFactorAuthenticationValue}
         />
+        {isChange && (
+          <div className={"flex gap-4 w-full mt-4"}>
+            <AnimatedButton
+              bgColor={"#222222"}
+              borderColor={"#4a4a4d"}
+              borderColorHover={"#14b8a6"}
+              onClick={() =>
+                setValue(
+                  "twoFactorAuthentication",
+                  userSettings.twoFactorAuthentication,
+                )
+              }
+              className={"w-full h-[50px] rounded-lg uppercase border-2"}
+            >
+              Cancel
+            </AnimatedButton>
+            <AnimatedButton
+              bgColor={"#222222"}
+              borderColor={"#4a4a4d"}
+              borderColorHover={"#14b8a6"}
+              onClick={onUpdate}
+              loading={updatingUserSettings}
+              className={"w-full h-[50px] rounded-lg uppercase border-2"}
+            >
+              Update
+            </AnimatedButton>
+          </div>
+        )}
       </div>
 
       <div>

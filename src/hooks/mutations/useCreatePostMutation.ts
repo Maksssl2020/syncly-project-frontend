@@ -1,7 +1,6 @@
 import useAuthentication from "../useAuthentication.ts";
 import { useMutation } from "@tanstack/react-query";
 import type {
-  AudioPostRequest,
   LinkPostRequest,
   PhotoPostRequest,
   PostType,
@@ -20,7 +19,6 @@ function useCreatePostMutation<
     | QuotePostRequest
     | PhotoPostRequest
     | VideoPostRequest
-    | AudioPostRequest
     | LinkPostRequest,
 >() {
   const { userId } = useAuthentication();

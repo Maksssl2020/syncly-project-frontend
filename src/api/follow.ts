@@ -14,6 +14,13 @@ export async function fetchUserFollowedUsers(userId: string | number) {
   return response.data;
 }
 
+export async function fetchFollowedUsersIds(userId: string | number) {
+  const response = await axiosConfig.get<number[]>(
+    `/follows/users/ids/${userId}`,
+  );
+  return response.data;
+}
+
 export async function handleFollowTag(
   userId: string | number,
   tagId: string | number,

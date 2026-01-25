@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import FormInput from "../input/FormInput.tsx";
 import { useForm } from "react-hook-form";
 import FormTextArea from "../input/FormTextarea.tsx";
@@ -7,39 +7,33 @@ import useFetchLinkPreviewMutation from "../../hooks/mutations/useFetchLinkPrevi
 import type { LinkPreviewResponse } from "../../types/linkPreview.ts";
 import { linkPostValidator } from "../../validators/postValidators.ts";
 import { yupResolver } from "@hookform/resolvers/yup";
-import type { LinkPostRequest } from "../../types/post.ts";
+import type {
+  LinkPost,
+  LinkPostRequest,
+  UpdateLinkPostRequest,
+} from "../../types/post.ts";
 import toast from "react-hot-toast";
+import type { InferType } from "yup";
 
-type LinkPostFormProps = {
-  onSubmit: (data: LinkPostRequest) => void;
-};
+type LinkPostFormProps =
+  | {
+      isEdit?: false;
+      onSubmit: (data: LinkPostRequest) => void;
+      postToEdit?: never;
+    }
+  | {
+      isEdit: true;
+      onSubmit: (data: UpdateLinkPostRequest) => void;
+      postToEdit: LinkPost;
+    };
+
+type LinkPostFormType = InferType<typeof linkPostValidator>;
 
 const LinkPostForm = forwardRef<HTMLFormElement, LinkPostFormProps>(
-  ({ onSubmit }, ref) => {
+  (props, ref) => {
     const [addedUrls, setAddedUrls] = useState<string[]>([]);
     const [urlsPreview, setUrlsPreview] = useState<LinkPreviewResponse[]>([]);
     const { getLinkPreview } = useFetchLinkPreviewMutation();
-
-    const onCreateLinkPostSubmit = ({
-      title,
-      tags,
-      description,
-    }: {
-      title?: string;
-      description: string;
-      tags?: string[] | undefined;
-    }) => {
-      if (addedUrls.length > 0) {
-        onSubmit({
-          title: title,
-          description: description,
-          tags: tags,
-          links: addedUrls,
-        });
-      } else {
-        toast.error("Provide at least 1 URL.");
-      }
-    };
 
     const {
       register,
@@ -49,6 +43,38 @@ const LinkPostForm = forwardRef<HTMLFormElement, LinkPostFormProps>(
     } = useForm({
       resolver: yupResolver(linkPostValidator),
     });
+
+    useEffect(() => {
+      if (props.isEdit) {
+        const mappedTags = props.postToEdit.tags.map((tag) => tag.name);
+        setValue("title", props.postToEdit.title);
+        setValue("description", props.postToEdit.description);
+        setValue("tags", mappedTags);
+        setAddedUrls(props.postToEdit.urls);
+      }
+    }, [props.isEdit, props.postToEdit, setValue]);
+
+    const onCreateLinkPostSubmit = (data: LinkPostFormType) => {
+      const linkPostRequest = {
+        title: data.title,
+        description: data.description,
+        tags: data.tags,
+        links: addedUrls,
+      };
+
+      if (addedUrls.length > 0) {
+        if (props.isEdit) {
+          props.onSubmit({
+            initialData: props.postToEdit,
+            updatedData: linkPostRequest,
+          });
+        } else {
+          props.onSubmit(linkPostRequest);
+        }
+      } else {
+        toast.error("Provide at least 1 URL.");
+      }
+    };
 
     return (
       <form
@@ -132,7 +158,10 @@ const LinkPostForm = forwardRef<HTMLFormElement, LinkPostFormProps>(
           error={errors?.description?.message}
           placeholder={"Why are you sharing this link?"}
         />
-        <TagSelector onSelectTag={(value) => setValue("tags", value)} />
+        <TagSelector
+          initialTags={props.postToEdit?.tags ?? []}
+          onSelectTag={(value) => setValue("tags", value)}
+        />
         <button type="submit" className="hidden" />
       </form>
     );

@@ -10,9 +10,18 @@ export async function fetchAllConversationsByUser() {
   return response.data;
 }
 
-export async function fetchConversation(recipientId: number | string) {
-  const response = await axiosConfig.get<ConversationMessage[]>(
-    `conversation/messages/by-user-ids/${recipientId}`,
-  );
+export async function fetchConversation(
+  recipientId: number | string,
+  page: number = 0,
+  size: number = 20,
+) {
+  const response = await axiosConfig.get<{
+    content: ConversationMessage[];
+    totalElements: number;
+    totalPages: number;
+    number: number; // current page
+  }>(`conversation/messages/by-user-ids/${recipientId}`, {
+    params: { page, size },
+  });
   return response.data;
 }

@@ -62,7 +62,7 @@ const NotFound = () => {
               <div className="text-sm opacity-70">Twoja główna strona</div>
             </div>
           </button>
-          <Link href="/">
+          <Link to="/">
             <button
               className="w-full h-16 flex items-center gap-3 px-4 py-3 border rounded-lg transition-colors hover:bg-cyan-500/10"
               style={{

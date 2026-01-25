@@ -11,9 +11,14 @@ import { signUpValidator } from "../validators/signUpValidator.ts";
 import type { SignUpRequest } from "../types/authentication.ts";
 import useSignUpMutation from "../hooks/mutations/useSignUpMutation.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
+import TurnstileWidget from "../components/widget/TurnstileWidget.tsx";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const [isHuman, setIsHuman] = useState(false);
+
   const {
     register,
     formState: { errors },
@@ -25,7 +30,11 @@ const SignUp = () => {
   const { signingUp, signUp } = useSignUpMutation();
 
   const onSubmit = (data: SignUpRequest) => {
-    signUp(data);
+    if (!isHuman) {
+      toast.error("Please confirm you are not a robot.");
+    } else {
+      signUp(data);
+    }
   };
 
   if (signingUp) {
@@ -36,6 +45,7 @@ const SignUp = () => {
     <Page className={"min-h-screen flex items-center justify-center py-6"}>
       <div className={"w-full max-w-lg "}>
         <AnimatedButton
+          borderColor={"#111111"}
           bgColorHover={"#111111"}
           textColorHover={"#14b8a6"}
           className={"flex items-center gap-2 mb-8 text-gray-300"}
@@ -121,6 +131,10 @@ const SignUp = () => {
                   href={"/privacy-policy"}
                 />
               </div>
+            </div>
+
+            <div className="w-full items-center flex justify-center mt-auto">
+              <TurnstileWidget setIsHuman={setIsHuman} />
             </div>
 
             <AnimatedButton

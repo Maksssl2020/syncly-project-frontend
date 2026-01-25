@@ -9,9 +9,13 @@ import { signInValidator } from "../validators/signInValidator.ts";
 import { useNavigate } from "react-router-dom";
 import useSignInMutation from "../hooks/mutations/useSignInMutation.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import TurnstileWidget from "../components/widget/TurnstileWidget.tsx";
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const [isHuman, setIsHuman] = useState(false);
 
   const {
     handleSubmit,
@@ -34,10 +38,14 @@ const SignIn = () => {
     username: string;
     password: string;
   }) => {
-    signIn({
-      username,
-      password,
-    });
+    if (!isHuman) {
+      toast.error("Please confirm you are not a robot.");
+    } else {
+      signIn({
+        username,
+        password,
+      });
+    }
   };
 
   if (signingIn) {
@@ -96,6 +104,10 @@ const SignIn = () => {
               register={register("password")}
               error={errors?.password?.message}
             />
+
+            <div className="w-full items-center flex justify-center mt-auto">
+              <TurnstileWidget setIsHuman={setIsHuman} />
+            </div>
 
             <AnimatedButton
               bgColor={"#222222"}

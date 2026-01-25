@@ -18,3 +18,22 @@ export async function handleLikeComment(commentId: string | number) {
   });
   return response.data;
 }
+
+export async function handleUnlikePost(postId: string | number) {
+  const response = await axiosConfig.delete("/likes/unlike/post", {
+    params: {
+      postId,
+    },
+  });
+
+  return response.data;
+}
+
+export async function handleUnlikeComment(commentId: string | number) {
+  const response = await axiosConfig.delete("/likes/unlike/comment", {
+    params: {
+      commentId,
+    },
+  });
+  return response.data;
+}

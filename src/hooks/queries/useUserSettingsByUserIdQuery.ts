@@ -1,10 +1,7 @@
-import useAuthentication from "../useAuthentication.ts";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserSettingsByUserId } from "../../api/userSettings.ts";
 
-function useUserSettingsByUserIdQuery() {
-  const { userId } = useAuthentication();
-
+function useUserSettingsByUserIdQuery(userId?: string | number) {
   const { data: userSettings, isLoading: fetchingUserSettings } = useQuery({
     queryKey: ["userSettings", userId],
     queryFn: () => {

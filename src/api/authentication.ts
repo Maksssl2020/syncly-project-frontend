@@ -36,7 +36,12 @@ export async function handleChangePassword(
 export async function checkUsernameExists(username: string) {
   const response = await axiosConfig.post<boolean>(
     "authentication/exists/username",
-    username,
+    null,
+    {
+      params: {
+        username,
+      },
+    },
   );
   return response.data;
 }
@@ -44,7 +49,12 @@ export async function checkUsernameExists(username: string) {
 export async function checkEmailExists(email: string) {
   const response = await axiosConfig.post<boolean>(
     "authentication/exists/email",
-    email,
+    null,
+    {
+      params: {
+        email: email,
+      },
+    },
   );
   return response.data;
 }

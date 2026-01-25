@@ -21,6 +21,11 @@ export interface PostCommentRequest {
   content: string;
 }
 
+export interface UpdateCommentRequest {
+  commentId: string | number;
+  content: string;
+}
+
 export interface PostCommentReplyRequest {
   userId: number | string;
   parentCommentId: number | string;

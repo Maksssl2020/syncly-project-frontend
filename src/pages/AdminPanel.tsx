@@ -14,37 +14,8 @@ import { motion } from "framer-motion";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import { useNavigate } from "react-router-dom";
 import AdminActivityCard from "../components/card/AdminActivityCard.tsx";
-
-const pageStats: PageStats[] = [
-  {
-    title: "Total Users",
-    value: 12458,
-    change: 5.2,
-    icon: <Users className="size-6" />,
-    color: "#14b8a6",
-  },
-  {
-    title: "Active Reports",
-    value: 27,
-    change: -12.5,
-    icon: <Flag className="size-6" />,
-    color: "#ef4444",
-  },
-  {
-    title: "Main Tags",
-    value: 156,
-    change: 8.1,
-    icon: <Tag className="size-6" />,
-    color: "#22d3ee",
-  },
-  {
-    title: "Posts Today",
-    value: 842,
-    change: 3.7,
-    icon: <MessageSquare className="size-6" />,
-    color: "#0d9488",
-  },
-];
+import useAdminPanelStatsQuery from "../hooks/queries/useAdminPanelStatsQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
 
 const quickActions = [
   {
@@ -122,6 +93,43 @@ const recentActivities: ActivityStats[] = [
 
 const AdminPanel = () => {
   const navigate = useNavigate();
+  const { adminPanelStats, fetchingAdminPanelStats } =
+    useAdminPanelStatsQuery();
+
+  if (fetchingAdminPanelStats) {
+    return <Spinner />;
+  }
+
+  const pageStats: PageStats[] = [
+    {
+      title: "Total Users",
+      value: adminPanelStats?.totalUsersCount ?? 0,
+      change: adminPanelStats?.usersChangeFromYesterday ?? 0,
+      icon: <Users className="size-6" />,
+      color: "#14b8a6",
+    },
+    {
+      title: "Active Reports",
+      value: adminPanelStats?.totalActiveReportsCount ?? 0,
+      change: adminPanelStats?.reportsChangeFromYesterday ?? 0,
+      icon: <Flag className="size-6" />,
+      color: "#ef4444",
+    },
+    {
+      title: "Main Tags",
+      value: adminPanelStats?.totalMainTagsCount ?? 0,
+      change: adminPanelStats?.tagsChangeFromYesterday ?? 0,
+      icon: <Tag className="size-6" />,
+      color: "#22d3ee",
+    },
+    {
+      title: "Posts Today",
+      value: adminPanelStats?.postsToday ?? 0,
+      change: adminPanelStats?.postsChangeFromYesterday ?? 0,
+      icon: <MessageSquare className="size-6" />,
+      color: "#0d9488",
+    },
+  ];
 
   return (
     <Page className={"min-h-screen p-6 flex flex-col gap-8 w-full"}>

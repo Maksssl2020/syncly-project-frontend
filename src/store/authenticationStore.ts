@@ -30,6 +30,7 @@ const initialState: Authentication = {
   role: "",
   accessToken: "",
   authenticated: false,
+  profileImage: undefined,
 };
 
 export const useAuthenticationStore = create<AuthenticationState>()(

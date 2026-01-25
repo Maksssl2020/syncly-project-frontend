@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import PageStatsCard from "../components/card/PageStatsCard.tsx";
 import type { PageStats } from "../types/admin.ts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Searchbar from "../components/input/Searchbar.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import type { DropdownOption } from "../types/types.ts";
@@ -23,6 +23,7 @@ import Spinner from "../components/spinner/Spinner.tsx";
 
 const AdminTags = () => {
   const navigate = useNavigate();
+  const [inputValue, setInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showTrendingOnly, setShowTrendingOnly] = useState(false);
@@ -66,11 +67,14 @@ const AdminTags = () => {
     },
   ];
 
+  useEffect(() => {
+    const id = setTimeout(() => setSearchTerm(inputValue), 500);
+    return () => clearTimeout(id);
+  }, [inputValue]);
+
   if (fetchingAllTagsData || !allTagsData) {
     return <Spinner />;
   }
-
-  console.log(allTagsData);
 
   const filteredTags = allTagsData.filter((tag) => {
     const matchesSearch =
@@ -122,8 +126,8 @@ const AdminTags = () => {
         <div className={"rounded-lg p-4 border-2 bg-black-200 border-gray-600"}>
           <div className="flex flex-col md:flex-row gap-4">
             <Searchbar
-              onChange={(value) => setSearchTerm(value)}
-              value={searchTerm}
+              onChange={(value) => setInputValue(value)}
+              value={inputValue}
               placeholder={"Search tags..."}
             />
             <DropdownMenu

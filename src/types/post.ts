@@ -1,5 +1,8 @@
 import React from "react";
 import type { MediaRequest } from "./media.ts";
+import type { UserItem } from "./user.ts";
+import type { Tag } from "./tags.ts";
+import type { Image } from "./image.ts";
 
 export interface PostOption {
   type: PostType;
@@ -15,11 +18,21 @@ export interface TextPostRequest {
   type?: "text";
 }
 
+export interface UpdateTextPostRequest {
+  initialData: TextPost;
+  updatedData: TextPostRequest;
+}
+
 export interface QuotePostRequest {
   quote: string;
   source?: string;
   tags?: string[];
   type?: "quote";
+}
+
+export interface UpdateQuotePostRequest {
+  initialData: QuotePost;
+  updatedData: QuotePostRequest;
 }
 
 export interface PhotoPostRequest {
@@ -29,20 +42,21 @@ export interface PhotoPostRequest {
   type?: "photo";
 }
 
+export interface UpdatePhotoPostRequest {
+  initialData: PhotoPost;
+  updatedData: PhotoPostRequest;
+}
+
 export interface VideoPostRequest {
   description: string;
   tags?: string[];
-  videos: MediaRequest[];
+  videoUrls: string[];
   type?: "video";
 }
 
-export interface AudioPostRequest {
-  songTitle: string;
-  artist: string;
-  yourThoughts: string;
-  audio: MediaRequest;
-  tags?: string[];
-  type?: "audio";
+export interface UpdateVideoPostRequest {
+  initialData: VideoPost;
+  updatedData: VideoPostRequest;
 }
 
 export interface LinkPostRequest {
@@ -53,6 +67,11 @@ export interface LinkPostRequest {
   type?: "link";
 }
 
+export interface UpdateLinkPostRequest {
+  initialData: LinkPost;
+  updatedData: LinkPostRequest;
+}
+
 export interface Post {
   id: number;
   createdAt: string;
@@ -61,46 +80,41 @@ export interface Post {
   authorId: number;
   authorName: string;
   authorUsername: string;
-  tags: string[];
+  authorAvatar?: Image;
+  tags: Tag[];
   likesBy: number[];
   savedBy: number[];
+  sharedBy: number[];
   commentsCount: number;
+  likesCount: number;
 }
 
 export interface TextPost extends Post {
-  postType: "text";
+  postType: "TEXT";
   title: string;
   content: string;
 }
 
 export interface QuotePost extends Post {
-  postType: "quote";
+  postType: "QUOTE";
   quote: string;
   source: string;
 }
 
 export interface PhotoPost extends Post {
-  postType: "photo";
+  postType: "PHOTO";
   caption: string;
   imageUrls: string[];
 }
 
-export interface AudioPost extends Post {
-  postType: "audio";
-  artist: string;
-  songTitle: string;
-  audioUrl: string;
-  yourThoughts: string;
-}
-
 export interface VideoPost extends Post {
-  postType: "video";
+  postType: "VIDEO";
   description: string;
   videoUrls: string[];
 }
 
 export interface LinkPost extends Post {
-  postType: "link";
+  postType: "LINK";
   title: string;
   description: string;
   urls: string[];
@@ -111,8 +125,30 @@ export type PostUnion =
   | TextPost
   | QuotePost
   | PhotoPost
-  | AudioPost
   | VideoPost
   | LinkPost;
 
-export type PostType = "text" | "quote" | "photo" | "video" | "link" | "audio";
+export type PostType = "TEXT" | "QUOTE" | "PHOTO" | "VIDEO" | "LINK";
+
+export interface SharedPost {
+  id: number | string;
+  sharedBy: UserItem;
+  originalPost: PostUnion;
+  sharedAt: string;
+}
+
+export type PostByType = {
+  TEXT: TextPost;
+  QUOTE: QuotePost;
+  PHOTO: PhotoPost;
+  VIDEO: VideoPost;
+  LINK: LinkPost;
+};
+
+export type UpdateRequestByType = {
+  TEXT: UpdateTextPostRequest;
+  QUOTE: UpdateQuotePostRequest;
+  PHOTO: UpdatePhotoPostRequest;
+  VIDEO: UpdateVideoPostRequest;
+  LINK: UpdateLinkPostRequest;
+};

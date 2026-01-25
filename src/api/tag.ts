@@ -11,6 +11,27 @@ export async function fetchAllTags() {
   return response.data;
 }
 
+export async function fetchTagByName(tagName: string) {
+  const response = await axiosConfig.get<MainTag>("/tags/tag/by-name", {
+    params: {
+      tagName,
+    },
+  });
+  return response.data;
+}
+
+export async function fetchRelatedTagsByTagCategory(category: string) {
+  const response = await axiosConfig.get<MainTag[]>(
+    "/tags/related/by-category",
+    {
+      params: {
+        category,
+      },
+    },
+  );
+  return response.data;
+}
+
 export async function fetchPopularTags(limit: number) {
   const response = await axiosConfig.get<TagUsage[]>("/tags/popular", {
     params: {

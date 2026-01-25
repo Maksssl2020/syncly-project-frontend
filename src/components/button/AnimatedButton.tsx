@@ -14,6 +14,7 @@ type AnimatedCustomButtonProps = {
   loading?: boolean;
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
+  isSelected?: boolean;
   children: React.ReactNode;
 } & HTMLMotionProps<"button">;
 
@@ -30,21 +31,22 @@ const AnimatedButton = ({
   type,
   loading,
   disabled,
+  isSelected = false,
   ...rest
 }: AnimatedCustomButtonProps) => {
   return (
     <motion.button
       whileHover={{
-        color: textColorHover,
-        backgroundColor: bgColorHover,
-        borderColor: borderColorHover,
+        color: isSelected ? textColor : textColorHover,
+        backgroundColor: isSelected ? bgColor : bgColorHover,
+        borderColor: isSelected ? borderColor : borderColorHover,
       }}
       style={{
-        color: textColor,
-        backgroundColor: bgColor,
-        borderColor: borderColor,
+        color: isSelected ? textColorHover : textColor,
+        backgroundColor: isSelected ? bgColorHover : bgColor,
+        borderColor: isSelected ? borderColorHover : borderColor,
       }}
-      className={`cursor-pointer border-2 ${className}`}
+      className={`cursor-pointer ${className}`}
       onClick={(event) => onClick?.(event)}
       type={type}
       disabled={disabled}

@@ -1,20 +1,21 @@
 import Searchbar from "../input/Searchbar.tsx";
 import SidebarElementBanner from "../banner/SidebarElementBanner.tsx";
-import { Eye, Star, TrendingUp } from "lucide-react";
+import { Star, TrendingUp } from "lucide-react";
 import type { MainTag, TagsStatistics } from "../../types/tags.ts";
 import TagsStatisticsCard from "../card/TagsStatisticsCard.tsx";
-import AnimatedButton from "../button/AnimatedButton.tsx";
 import { isThisWeek } from "date-fns";
 
 type TagsSidebarProps = {
   tagsData: MainTag[];
   followedTags: Set<string>;
+  searchQuery: string;
   onChange: (value: string) => void;
 };
 
 const TagsSidebar = ({
   tagsData,
   followedTags,
+  searchQuery,
   onChange,
 }: TagsSidebarProps) => {
   const groupedByCategory: Record<string, number> = tagsData.reduce<
@@ -57,7 +58,7 @@ const TagsSidebar = ({
       <Searchbar
         onChange={onChange}
         placeholder={"Search tags..."}
-        value={""}
+        value={searchQuery}
       />
 
       <div
@@ -90,36 +91,6 @@ const TagsSidebar = ({
           {topTags.map((category, index) => (
             <TagsStatisticsCard item={category} key={index} />
           ))}
-        </div>
-      </div>
-
-      <div
-        className={
-          "rounded-lg p-6 border-2 flex flex-col gap-4 bg-black-200 border-gray-600"
-        }
-      >
-        <h3 className="text-lg font-semibold mb-4 text-white-100">
-          Quick Actions
-        </h3>
-        <div className={"space-y-2"}>
-          <AnimatedButton
-            bgColor={"#222222"}
-            bgColorHover={"#2c2c2e"}
-            textColorHover={"#14b8a6"}
-            className={"w-full flex items-center gap-3 p-3 rounded-lg"}
-          >
-            <Eye className={"size-4"} />
-            Manage Following
-          </AnimatedButton>
-          <AnimatedButton
-            bgColor={"#222222"}
-            bgColorHover={"#2c2c2e"}
-            textColorHover={"#14b8a6"}
-            className={"w-full flex items-center gap-3 p-3 rounded-lg"}
-          >
-            <TrendingUp className={"size-4"} />
-            View Trending
-          </AnimatedButton>
         </div>
       </div>
     </div>

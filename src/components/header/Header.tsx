@@ -21,6 +21,7 @@ const Header = () => {
         </div>
         <div className={"flex items-center gap-4"}>
           <AnimatedButton
+            borderColor={"#171719"}
             onClick={() => navigate("/sign-in")}
             className={"px-4 py-3 rounded-lg"}
             bgColor={"#171719"}
@@ -28,6 +29,8 @@ const Header = () => {
             Sign In
           </AnimatedButton>
           <AnimatedButton
+            borderColor={"#171719"}
+            bgColor={"#171719"}
             onClick={() => navigate("/sign-up")}
             className={"px-4 py-3 rounded-lg"}
           >

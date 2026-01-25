@@ -1,36 +1,31 @@
 import Avatar from "../img/Avatar.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import {
-  Bookmark,
-  Heart,
-  MessageCircle,
-  MoreHorizontal,
-  Share2,
-} from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Share2 } from "lucide-react";
 import type { PostUnion } from "../../types/post.ts";
 import TextPostCard from "./TextPostCard.tsx";
 import QuotePostCard from "./QuotePostCard.tsx";
 import PhotoPostCard from "./PhotoPostCard.tsx";
 import { formatDistanceToNow } from "date-fns";
-import {
-  isAudioPost,
-  isLinkPost,
-  isPhotoPost,
-  isQuotePost,
-  isTextPost,
-  isVideoPost,
-} from "../../utils/postUnionGuards.ts";
+import { isLinkPost, isPhotoPost, isQuotePost, isTextPost, isVideoPost } from "../../utils/postUnionGuards.ts";
 import VideoPostCard from "./VideoPostCard.tsx";
-import AudioPostCard from "./AudioPostCard.tsx";
 import LinkPostCard from "./LinkPostCard.tsx";
 import useLikePostMutation from "../../hooks/mutations/useLikePostMutation.ts";
 import useAuthentication from "../../hooks/useAuthentication.ts";
 import { useState } from "react";
 import CommentsSection from "../section/CommentsSection.tsx";
-import useUnsavePostByUserPostCollectionMutation from "../../hooks/mutations/useUnsavePostByUserPostCollectionMutation.ts";
+import useUnsavePostByUserPostCollectionMutation
+  from "../../hooks/mutations/useUnsavePostByUserPostCollectionMutation.ts";
 import SavePostInCollectionModal from "../modal/SavePostInCollectionModal.tsx";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useSharePostMutation from "../../hooks/mutations/useSharePostMutation.ts";
+import PostOptionsDropdown from "../dropdown/PostOptionsDropdown.tsx";
+import ReportFormModal from "../modal/ReportFormModal.tsx";
+import useUnlikePostMutation from "../../hooks/mutations/useUnlikePostMutation.ts";
+import DeleteWarningModal from "../modal/DeleteWarningModal.tsx";
+import useDeletePostMutation from "../../hooks/mutations/useDeletePostMutation.ts";
+import EditPostModal from "../modal/EditPostModal.tsx";
+import useUpdatePostMutation from "../../hooks/mutations/useUpdatePostMutation.ts";
 
 type DashboardPostCardProps = {
   isSavedPost?: boolean;
@@ -53,24 +48,43 @@ const DashboardPostCard = ({
     likesBy,
     commentsCount,
     savedBy,
+    sharedBy,
+    authorAvatar,
   } = currentPost;
 
   const likesBySet = new Set(likesBy);
   const savedBySet = new Set(savedBy);
+  const sharedBySet = new Set(sharedBy);
+
   const [isLiked, setIsLiked] = useState(likesBySet.has(Number(userId)));
+  // @ts-ignore
   const [isSaved, setIsSaved] = useState(savedBySet.has(Number(userId)));
+  const [isShared, setIsShared] = useState(sharedBySet.has(Number(userId)));
+
   const [likes, setLikes] = useState<number>(likesBySet.size);
+  const [sharedCount, setSharedCount] = useState<number>(sharedBySet.size);
   const [showComments, setShowComments] = useState(false);
+
   const [showSavePostModal, setShowSavePostModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showDeleteWarningModal, setShowDeleteWarningModal] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
 
-  const [showLikes, setShowLikes] = useState(false);
-  const [showShares, setShowShares] = useState(false);
-
-  const { likePost } = useLikePostMutation(() => {
+  const { likePost, likingPost } = useLikePostMutation(() => {
     setLikes((prevState) => prevState + 1);
     setIsLiked(true);
   });
+  const { unlikePost, unlikingPost } = useUnlikePostMutation(() => {
+    setLikes((prevState) => prevState - 1);
+    setIsLiked(false);
+  });
   const { unsavePost } = useUnsavePostByUserPostCollectionMutation();
+  const { sharePost, sharingPost } = useSharePostMutation(() => {
+    setSharedCount((prevState) => prevState + 1);
+    setIsShared(true);
+  });
+  // @ts-ignore
+  const { updatePost, updatingPost } = useUpdatePostMutation();
 
   const renderPostContent = () => {
     if (isTextPost(currentPost)) {
@@ -89,10 +103,6 @@ const DashboardPostCard = ({
       return <VideoPostCard post={currentPost} />;
     }
 
-    if (isAudioPost(currentPost)) {
-      return <AudioPostCard post={currentPost} />;
-    }
-
     if (isLinkPost(currentPost)) {
       return <LinkPostCard post={currentPost} />;
     }
@@ -103,7 +113,28 @@ const DashboardPostCard = ({
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
 
   const onLikePost = () => {
-    likePost(id);
+    if (!isLiked) {
+      likePost(id);
+    } else {
+      unlikePost(id);
+    }
+  };
+
+  const onSharePost = () => {
+    if (!isShared) {
+      sharePost(id);
+    }
+  };
+
+  const { deletePost, deletingPost } = useDeletePostMutation();
+
+  const onDeletePost = () => {
+    deletePost({
+      postId: id,
+      authorId: authorId,
+    });
+
+    setShowDeleteWarningModal(false);
   };
 
   return (
@@ -113,7 +144,7 @@ const DashboardPostCard = ({
       }
     >
       <header className={"w-full h-auto flex gap-4 items-center"}>
-        <Avatar />
+        <Avatar avatar={authorAvatar} />
         <div className={"flex flex-col gap-1 text-white-100"}>
           <motion.h3
             whileHover={{
@@ -139,16 +170,13 @@ const DashboardPostCard = ({
           </div>
         </div>
         <div className={"ml-auto flex gap-2"}>
-          <AnimatedButton
-            className={"p-2 h-fit rounded-lg border-2"}
-            bgColor={"#222222"}
-            bgColorHover={"#393939"}
-            borderColor={"#222222"}
-            borderColorHover={"#393939"}
-            textColorHover={"#14b8a6"}
-          >
-            <MoreHorizontal className={"size-4"} />
-          </AnimatedButton>
+          <PostOptionsDropdown
+            authorId={currentPost.authorId}
+            postId={currentPost.id}
+            onReportClick={() => setShowReportModal(true)}
+            onDeleteClick={() => setShowDeleteWarningModal(true)}
+            onEditPostClick={() => setEditModalOpen(true)}
+          />
 
           {isSavedPost && (
             <AnimatedButton
@@ -170,14 +198,19 @@ const DashboardPostCard = ({
 
       <div className={"flex flex-wrap gap-1"}>
         {post.tags.map((tag) => (
-          <span
-            key={tag}
-            className={
-              "text-sm px-2 py-1 rounded-full bg-teal-100 cursor-pointer text-black-100"
-            }
-          >
-            #{tag}
-          </span>
+          <Link to={`/tags/${tag.name}`}>
+            <span
+              key={tag.name + tag.id}
+              style={{
+                backgroundColor: tag.color,
+              }}
+              className={
+                "text-sm px-2 py-1 rounded-full bg-teal-100 cursor-pointer text-black-100"
+              }
+            >
+              #{tag.name}
+            </span>
+          </Link>
         ))}
       </div>
 
@@ -195,6 +228,7 @@ const DashboardPostCard = ({
             bgColorHover={"#4D3232"}
             borderColor={isLiked ? "#4D3232" : "#222222"}
             borderColorHover={"#4D3232"}
+            loading={likingPost || unlikingPost}
             className={
               "px-4 py-3 h-fit w-auto rounded-lg flex gap-4 items-center"
             }
@@ -218,7 +252,8 @@ const DashboardPostCard = ({
             {commentsCount}
           </AnimatedButton>
           <AnimatedButton
-            bgColor={"#222222"}
+            bgColor={isShared ? "#244541" : "#222222"}
+            onClick={onSharePost}
             textColor={"#b0b0b0"}
             textColorHover={"#b0b0b0"}
             borderColor={"#222222"}
@@ -227,9 +262,10 @@ const DashboardPostCard = ({
             className={
               "px-4 py-3 h-fit w-auto rounded-lg flex gap-4 items-center"
             }
+            loading={sharingPost}
           >
             <Share2 className={"size-4"} />
-            122
+            {sharedCount}
           </AnimatedButton>
         </div>
         <AnimatedButton
@@ -265,6 +301,36 @@ const DashboardPostCard = ({
         postId={post.id}
         isOpen={showSavePostModal}
         onClose={() => setShowSavePostModal(false)}
+      />
+
+      <ReportFormModal
+        type={"POST"}
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        authorName={authorName}
+        entityId={id}
+      />
+
+      <DeleteWarningModal
+        onSubmit={() => onDeletePost()}
+        onClose={() => setShowDeleteWarningModal(false)}
+        loading={deletingPost}
+        isOpen={showDeleteWarningModal}
+        title={"Are you sure you want to delete post?"}
+      />
+
+      <EditPostModal
+        isOpen={isEditModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        // @ts-ignore
+        postToEdit={post}
+        onSubmit={(data) => {
+          console.log(data);
+          updatePost({
+            type: post.postType,
+            updateRequest: data,
+          });
+        }}
       />
     </div>
   );

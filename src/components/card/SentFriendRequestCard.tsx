@@ -41,7 +41,6 @@ const SentFriendRequestCard = ({ request }: SentFriendRequestCardProps) => {
           <AnimatedButton
             bgColor={"#222222"}
             borderColorHover={"#393939"}
-            q
             borderColor={"#222222"}
             bgColorHover={"#393939"}
             textColorHover={"#ef4444"}

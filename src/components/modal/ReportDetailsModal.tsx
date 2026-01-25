@@ -4,7 +4,14 @@ import {
   getReportStatusColor,
   getReportTypeColor,
 } from "../../utils/colorUtils.ts";
-import type { Report, ReportStatus, ReportType } from "../../types/report.ts";
+import type {
+  CommentReport,
+  PostReport,
+  ReportStatus,
+  ReportType,
+  ReportUnion,
+  ResolveReportRequest,
+} from "../../types/report.ts";
 import {
   AlertCircle,
   CheckCircle,
@@ -17,11 +24,16 @@ import Avatar from "../img/Avatar.tsx";
 import { formatDate } from "../../utils/dateUtils.ts";
 import Label from "../label/Label.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
+import { format } from "date-fns";
+import ReportedPostPreview from "../preview/ReportedPostPreview.tsx";
+import ReportedCommentPreview from "../preview/ReportedCommentPreview.tsx";
 
 type ReportDetailsModalProps = {
   isOpen: boolean;
-  report: Report | null;
+  report: ReportUnion | null;
   onClose: () => void;
+  onResolveReport: (data: ResolveReportRequest) => void;
+  isResolving: boolean;
 };
 
 const getReportTypeIcon = (type: ReportType) => {
@@ -46,10 +58,28 @@ const getStatusIcon = (status: ReportStatus) => {
   }
 };
 
+const ReportedContentPreview = ({ report }: { report: ReportUnion }) => {
+  if (report.reportType === "POST") {
+    return <ReportedPostPreview report={report as PostReport} />;
+  } else if (report.reportType === "COMMENT") {
+    return <ReportedCommentPreview report={report as CommentReport} />;
+  }
+
+  return (
+    <div className="bg-black-300 border border-gray-600 rounded-lg p-4">
+      <p className="text-gray-400 text-sm">
+        Content preview not available for this report type.
+      </p>
+    </div>
+  );
+};
+
 const ReportDetailsModal = ({
   isOpen,
   report,
   onClose,
+  onResolveReport,
+  isResolving,
 }: ReportDetailsModalProps) => {
   return (
     <Modal
@@ -69,11 +99,11 @@ const ReportDetailsModal = ({
                 "flex px-2 py-1 rounded gap-2 items-center text-xs font-medium"
               }
               style={{
-                backgroundColor: getReportTypeColor(report.type),
+                backgroundColor: getReportTypeColor(report.reportType),
               }}
             >
-              {getReportTypeIcon(report.type)}
-              <span>{report.type}</span>
+              {getReportTypeIcon(report.reportType)}
+              <span>{report.reportType}</span>
             </div>
             <h2 className={"text-xl font-bold text-white-100"}>
               Report Details
@@ -82,7 +112,7 @@ const ReportDetailsModal = ({
 
           <div className={"p-6 flex flex-col gap-4 "}>
             <h3 className={"text-lg font-bold text-white-100"}>
-              {report.targetTitle}
+              {report.title}
             </h3>
             <div className={"flex flex-wrap gap-2"}>
               <span
@@ -90,7 +120,9 @@ const ReportDetailsModal = ({
                   "flex items-center px-2 py-1 rounded text-xs font-medium text-black-100"
                 }
                 style={{
-                  backgroundColor: getReportReasonColor(report.reason),
+                  backgroundColor: getReportReasonColor(
+                    report.reportReasonType,
+                  ),
                 }}
               >
                 {report.reason}
@@ -100,11 +132,11 @@ const ReportDetailsModal = ({
                   "flex items-center px-2 gap-2 py-1 rounded text-xs font-medium text-black-100"
                 }
                 style={{
-                  backgroundColor: getReportStatusColor(report.status),
+                  backgroundColor: getReportStatusColor(report.reportStatus),
                 }}
               >
-                {getStatusIcon(report.status)}
-                {report.status}
+                {getStatusIcon(report.reportStatus)}
+                {report.reportStatus}
               </span>
             </div>
             <div className={"flex items-center gap-4"}>
@@ -117,29 +149,37 @@ const ReportDetailsModal = ({
                   </span>
                 </span>
                 <span className={"text-gray-400"}>
-                  {formatDate(report.createdAt)}
+                  {format(report.reportedAt, "dd-MM-yyyy HH:mm:ss")}
                 </span>
               </div>
             </div>
-            <Label title={"Report Description"} data={report.description} />
-            <Label title={"Reported Content"} data={report.targetContent} />
-            {report.status !== "PENDING" && report.resolvedAt && (
+            <div>
+              <Label title="Report Description" data={report.reason} />
+            </div>
+
+            <div>
+              <h4 className="text-white-100 font-medium mb-3">
+                Reported Content
+              </h4>
+              <ReportedContentPreview report={report} />
+            </div>
+            {report.reportStatus !== "PENDING" && report.resolvedAt && (
               <div
                 className="p-4 rounded-lg mb-6 bg-black-300 border-2"
                 style={{
                   borderColor:
-                    report.status === "RESOLVED" ? "#22c55e" : "#ef4444",
+                    report.reportStatus === "RESOLVED" ? "#22c55e" : "#ef4444",
                 }}
               >
                 <h4 className="font-medium mb-2 text-gray-400">Resolution</h4>
                 <p className={"text-white-100"}>
-                  {report.status === "RESOLVED"
+                  {report.reportStatus === "RESOLVED"
                     ? "This report was resolved and appropriate action was taken."
                     : "This report was rejected as it did not violate community guidelines."}
                 </p>
                 <div className="flex items-center mt-2">
                   <span className={"text-gray-400"}>
-                    {report.status} by{" "}
+                    {report.reportStatus} by{" "}
                     <span className={"text-white-100"}>
                       {report.resolvedBy?.username}
                     </span>{" "}
@@ -160,9 +200,15 @@ const ReportDetailsModal = ({
                 Close
               </AnimatedButton>
 
-              {report.status === "PENDING" && (
+              {report.reportStatus === "PENDING" && (
                 <>
                   <AnimatedButton
+                    onClick={() => {
+                      onResolveReport({
+                        reportId: report.id,
+                        reportStatus: "RESOLVED",
+                      });
+                    }}
                     className={"px-4 py-2 rounded-lg items-center flex gap-2"}
                     textColor={"#22c55e"}
                     borderColor={"#22c55e"}
@@ -170,11 +216,18 @@ const ReportDetailsModal = ({
                     textColorHover={"#111111"}
                     borderColorHover={"#22c55e"}
                     bgColorHover={"#22c55e"}
+                    loading={isResolving}
                   >
                     <CheckCircle className={"size-4"} />
                     Resolve Report
                   </AnimatedButton>
                   <AnimatedButton
+                    onClick={() => {
+                      onResolveReport({
+                        reportId: report.id,
+                        reportStatus: "REJECTED",
+                      });
+                    }}
                     className={"px-4 py-2 rounded-lg items-center flex gap-2"}
                     textColor={"#ef4444"}
                     borderColor={"#ef4444"}
@@ -182,6 +235,7 @@ const ReportDetailsModal = ({
                     textColorHover={"#111111"}
                     bgColorHover={"#ef4444"}
                     borderColorHover={"#ef4444"}
+                    loading={isResolving}
                   >
                     <XCircle className={"size-4"} />
                     Reject Report

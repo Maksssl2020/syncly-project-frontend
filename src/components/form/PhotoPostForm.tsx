@@ -2,22 +2,47 @@ import { useForm } from "react-hook-form";
 import FormFileInput from "../input/FormFileInput.tsx";
 import FormTextArea from "../input/FormTextarea.tsx";
 import TagSelector from "../select/TagSelector.tsx";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import FormInput from "../input/FormInput.tsx";
 import { motion } from "framer-motion";
 import { LinkIcon } from "lucide-react";
 import { photoPostValidator } from "../../validators/postValidators.ts";
 import { yupResolver } from "@hookform/resolvers/yup";
-import type { PhotoPostRequest } from "../../types/post.ts";
+import type { PhotoPost, PhotoPostRequest, UpdatePhotoPostRequest } from "../../types/post.ts";
 import toast from "react-hot-toast";
 import type { MediaRequest } from "../../types/media.ts";
+import type { InferType } from "yup";
 
-type PhotoPostFormProps = {
-  onSubmit: (data: PhotoPostRequest) => void;
-};
+type PhotoPostFormProps =
+  | {
+      isEdit?: false;
+      onSubmit: (data: PhotoPostRequest) => void;
+      postToEdit?: never;
+    }
+  | {
+      isEdit: true;
+      onSubmit: (data: UpdatePhotoPostRequest) => void;
+      postToEdit: PhotoPost;
+    };
+
+function base64ToFile(base64: string, filename: string, mime = "image/jpeg") {
+  const clean = base64.replace(/\s/g, "");
+
+  const byteString = atob(clean);
+  const len = byteString.length;
+  const bytes = new Uint8Array(len);
+
+  for (let i = 0; i < len; i++) {
+    bytes[i] = byteString.charCodeAt(i);
+  }
+
+  return new File([bytes], filename, { type: mime });
+}
+
+type PhotoPostFormType = InferType<typeof photoPostValidator>;
 
 const PhotoPostForm = forwardRef<HTMLFormElement, PhotoPostFormProps>(
-  ({ onSubmit }, ref) => {
+  (props, ref) => {
     const [selectedPhotoType, setSelectedPhotoType] = useState<
       "NONE" | "FILE" | "URL"
     >("NONE");
@@ -34,13 +59,30 @@ const PhotoPostForm = forwardRef<HTMLFormElement, PhotoPostFormProps>(
       resolver: yupResolver(photoPostValidator),
     });
 
-    const onPhotoSubmit = ({
-      caption,
-      tags,
-    }: {
-      caption: string;
-      tags?: string[] | undefined;
-    }) => {
+    useEffect(() => {
+      if (props.isEdit) {
+        const mappedTags = props.postToEdit.tags.map((tag) => tag.name);
+        setValue("tags", mappedTags);
+        setValue("caption", props.postToEdit.caption);
+        const canParse = URL.canParse(props.postToEdit.imageUrls[0]);
+        if (canParse) {
+          setAddedPhotoUrls(props.postToEdit.imageUrls);
+          setSelectedPhotoType("URL");
+        } else {
+          console.log(props.postToEdit.imageUrls);
+
+          const mappedImages = props.postToEdit.imageUrls.map((url, index) =>
+            base64ToFile(url, `file${index}`),
+          );
+          setAddedPhotoFiles(mappedImages);
+          setSelectedPhotoType("FILE");
+        }
+        console.log("EDIT");
+        console.log("EDIT");
+      }
+    }, [props.isEdit, props.postToEdit, setValue]);
+
+    const onPhotoSubmit = (data: PhotoPostFormType) => {
       console.log("TEST");
 
       if (addedPhotoFiles.length == 0 && addedPhotoUrls.length == 0) {
@@ -60,11 +102,20 @@ const PhotoPostForm = forwardRef<HTMLFormElement, PhotoPostFormProps>(
           }));
         }
 
-        onSubmit({
-          caption: caption,
+        const photoPostRequest: PhotoPostRequest = {
+          caption: data.caption,
           photos: photos,
-          tags: tags,
-        });
+          tags: data.tags,
+        };
+
+        if (props.isEdit) {
+          props.onSubmit({
+            initialData: props.postToEdit,
+            updatedData: photoPostRequest,
+          });
+        } else {
+          props.onSubmit(photoPostRequest);
+        }
       }
     };
 
@@ -199,7 +250,10 @@ const PhotoPostForm = forwardRef<HTMLFormElement, PhotoPostFormProps>(
           register={register("caption")}
           error={errors?.caption?.message}
         />
-        <TagSelector onSelectTag={(value) => setValue("tags", value)} />
+        <TagSelector
+          initialTags={props.postToEdit?.tags ?? []}
+          onSelectTag={(value) => setValue("tags", value)}
+        />
         <button type="submit" className="hidden" />
       </form>
     );

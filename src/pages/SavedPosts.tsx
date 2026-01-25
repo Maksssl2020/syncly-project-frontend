@@ -1,13 +1,11 @@
 import Page from "../animation/Page";
 import SavedPostsSidebar from "../components/sidebar/SavedPostsSidebar.tsx";
 import { useState } from "react";
-import { Grid3X3, List, SortDesc } from "lucide-react";
+import { SortDesc } from "lucide-react";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
-import type { DropdownOption, ToggleOption } from "../types/types.ts";
-import ViewToggle from "../components/toggle/ViewToggle.tsx";
+import type { DropdownOption } from "../types/types.ts";
 import { motion } from "framer-motion";
 import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
-import DashboardPostGridCard from "../components/card/DashboardPostGridCard.tsx";
 import PageHeaderContainer from "../components/header/PageHeaderContainer.tsx";
 import Spinner from "../components/spinner/Spinner.tsx";
 import useUserPostCollectionsQuery from "../hooks/queries/useUserPostCollectionsQuery.ts";
@@ -21,24 +19,15 @@ const sortOptions: DropdownOption[] = [
     value: "oldest",
     label: "Oldest Saved",
   },
-  {
-    value: "popular",
-    label: "Most Popular",
-  },
 ];
 
-type SortOption = "recent" | "oldest" | "popular";
-
-const viewOptions: ToggleOption[] = [
-  { value: "list", icon: <List className="size-5" /> },
-  { value: "grid", icon: <Grid3X3 className="size-5" /> },
-];
-
-type ViewMode = "list" | "grid";
+type SortOption = "recent" | "oldest";
 
 const SavedPosts = () => {
+  const [selectedQuickActionOption, setSelectedQuickActionOptions] = useState<
+    "MOST_LIKED" | "MOST_COMMENTED" | ""
+  >("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [chosenSortOption, setChosenSortOption] =
     useState<SortOption>("recent");
 
@@ -49,6 +38,28 @@ const SavedPosts = () => {
     return <Spinner />;
   }
 
+  const selectedCollection = userPostCollections.find(
+    (postCollection) => postCollection.title.toLowerCase() === selectedCategory,
+  );
+
+  console.log("selectedCollection", selectedCollection?.posts);
+
+  const sortedPosts = [...(selectedCollection?.posts || [])].sort((a, b) => {
+    if (selectedQuickActionOption === "MOST_LIKED") {
+      return b.likesCount - a.likesCount;
+    }
+    if (selectedQuickActionOption === "MOST_COMMENTED") {
+      return b.commentsCount - a.commentsCount;
+    }
+    if (chosenSortOption === "recent") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (chosenSortOption === "oldest") {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    return 0;
+  });
+
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
       <div className="max-w-6xl mx-auto px-6 py-8">
@@ -57,6 +68,22 @@ const SavedPosts = () => {
             userPostCollections={userPostCollections}
             selectedCategoryId={selectedCategory}
             onChange={setSelectedCategory}
+            onMostCommentedClick={() => {
+              if (selectedQuickActionOption === "MOST_COMMENTED") {
+                setSelectedQuickActionOptions("");
+              } else {
+                setSelectedQuickActionOptions("MOST_COMMENTED");
+              }
+            }}
+            onMostLikedClick={() => {
+              if (selectedQuickActionOption === "MOST_LIKED") {
+                setSelectedQuickActionOptions("");
+              } else {
+                setSelectedQuickActionOptions("MOST_LIKED");
+              }
+            }}
+            onClearAllClick={() => {}}
+            selectedQuickAction={selectedQuickActionOption}
           />
 
           <div className={"lg:col-span-3 space-y-6"}>
@@ -94,50 +121,16 @@ const SavedPosts = () => {
                     />
                   </div>
                 </div>
-                <ViewToggle
-                  options={viewOptions}
-                  value={viewMode}
-                  onChange={(value) => setViewMode(value as ViewMode)}
-                />
               </div>
             </PageHeaderContainer>
-            <motion.div
-              layout
-              className={
-                viewMode === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 gap-6"
-                  : "space-y-6"
-              }
-            >
-              {viewMode === "list" ? (
-                <>
-                  {userPostCollections
-                    .find(
-                      (postCollection) =>
-                        postCollection.title.toLowerCase() === selectedCategory,
-                    )
-                    ?.posts?.map((post, index) => (
-                      <DashboardPostCard
-                        key={index}
-                        post={post}
-                        isSavedPost={true}
-                      />
-                    ))}
-                </>
-              ) : (
-                <>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-                    <motion.div
-                      layout
-                      whileHover={{ y: -5 }}
-                      key={item}
-                      className="rounded-lg  bg-black-200 border-gray-600 overflow-hidden group cursor-pointer border-2"
-                    >
-                      <DashboardPostGridCard isSavedPost={true} />
-                    </motion.div>
-                  ))}
-                </>
-              )}
+            <motion.div layout className={"space-y-6"}>
+              {sortedPosts.map((post) => (
+                <DashboardPostCard
+                  key={post.id}
+                  post={post}
+                  isSavedPost={true}
+                />
+              ))}
             </motion.div>
           </div>
         </div>

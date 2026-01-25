@@ -70,11 +70,15 @@ const Tags = () => {
 
   console.log(followedTags);
 
-  const onFollowToggle = (isFollowed: boolean, tagId: string | number) => {
+  const onFollowToggle = (
+    isFollowed: boolean,
+    tagId: string | number,
+    tagName: string,
+  ) => {
     if (isFollowed) {
       unfollowTag(tagId);
     } else {
-      followTag(tagId);
+      followTag({ tagId, tagName });
     }
   };
 
@@ -99,6 +103,7 @@ const Tags = () => {
           <TagsSidebar
             tagsData={allTagsData}
             followedTags={followingTags}
+            searchQuery={searchQuery}
             onChange={(value) => setSearchQuery(value)}
           />
           <div className={"lg:col-span-3 space-y-6"}>
@@ -115,17 +120,14 @@ const Tags = () => {
               </div>
             </PageHeaderContainer>
 
-            <motion.div
-              layout
-              className={"grid grid-cols-1 md:grid-cols-2 gap-6"}
-            >
+            <motion.div className={"grid grid-cols-1 md:grid-cols-2 gap-6"}>
               {filteredTags.map((tag, index) => (
                 <TagCard
                   tag={tag}
                   index={index}
                   isFollowed={followingTags.has(tag.name.toLowerCase())}
                   onToggleFollow={(isFollowed, tagId) =>
-                    onFollowToggle(isFollowed, tagId)
+                    onFollowToggle(isFollowed, tagId, tag.name)
                   }
                   loading={followingTag || unfollowingTag}
                 />

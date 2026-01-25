@@ -2,17 +2,28 @@ import FormTextArea from "../input/FormTextarea.tsx";
 import { useForm } from "react-hook-form";
 import FormInput from "../input/FormInput.tsx";
 import TagSelector from "../select/TagSelector.tsx";
-import type { QuotePostRequest } from "../../types/post.ts";
+import type { QuotePost, QuotePostRequest, UpdateQuotePostRequest } from "../../types/post.ts";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { quotePostValidator } from "../../validators/postValidators.ts";
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
+import type { InferType } from "yup";
 
-type QuotePostFormProps = {
-  onSubmit: (data: QuotePostRequest) => void;
-};
+type QuotePostFormProps =
+  | {
+      isEdit?: false;
+      onSubmit: (data: QuotePostRequest) => void;
+      postToEdit?: never;
+    }
+  | {
+      isEdit: true;
+      onSubmit: (data: UpdateQuotePostRequest) => void;
+      postToEdit: QuotePost;
+    };
+
+type QuotePostFormType = InferType<typeof quotePostValidator>;
 
 const QuotePostForm = forwardRef<HTMLFormElement, QuotePostFormProps>(
-  ({ onSubmit }, ref) => {
+  (props, ref) => {
     const {
       register,
       formState: { errors },
@@ -22,8 +33,40 @@ const QuotePostForm = forwardRef<HTMLFormElement, QuotePostFormProps>(
       resolver: yupResolver(quotePostValidator),
     });
 
+    useEffect(() => {
+      if (props.isEdit) {
+        const mappedTags = props.postToEdit.tags.map((tag) => tag.name);
+        setValue("quote", props.postToEdit.quote);
+        setValue("source", props.postToEdit.source);
+        setValue("tags", mappedTags);
+      }
+    }, [props.isEdit, props.postToEdit, setValue]);
+
+    const onSubmitClick = (data: QuotePostFormType) => {
+      const quotePostRequest: QuotePostRequest = {
+        quote: data.quote,
+        tags: data.tags,
+        source: data.source,
+        type: "quote",
+      };
+
+      if (props.isEdit) {
+        const updateQuotePostRequest: UpdateQuotePostRequest = {
+          initialData: props.postToEdit,
+          updatedData: quotePostRequest,
+        };
+        props.onSubmit(updateQuotePostRequest);
+      } else {
+        props.onSubmit(quotePostRequest);
+      }
+    };
+
     return (
-      <form ref={ref} onSubmit={handleSubmit(onSubmit)} className={"space-y-4"}>
+      <form
+        ref={ref}
+        onSubmit={handleSubmit(onSubmitClick)}
+        className={"space-y-4"}
+      >
         <FormTextArea
           title={"Quote"}
           placeholder={"Enter the quote..."}
@@ -38,7 +81,10 @@ const QuotePostForm = forwardRef<HTMLFormElement, QuotePostFormProps>(
           error={errors?.source?.message}
           placeholder={"Who said it?"}
         />
-        <TagSelector onSelectTag={(value) => setValue("tags", value)} />
+        <TagSelector
+          initialTags={props.postToEdit?.tags ?? []}
+          onSelectTag={(value) => setValue("tags", value)}
+        />
         <button type="submit" className="hidden" />
       </form>
     );

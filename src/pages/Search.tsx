@@ -17,10 +17,13 @@ import useFollowTagMutation from "../hooks/mutations/useFollowTagMutation.ts";
 import useUnfollowTagMutation from "../hooks/mutations/useUnfollowTagMutation.ts";
 import useFollowedUsersQuery from "../hooks/queries/useFollowedUsersQuery.ts";
 import { useNavigate } from "react-router-dom";
+import useSearch from "../hooks/useSearch.ts";
+import useTrendingSearchesQuery from "../hooks/queries/useTrendingSearchesQuery.ts";
 
 const Search = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [chosenTab, setChosenTab] = useState<string>("all");
 
   const { searchedUsers, searchingUsers } = useSearchUsersByQuery(searchQuery);
@@ -28,12 +31,20 @@ const Search = () => {
   const { searchedPosts, searchingPosts } = useSearchPostsQuery(searchQuery);
   const { followedTags, fetchingFollowedTags } = useFollowedTagsQuery();
   const { followedUsers, fetchingFollowedUsers } = useFollowedUsersQuery();
-  const { followTag, followingTag } = useFollowTagMutation();
-  const { unfollowTag, unfollowingTag } = useUnfollowTagMutation();
+  const { followTag } = useFollowTagMutation();
+  const { unfollowTag } = useUnfollowTagMutation();
   const [followingTags, setFollowingTags] = useState<Set<string>>(new Set([]));
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(
     new Set([]),
   );
+
+  const { trendingSearches } = useTrendingSearchesQuery();
+
+  useSearch({
+    inputValue: searchInputValue,
+    setSearch: setSearchQuery,
+    saveSearchEnabled: true,
+  });
 
   useEffect(() => {
     if (followedTags && !fetchingFollowedTags) {
@@ -104,15 +115,17 @@ const Search = () => {
     },
   ];
 
-  const onFollowToggle = (isFollowed: boolean, tagId: string | number) => {
+  const onFollowToggle = (
+    isFollowed: boolean,
+    tagId: string | number,
+    tagName: string,
+  ) => {
     if (isFollowed) {
       unfollowTag(tagId);
     } else {
-      followTag(tagId);
+      followTag({ tagId, tagName });
     }
   };
-
-  console.log(searchedUsers);
 
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
@@ -125,10 +138,9 @@ const Search = () => {
             Search for users, posts, and tags to find interesting content
           </p>
           <Searchbar
-            value={searchQuery}
+            value={searchInputValue}
             placeholder={"Search users, posts, tags..."}
-            onChange={(value) => setSearchQuery(value)}
-            debounceMs={500}
+            onChange={(value) => setSearchInputValue(value)}
           />
         </div>
         <div className=" px-6 py-8 w-full rounded-lg bg-black-200 border-gray-600 border-2">
@@ -175,6 +187,7 @@ const Search = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {searchedUsers?.map((item, index) => (
                         <UserSearchCard
+                          key={index}
                           user={item}
                           isFollowed={followingUsers.has(
                             item.username.toLowerCase(),
@@ -219,8 +232,8 @@ const Search = () => {
                           index={index}
                           tag={tag}
                           key={tag.name}
-                          onToggleFollow={(isFollowed, tagId) =>
-                            onFollowToggle(isFollowed, tagId)
+                          onToggleFollow={(isFollowed, tagId, tagName) =>
+                            onFollowToggle(isFollowed, tagId, tagName)
                           }
                         />
                       ))}
@@ -240,33 +253,27 @@ const Search = () => {
             </div>
           )
         ) : (
-          <div>
-            <h2 className="text-xl font-bold mb-4 text-white-100">
-              Trending Searches
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                "#sztuka",
-                "#fotografia",
-                "#muzyka",
-                "#podróże",
-                "@anna_art",
-                "@michal_photo",
-                "digital art",
-                "nature",
-              ].map((term) => (
-                <AnimatedButton
-                  key={term}
-                  borderColor={"#4d4d4d"}
-                  borderColorHover={"#14b8a6"}
-                  onClick={() => setSearchQuery(term)}
-                  className="p-3 rounded-lg text-center border-2"
-                >
-                  {term}
-                </AnimatedButton>
-              ))}
+          trendingSearches !== undefined &&
+          trendingSearches.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold mb-4 text-white-100">
+                Trending Searches
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {trendingSearches?.map((data) => (
+                  <AnimatedButton
+                    key={data.searchName}
+                    borderColor={"#4d4d4d"}
+                    borderColorHover={"#14b8a6"}
+                    onClick={() => setSearchQuery(data.searchName)}
+                    className="p-3 rounded-lg text-center border-2"
+                  >
+                    {data.searchName}
+                  </AnimatedButton>
+                ))}
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
     </Page>

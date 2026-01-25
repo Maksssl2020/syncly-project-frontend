@@ -1,8 +1,8 @@
 import Page from "../animation/Page.tsx";
-import type { TabData } from "../types/types.ts";
-import { Key, Shield, User } from "lucide-react";
+import type {TabData} from "../types/types.ts";
+import {Key, Shield, User} from "lucide-react";
 import Tab from "../components/tab/Tab.tsx";
-import { useState } from "react";
+import {useState} from "react";
 import ProfileSettingsSection from "../components/section/ProfileSettingsSection.tsx";
 import PrivacySettingsSection from "../components/section/PrivacySettingsSection.tsx";
 import AccountSettingsSection from "../components/section/AccountSettingsSection.tsx";
@@ -35,7 +35,8 @@ const Settings = () => {
   const [activeTabId, setActiveTabId] = useState<string>("profile");
   const { userProfile, fetchingUserProfile } =
     useUserProfileByUserIdQuery(userId);
-  const { userSettings, fetchingUserSettings } = useUserSettingsByUserIdQuery();
+  const { userSettings, fetchingUserSettings } =
+    useUserSettingsByUserIdQuery(userId);
 
   if (
     fetchingUserProfile ||
@@ -78,11 +79,7 @@ const Settings = () => {
                 <ProfileSettingsSection data={userProfile} />
               )}
               {activeTabId === "account" && (
-                <AccountSettingsSection
-                  isTwoFactorAuthentication={
-                    userSettings.twoFactorAuthentication
-                  }
-                />
+                <AccountSettingsSection userSettings={userSettings} />
               )}
               {activeTabId === "privacy" && (
                 <PrivacySettingsSection userSettings={userSettings} />

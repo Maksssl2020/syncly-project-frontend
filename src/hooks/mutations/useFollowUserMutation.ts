@@ -17,6 +17,9 @@ function useFollowUserMutation() {
       queryClient.invalidateQueries({
         queryKey: ["followedUsers", userId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["followedUsersIds", userId],
+      });
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {
       const errorMessage = error.response?.data?.message;

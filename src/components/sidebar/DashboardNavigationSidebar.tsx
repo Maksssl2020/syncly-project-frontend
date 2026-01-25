@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import type { NavigationData } from "../../types/types.ts";
 import useAuthentication from "../../hooks/useAuthentication.ts";
 import { useAuthenticationStore } from "../../store/authenticationStore.ts";
+import { usePresenceStore } from "../../store/presenceStore.ts";
 
 const navigationData: NavigationData[] = [
   {
@@ -96,6 +97,7 @@ const DashboardNavigationSidebar = () => {
           <AnimatedButton
             onClick={() => {
               useAuthenticationStore.getState().logout();
+              usePresenceStore.persist.clearStorage();
               navigate("/");
             }}
             bgColor={"#222222"}
@@ -116,9 +118,7 @@ const DashboardNavigationSidebar = () => {
               bgColorHover={"#393939"}
               borderColorHover={"#14b8a6"}
               textColorHover={"#14b8a6"}
-              className={
-                "flex gap-2 h-[50px] rounded-lg items-center justify-center"
-              }
+              className={"flex gap-2 h-[50px] rounded-lg items-center pl-2"}
             >
               <Shield className={"size-5 "} />
               Go To Admin Panel

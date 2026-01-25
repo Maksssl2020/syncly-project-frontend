@@ -26,7 +26,7 @@ const DropdownMenu = ({
   const { isOpen, setIsOpen, ref } = useClickOutside(false);
 
   return (
-    <div ref={ref} className={`relative w-full  ${className}`}>
+    <div ref={ref} className={`relative w-full ${className}`}>
       <motion.button
         type={"button"}
         onClick={() => setIsOpen(!isOpen)}

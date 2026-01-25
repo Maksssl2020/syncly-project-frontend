@@ -7,3 +7,8 @@ export async function fetchUserSettingsByUserId(userId: string | number) {
   );
   return response.data;
 }
+
+export async function handleUserSettingsUpdate(data: UserSettings) {
+  const response = await axiosConfig.patch("/users-settings/update", data);
+  return response.data;
+}

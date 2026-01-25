@@ -11,7 +11,11 @@ type TagCardProps = {
   index: number;
   isFollowed: boolean;
   loading?: boolean;
-  onToggleFollow: (isFollowed: boolean, tagId: string | number) => void;
+  onToggleFollow: (
+    isFollowed: boolean,
+    tagId: string | number,
+    tagName: string,
+  ) => void;
 };
 
 const TagCard = ({
@@ -87,7 +91,7 @@ const TagCard = ({
       </div>
 
       <AnimatedButton
-        onClick={() => onToggleFollow(isFollowed, tag.id)}
+        onClick={() => onToggleFollow(isFollowed, tag.id, tag.name)}
         className={
           "px-4 py-2 rounded-lg w-full mt-4 flex items-center gap-2 border-2"
         }

@@ -76,24 +76,24 @@ const ProfileSettingsSection = ({ data }: ProfileSettingsSectionProps) => {
   }, [watchedValues, initialUserProfileData]);
 
   const onUpdateClick = async (data: UserProfileDataToUpdate) => {
-    let isUsernameAvailable = true;
-    let isEmailAvailable = true;
+    let isUsernameTaken = false;
+    let isEmailTaken = false;
 
     if (data.username !== initialUserProfileData.username) {
-      isUsernameAvailable = await usernameExists(data.username);
+      isUsernameTaken = await usernameExists(data.username);
     }
     if (data.email !== initialUserProfileData.email) {
-      isEmailAvailable = await emailExists(data.email);
+      isEmailTaken = await emailExists(data.email);
     }
 
-    if (!isUsernameAvailable) {
+    if (isUsernameTaken) {
       toast.error(`Username ${data.username} already exists!`);
     }
-    if (!isEmailAvailable) {
+    if (isEmailTaken) {
       toast.error(`Email ${data.email} already exists!`);
     }
 
-    if (isEmailAvailable && isUsernameAvailable && userId) {
+    if (!isEmailTaken && !isUsernameTaken && userId) {
       updateUserProfile({
         userId: userId,
         initialData: initialUserProfileData,

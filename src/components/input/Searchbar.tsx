@@ -1,43 +1,24 @@
 import { motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, X } from "lucide-react";
 
 type SearchbarProps = {
+  value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  value: string;
-  debounceMs?: number;
 };
 
 const Searchbar = ({
   value,
   onChange,
   placeholder = "Szukaj...",
-  debounceMs = 300,
 }: SearchbarProps) => {
-  const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState(value);
-
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(inputValue);
-    }, debounceMs);
-
-    return () => clearTimeout(timeout);
-  }, [inputValue, onChange, debounceMs]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleClear = () => {
-    setInputValue("");
     onChange("");
   };
+
   return (
     <motion.div
       animate={{
@@ -46,18 +27,13 @@ const Searchbar = ({
       }}
       className="bg-black-100 flex h-12 w-full overflow-hidden rounded-lg border-2"
     >
-      <motion.div
-        animate={{
-          color: isFocused ? "#14b8a6" : "#b0b0b0",
-        }}
-        className="flex h-full w-12 items-center justify-center select-none"
-      >
-        <Search className={"size-6"} />
-      </motion.div>
+      <div className="flex h-full w-12 items-center justify-center select-none text-gray-500">
+        <Search className="size-6" />
+      </div>
 
       <input
-        value={inputValue}
-        onChange={handleChange}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
@@ -65,13 +41,10 @@ const Searchbar = ({
       />
 
       <motion.button
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
         onClick={handleClear}
         className="hover:text-white-100 flex h-full w-10 items-center justify-center text-gray-300"
       >
-        {inputValue && <X className="h-4 w-4" />}
+        {value && <X className="h-4 w-4" />}
       </motion.button>
     </motion.div>
   );

@@ -34,7 +34,7 @@ const PageStatsCard = ({ data, index }: PageStatsCardProps) => {
             ) : (
               <TrendingDown className={"size-5 mr-1"} />
             )}
-            <span>{Math.abs(Number(data.change))}%</span>
+            <span>+{Math.abs(Number(data.change))}</span>
           </div>
         )}
       </div>

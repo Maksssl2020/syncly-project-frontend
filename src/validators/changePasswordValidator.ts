@@ -10,5 +10,5 @@ export const changePasswordValidator = yup.object().shape({
     .string()
     .required("Confirm password is required.")
     .oneOf([yup.ref("newPassword"), ""], "Passwords must match."),
-  twoFactorAuthentication: yup.boolean(),
+  twoFactorAuthentication: yup.boolean().required(),
 });

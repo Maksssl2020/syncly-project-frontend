@@ -1,3 +1,5 @@
+import type { Image } from "./image.ts";
+
 export interface SignUpRequest {
   firstName: string;
   lastName: string;
@@ -17,6 +19,7 @@ export interface Authentication {
   accessToken?: string;
   role?: string;
   authenticated: boolean;
+  profileImage?: Image;
 }
 
 export interface AuthenticationResponse {
@@ -24,6 +27,7 @@ export interface AuthenticationResponse {
   username: string;
   accessToken: string;
   role: string;
+  profileImage?: Image;
 }
 
 export interface ChangePasswordRequest {

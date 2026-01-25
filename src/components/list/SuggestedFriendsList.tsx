@@ -1,12 +1,20 @@
 import type { UserItem } from "../../types/user.ts";
 import { UserPlus } from "lucide-react";
 import SuggestedFriendCard from "../card/SuggestedFriendCard.tsx";
+import useSendFriendRequestMutation from "../../hooks/mutations/useSendFriendRequestMutation.ts";
+import { useState } from "react";
 
 interface SuggestedFriendsProps {
   suggested: UserItem[];
 }
 
 const SuggestedFriendsList = ({ suggested }: SuggestedFriendsProps) => {
+  const [sentFriendRequestUserId, setSentFriendRequestUserId] = useState<
+    string | number | undefined
+  >(undefined);
+  const { sendFriendRequest, sendingFriendRequest } =
+    useSendFriendRequestMutation();
+
   if (suggested.length === 0) {
     return (
       <div className="p-12 text-center">
@@ -27,7 +35,15 @@ const SuggestedFriendsList = ({ suggested }: SuggestedFriendsProps) => {
     <div className={"p-6 "}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {suggested.map((user) => (
-          <SuggestedFriendCard user={user} />
+          <SuggestedFriendCard
+            onAddFriend={(userId) => {
+              setSentFriendRequestUserId(userId);
+              sendFriendRequest(userId);
+            }}
+            addingFriend={sendingFriendRequest}
+            addingFriendId={sentFriendRequestUserId}
+            user={user}
+          />
         ))}
       </div>
     </div>

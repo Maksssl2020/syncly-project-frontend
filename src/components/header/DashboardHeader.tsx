@@ -1,17 +1,7 @@
 import AnimatedButton from "../button/AnimatedButton.tsx";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Logo from "../logo/Logo.tsx";
-import {
-  ArrowLeft,
-  Bookmark,
-  FolderPlus,
-  Hash,
-  Plus,
-  Settings,
-  Share2,
-  Tag,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Bookmark, FolderPlus, Hash, Home, Settings, Tag, Users } from "lucide-react";
 import Avatar from "../img/Avatar.tsx";
 
 const DashboardHeader = () => {
@@ -84,27 +74,16 @@ const DashboardHeader = () => {
   };
 
   const getHeaderAdditionalElements = () => {
-    if (pathname.includes("blog")) {
+    if (pathname.includes("my-blog")) {
       return (
         <>
-          <AnimatedButton
-            onClick={() => navigate("/sign-in")}
-            className={"px-4 py-3  rounded-lg flex gap-3 items-center text-lg"}
-            bgColor={"#222222"}
-            bgColorHover={"#393939"}
-            textColorHover={"#14b8a6"}
-            textColor={"#b0b0b0"}
-          >
-            <Share2 className="size-4" />
-            Share Profile
-          </AnimatedButton>
           <AnimatedButton
             bgColor={"#222222"}
             borderColor={"#14b8a6"}
             bgColorHover={"#14b8a6"}
             textColor={"#b0b0b0"}
             textColorHover={"#111111"}
-            onClick={() => navigate("/sign-up")}
+            onClick={() => navigate("/settings")}
             className={
               "px-4 py-3 border-2 rounded-lg flex gap-3 items-center text-lg"
             }
@@ -128,23 +107,9 @@ const DashboardHeader = () => {
         </div>
       );
     }
-    if (pathname.includes("/tags") && tag) {
-      return (
-        <AnimatedButton
-          bgColor={"#222222"}
-          borderColor={"#14b8a6"}
-          bgColorHover={"#14b8a6"}
-          textColor={"#14b8a6"}
-          textColorHover={"#111111"}
-          className="px-4 py-2 rounded-lg flex items-center gap-2 border-2"
-        >
-          <Plus className={"size-5"} />
-          Follow Tag
-        </AnimatedButton>
-      );
-    }
   };
 
+  // @ts-ignore
   const isDeltaNavigation = () => {
     if (pathname.includes("conversation")) {
       return true;
@@ -166,21 +131,33 @@ const DashboardHeader = () => {
       <nav
         className={` w-full justify-between items-center flex ${pathname.includes("conversation") ? "" : "max-w-6xl"}`}
       >
-        <div className={"flex gap-5 items-center"}>
-          <AnimatedButton
-            onClick={() =>
-              isDeltaNavigation() ? navigate(-1) : navigate("/dashboard")
-            }
-            bgColor={"#222222"}
-            bgColorHover={"#393939"}
-            textColorHover={"#14b8a6"}
-            textColor={"#b0b0b0"}
-            borderColor={"#222222"}
-            borderColorHover={"#393939"}
-            className={"size-10 rounded-lg justify-center items-center flex"}
-          >
-            <ArrowLeft className={"size-6"} />
-          </AnimatedButton>
+        <div className={"flex gap-8 items-center"}>
+          <div className={"flex gap-2 items-center"}>
+            <AnimatedButton
+              onClick={() => navigate(-1)}
+              bgColor={"#222222"}
+              bgColorHover={"#393939"}
+              textColorHover={"#14b8a6"}
+              textColor={"#b0b0b0"}
+              borderColor={"#2c2c2c"}
+              borderColorHover={"#393939"}
+              className={"size-12 rounded-lg justify-center items-center flex"}
+            >
+              <ArrowLeft className={"size-6"} />
+            </AnimatedButton>
+            <AnimatedButton
+              onClick={() => navigate("/dashboard")}
+              bgColor={"#222222"}
+              bgColorHover={"#393939"}
+              textColorHover={"#14b8a6"}
+              textColor={"#b0b0b0"}
+              borderColor={"#2c2c2c"}
+              borderColorHover={"#393939"}
+              className={"size-12 rounded-lg justify-center items-center flex"}
+            >
+              <Home className={"size-6"} />
+            </AnimatedButton>
+          </div>
           {getHeaderTitle()}
         </div>
         <div className={"flex items-center gap-4"}>

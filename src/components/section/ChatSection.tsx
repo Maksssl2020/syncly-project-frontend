@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { ConversationMessage } from "../../types/conversation.ts";
 import MessageBubble from "../bubble/MessageBubble.tsx";
 import useAuthentication from "../../hooks/useAuthentication.ts";
+import useUserProfileAvatarByUserIdQuery from "../../hooks/queries/useUserProfileAvatarByUserIdQuery.ts";
 
 interface ChatSectionProps {
   messages: ConversationMessage[];
@@ -9,19 +10,27 @@ interface ChatSectionProps {
 
 const ChatSection = ({ messages }: ChatSectionProps) => {
   const { userId } = useAuthentication();
+  const chatBoxRef = useRef(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const foundId = messages
+    .map((message) => message.senderUserId)
+    .find((id) => id !== userId);
+
+  const { userProfileAvatar } = useUserProfileAvatarByUserIdQuery(foundId);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const groupedMessages: { [key: string]: ConversationMessage[] } = {};
+  const sortedMessages = [...messages].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+  );
 
-  messages.forEach((message) => {
+  const groupedMessages: { [date: string]: ConversationMessage[] } = {};
+
+  sortedMessages.forEach((message) => {
     const date = new Date(message.timestamp).toLocaleDateString();
-    if (!groupedMessages[date]) {
-      groupedMessages[date] = [];
-    }
+    if (!groupedMessages[date]) groupedMessages[date] = [];
     groupedMessages[date].push(message);
   });
 
@@ -29,14 +38,15 @@ const ChatSection = ({ messages }: ChatSectionProps) => {
     const groups: ConversationMessage[][] = [];
     let currentGroup: ConversationMessage[] = [];
 
-    messages.forEach((message) => {
-      if (message.senderUserId !== userId) {
-        if (currentGroup.length > 0) {
-          groups.push([...currentGroup]);
-        }
-        currentGroup = [message];
-      } else {
+    messages.forEach((message, index) => {
+      if (
+        index === 0 ||
+        message.senderUserId === messages[index - 1].senderUserId
+      ) {
         currentGroup.push(message);
+      } else {
+        groups.push(currentGroup);
+        currentGroup = [message];
       }
     });
 
@@ -47,8 +57,20 @@ const ChatSection = ({ messages }: ChatSectionProps) => {
     return groups;
   };
 
+  // useEffect(() => {
+  //   if (chatBoxRef.current) {
+  //     chatBoxRef.current.scroll({
+  //       top: chatBoxRef.current.scrollHeight,
+  //       behavior: "smooth",
+  //     });
+  //   }
+  // }, [messages]);
+
   return (
-    <div className={"overflow-y-auto p-4 flex flex-gol gap-4 w-full"}>
+    <div
+      ref={chatBoxRef}
+      className={"overflow-y-auto p-4 flex flex-col gap-4 w-full h-[731px]"}
+    >
       {Object.entries(groupedMessages).map(([date, dateMessages]) => (
         <div key={date} className={"flex flex-col gap-4 w-full "}>
           <div className={"flex justify-center"}>
@@ -65,6 +87,7 @@ const ChatSection = ({ messages }: ChatSectionProps) => {
           {groupConsecutiveMessages(dateMessages).map((group, groupIndex) => (
             <div key={groupIndex} className=" flex flex-col gap-2 ">
               <MessageBubble
+                messageAvatar={userProfileAvatar}
                 messages={group}
                 isCurrentUser={group[0].senderUserId === userId}
               />

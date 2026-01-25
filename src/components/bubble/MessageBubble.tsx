@@ -1,20 +1,26 @@
 import type { ConversationMessage } from "../../types/conversation.ts";
 import Avatar from "../img/Avatar.tsx";
 import { format } from "date-fns";
+import type { Image } from "../../types/image.ts";
 
 interface MessageBubbleProps {
+  messageAvatar?: Image;
   messages: ConversationMessage[];
   isCurrentUser: boolean;
 }
 
-const MessageBubble = ({ messages, isCurrentUser }: MessageBubbleProps) => {
+const MessageBubble = ({
+  messageAvatar,
+  messages,
+  isCurrentUser,
+}: MessageBubbleProps) => {
   if (!messages.length) return null;
   const lastMessage = messages[messages.length - 1];
 
   return (
     <div className={`flex ${isCurrentUser ? "justify-end " : "justify-start"}`}>
       <div className={"flex gap-2"}>
-        {!isCurrentUser && <Avatar size={"size-10"} />}
+        {!isCurrentUser && <Avatar size={"size-10"} avatar={messageAvatar} />}
 
         <div
           className={`max-w-xs md:max-w-md space-y-1 ${isCurrentUser ? "order-first mr-2" : ""} `}

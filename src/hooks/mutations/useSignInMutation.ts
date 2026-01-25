@@ -16,9 +16,11 @@ function useSignInMutation() {
     mutationFn: (data: SignInRequest) => handleSignIn(data),
     onSuccess: (data) => {
       useAuthenticationStore.getState().login(data);
-      const { accessToken } = useAuthenticationStore.getState().authentication;
-      if (accessToken) {
-        connectStomp(accessToken);
+      console.log(data);
+      const { accessToken, username } =
+        useAuthenticationStore.getState().authentication;
+      if (accessToken && username) {
+        connectStomp(accessToken, username);
         navigate("/dashboard");
       }
     },

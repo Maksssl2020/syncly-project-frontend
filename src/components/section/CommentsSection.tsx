@@ -8,26 +8,41 @@ import useAddPostCommentMutation from "../../hooks/mutations/useAddPostCommentMu
 import { useForm } from "react-hook-form";
 import FormInput from "../input/FormInput.tsx";
 import useAuthentication from "../../hooks/useAuthentication.ts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import usePostCommentsQuery from "../../hooks/queries/usePostCommentsQuery.ts";
-import Spinner from "../spinner/Spinner.tsx";
+import ComponentSpinner from "../spinner/ComponentSpinner.tsx";
+import useDeleteCommentMutation from "../../hooks/mutations/useDeleteCommentMutation.ts";
+import useUpdateCommentMutation from "../../hooks/mutations/useUpdateCommentMutation.ts";
+import ReportFormModal from "../modal/ReportFormModal.tsx";
 
 type CommentsSectionProps = {
   postId: string | number;
 };
 
 const CommentsSection = ({ postId }: CommentsSectionProps) => {
-  const { userId } = useAuthentication();
+  const { userId, profileImage } = useAuthentication();
   const { postComments, fetchingPostComments } = usePostCommentsQuery(postId);
   const [postCommentsData, setPostCommentsData] = useState<Comment[]>(
     postComments ?? [],
   );
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedCommentToReport, setSelectedCommentToReport] = useState<
+    Comment | undefined
+  >(undefined);
+  const { deleteComment } = useDeleteCommentMutation();
+  const { updateComment } = useUpdateCommentMutation(
+    (commentId, commentContent) => {
+      setPostCommentsData((prev) =>
+        prev.map((comment) =>
+          comment.id === commentId
+            ? { ...comment, content: commentContent }
+            : comment,
+        ),
+      );
+    },
+  );
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const { register, handleSubmit } = useForm({
     defaultValues: {
       content: "",
     },
@@ -49,8 +64,14 @@ const CommentsSection = ({ postId }: CommentsSectionProps) => {
     }
   };
 
+  useEffect(() => {
+    if (postComments) {
+      setPostCommentsData(postComments);
+    }
+  }, [postComments]);
+
   if (fetchingPostComments) {
-    return <Spinner />;
+    return <ComponentSpinner />;
   }
 
   return (
@@ -60,9 +81,8 @@ const CommentsSection = ({ postId }: CommentsSectionProps) => {
       exit={{ opacity: 0, height: 0 }}
       className="border-t-2 border-gray-600 pt-4 space-y-4"
     >
-      {/* Add Comment */}
       <div className="flex w-full items-center gap-3">
-        <Avatar />
+        <Avatar avatar={profileImage} />
         <div className={"flex-1"}>
           <FormInput
             title={""}
@@ -99,7 +119,24 @@ const CommentsSection = ({ postId }: CommentsSectionProps) => {
 
       <div className="space-y-1">
         {postCommentsData.map((comment) => (
-          <CommentCard key={comment.id} comment={comment} isReply={false} />
+          <CommentCard
+            key={comment.authorName + comment.postId + comment.id}
+            comment={comment}
+            isReply={false}
+            onDelete={(commentId) =>
+              deleteComment({
+                postId,
+                commentId,
+              })
+            }
+            onUpdate={(commentId, content) =>
+              updateComment({ commentId, content })
+            }
+            onReport={(comment) => {
+              setShowReportModal(true);
+              setSelectedCommentToReport(comment);
+            }}
+          />
         ))}
       </div>
 
@@ -109,6 +146,17 @@ const CommentsSection = ({ postId }: CommentsSectionProps) => {
           <p>No comments yet. Be the first to comment!</p>
         </div>
       )}
+
+      <ReportFormModal
+        type={"COMMENT"}
+        isOpen={showReportModal && selectedCommentToReport !== undefined}
+        onClose={() => {
+          setShowReportModal(false);
+          setSelectedCommentToReport(undefined);
+        }}
+        authorName={selectedCommentToReport?.authorName ?? ""}
+        entityId={selectedCommentToReport?.id ?? -1}
+      />
     </motion.div>
   );
 };

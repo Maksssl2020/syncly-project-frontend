@@ -4,15 +4,30 @@ import FormTextArea from "../input/FormTextarea.tsx";
 import TagSelector from "../select/TagSelector.tsx";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { textPostValidator } from "../../validators/postValidators.ts";
-import type { TextPostRequest } from "../../types/post.ts";
-import { forwardRef } from "react";
+import type {
+  TextPost,
+  TextPostRequest,
+  UpdateTextPostRequest,
+} from "../../types/post.ts";
+import { forwardRef, useEffect } from "react";
+import type { InferType } from "yup";
 
-type TextPostFormProps = {
-  onSubmit: (data: TextPostRequest) => void;
-};
+type TextPostFormProps =
+  | {
+      isEdit?: false;
+      onSubmit: (data: TextPostRequest) => void;
+      postToEdit?: never;
+    }
+  | {
+      isEdit: true;
+      onSubmit: (data: UpdateTextPostRequest) => void;
+      postToEdit: TextPost;
+    };
+
+type TextPostFormData = InferType<typeof textPostValidator>;
 
 const TextPostForm = forwardRef<HTMLFormElement, TextPostFormProps>(
-  ({ onSubmit }, ref) => {
+  (props, ref) => {
     const {
       register,
       handleSubmit,
@@ -22,16 +37,37 @@ const TextPostForm = forwardRef<HTMLFormElement, TextPostFormProps>(
       resolver: yupResolver(textPostValidator),
     });
 
+    useEffect(() => {
+      if (props.isEdit && props.postToEdit) {
+        const mappedTags = props.postToEdit.tags.map((tag) => tag.name);
+        setValue("title", props.postToEdit.title);
+        setValue("content", props.postToEdit.content);
+        setValue("tags", mappedTags);
+      }
+    }, [props.isEdit, props.postToEdit, setValue]);
+
+    const onSubmitClick = (data: TextPostFormData) => {
+      const textPostRequestData: TextPostRequest = {
+        title: data.title,
+        content: data.content,
+        tags: data.tags,
+      };
+
+      if (props.isEdit) {
+        const updateTextPostRequest: UpdateTextPostRequest = {
+          initialData: props.postToEdit,
+          updatedData: textPostRequestData,
+        };
+        props.onSubmit(updateTextPostRequest);
+      } else {
+        props.onSubmit(textPostRequestData);
+      }
+    };
+
     return (
       <form
         ref={ref}
-        onSubmit={handleSubmit((data) => {
-          onSubmit({
-            title: data.title,
-            content: data.content,
-            tags: data.tags,
-          });
-        })}
+        onSubmit={handleSubmit(onSubmitClick)}
         className={"space-y-4"}
       >
         <FormInput
@@ -48,7 +84,10 @@ const TextPostForm = forwardRef<HTMLFormElement, TextPostFormProps>(
           register={register("content")}
           error={errors?.content?.message}
         />
-        <TagSelector onSelectTag={(value) => setValue("tags", value)} />
+        <TagSelector
+          initialTags={props.postToEdit?.tags ?? []}
+          onSelectTag={(value) => setValue("tags", value)}
+        />
         <button type="submit" className="hidden" />
       </form>
     );

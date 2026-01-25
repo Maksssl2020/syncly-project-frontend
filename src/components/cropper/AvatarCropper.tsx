@@ -11,6 +11,7 @@ type AvatarCropperProps = {
 function getCroppedImg(
   imageSrc: string,
   crop: any,
+  // @ts-ignore
   fileName: string,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
