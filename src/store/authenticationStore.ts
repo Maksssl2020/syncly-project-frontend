@@ -7,6 +7,8 @@ import { create } from "zustand/react";
 
 type AuthenticationState = {
   authentication: Authentication;
+  verificationUserId: number | undefined;
+  verificationEmail: string | undefined;
   login: (data: AuthenticationResponse) => void;
   logout: () => void;
 };
@@ -26,6 +28,7 @@ const sessionStorageAdapter: PersistStorage<AuthenticationState> = {
 
 const initialState: Authentication = {
   userId: undefined,
+  email: undefined,
   username: "",
   role: "",
   accessToken: "",
@@ -37,6 +40,8 @@ export const useAuthenticationStore = create<AuthenticationState>()(
   persist(
     (setState) => ({
       authentication: initialState,
+      verificationUserId: undefined,
+      verificationEmail: undefined,
       login: (data) =>
         setState({
           authentication: {

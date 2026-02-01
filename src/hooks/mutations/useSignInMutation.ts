@@ -15,13 +15,22 @@ function useSignInMutation() {
     mutationKey: ["signInUser"],
     mutationFn: (data: SignInRequest) => handleSignIn(data),
     onSuccess: (data) => {
-      useAuthenticationStore.getState().login(data);
-      console.log(data);
-      const { accessToken, username } =
-        useAuthenticationStore.getState().authentication;
-      if (accessToken && username) {
-        connectStomp(accessToken, username);
-        navigate("/dashboard");
+      if (data.requiresTwoFactorAuthentication) {
+        useAuthenticationStore.getState().verificationUserId = Number(
+          data.userId,
+        );
+        useAuthenticationStore.getState().verificationEmail = data.email;
+        toast.success("Wysłano wiadomość e-mail z kodem weryfikacyjnym.");
+        navigate("/verify-2fa");
+      } else {
+        useAuthenticationStore.getState().login(data);
+        console.log(data);
+        const { accessToken, username } =
+          useAuthenticationStore.getState().authentication;
+        if (accessToken && username) {
+          connectStomp(accessToken, username);
+          navigate("/dashboard");
+        }
       }
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {

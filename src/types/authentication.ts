@@ -15,6 +15,7 @@ export interface SignInRequest {
 
 export interface Authentication {
   userId?: string | number;
+  email?: string | number;
   username?: string;
   accessToken?: string;
   role?: string;
@@ -25,12 +26,19 @@ export interface Authentication {
 export interface AuthenticationResponse {
   userId: string | number;
   username: string;
+  email: string;
   accessToken: string;
   role: string;
   profileImage?: Image;
+  requiresTwoFactorAuthentication: boolean;
 }
 
 export interface ChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
+}
+
+export interface TwoFactorVerificationRequest {
+  userId: string | number;
+  code: string;
 }

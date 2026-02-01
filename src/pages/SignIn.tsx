@@ -54,7 +54,7 @@ const SignIn = () => {
 
   return (
     <Page className={"min-h-screen flex items-center justify-center py-6"}>
-      <div className={"w-full max-w-lg "}>
+      <div className={"w-full max-w-lg"}>
         <AnimatedButton
           borderColor={"#111111"}
           borderColorHover={"#111111"}
@@ -73,12 +73,17 @@ const SignIn = () => {
           }
         >
           <div className={"flex justify-center flex-col items-center gap-6"}>
-            <div
-              className={
-                "size-12 bg-teal-100 rounded-lg flex items-center justify-center"
-              }
-            >
-              <span className={"font-bold text-xl text-black-400"}>S</span>
+            <div className="flex items-center justify-center gap-3">
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--color-teal-100), var(--color-cyan-100))",
+                }}
+              >
+                <span className="text-xl font-bold text-black-400">S</span>
+              </div>
+              <span className="text-2xl font-bold text-white-100">Syncly</span>
             </div>
             <div className={" items-center flex flex-col"}>
               <h2 className={"text-2xl font-bold text-white-100"}>

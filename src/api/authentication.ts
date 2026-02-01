@@ -22,6 +22,14 @@ export async function handleSignIn(data: SignInRequest) {
   return response.data;
 }
 
+export async function handle2FA(data: TwoFactorVerificationRequest) {
+  const response = await axiosConfig.post<AuthenticationResponse>(
+    "/authentication/verify-2fa",
+    data,
+  );
+  return response.data;
+}
+
 export async function handleChangePassword(
   userId: string | number,
   data: ChangePasswordRequest,

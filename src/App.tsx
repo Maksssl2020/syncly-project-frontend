@@ -30,6 +30,7 @@ import ProtectedSignedInRoute from "./routes/ProtectedSignedInRoute.tsx";
 import useAuthentication from "./hooks/useAuthentication.ts";
 import { useEffect } from "react";
 import { connectStomp } from "./config/stompClient.ts";
+import TwoFactorVerificationCode from "./pages/TwoFactorVerificationCode.tsx";
 
 function App() {
   const { accessToken, username } = useAuthentication();
@@ -98,6 +99,7 @@ function App() {
           </Route>
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/verify-2fa" element={<TwoFactorVerificationCode />} />
         </Routes>
       </BrowserRouter>
     </AnimatePresence>
