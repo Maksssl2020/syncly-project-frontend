@@ -1,5 +1,6 @@
-import { useEffect } from "react";
-import usePostsForDashboardByFollowedInfiniteQuery from "../../hooks/queries/usePostsForDashboardByFollowedInfiniteQuery.ts";
+import { useEffect, useMemo } from "react";
+import usePostsForDashboardByFollowedInfiniteQuery
+  from "../../hooks/queries/usePostsForDashboardByFollowedInfiniteQuery.ts";
 import { useInView } from "react-intersection-observer";
 import DashboardPostCard from "../card/DashboardPostCard.tsx";
 import Spinner from "../spinner/Spinner.tsx";
@@ -15,6 +16,12 @@ const DashboardFollowedPostsSection = () => {
       fetchNextPage();
     }
   }, [inView, hasNextPage, fetchNextPage]);
+
+  const totalItems = useMemo(() => {
+    return data?.pages?.reduce((total, page) => total + page.length, 0) || 0;
+  }, [data]);
+
+  console.log("totalItems: " + totalItems);
 
   return (
     <>

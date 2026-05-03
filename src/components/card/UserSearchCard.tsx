@@ -1,24 +1,11 @@
 import Avatar from "../img/Avatar.tsx";
-import AnimatedButton from "../button/AnimatedButton.tsx";
-import {
-  Check,
-  Clock,
-  FileText,
-  Send,
-  UserPlus,
-  Users,
-  XIcon,
-} from "lucide-react";
+import { FileText, Users } from "lucide-react";
 import type { UserItem } from "../../types/user.ts";
-import useFollowUserMutation from "../../hooks/mutations/useFollowUserMutation.ts";
-import useUnfollowUserMutation from "../../hooks/mutations/useUnfollowUserMutation.ts";
-import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
-import useSendFriendRequestMutation from "../../hooks/mutations/useSendFriendRequestMutation.ts";
-import useDeleteFriendMutation from "../../hooks/mutations/useDeleteFriendMutation.ts";
+import { motion } from "framer-motion";
 import useFriendRequestStatusQuery from "../../hooks/queries/useFriendRequestStatusQuery.ts";
 import ComponentSpinner from "../spinner/ComponentSpinner.tsx";
-import useDeleteFriendRequestMutation from "../../hooks/mutations/useDeleteFriendRequestMutation.ts";
+import FriendButton from "../button/FriendButton.tsx";
+import FollowButton from "../button/FollowButton.tsx";
 
 type UserSearchCardProps = {
   user: UserItem;
@@ -31,125 +18,14 @@ const UserSearchCard = ({
   isFollowed = false,
   onClick,
 }: UserSearchCardProps) => {
-  const [isFriendButtonHovered, setIsFriendButtonHovered] = useState(false);
-  const { followUser, followingUser } = useFollowUserMutation();
-  const { unfollowUser, unfollowingUser } = useUnfollowUserMutation();
-  const { sendFriendRequest, sendingFriendRequest } =
-    useSendFriendRequestMutation();
-  const { deleteFriend, deletingFriend } = useDeleteFriendMutation();
-  const { deleteFriendRequest, deletingFriendRequest } =
-    useDeleteFriendRequestMutation();
   const { friendRequestStatus, fetchingFriendRequestStatus } =
     useFriendRequestStatusQuery(user.userId);
-  console.log(user);
-
-  const onFollowUserClick = () => {
-    if (isFollowed) {
-      unfollowUser(user.userId);
-    } else {
-      followUser(user.userId);
-    }
-  };
 
   if (fetchingFriendRequestStatus) {
     return <ComponentSpinner />;
   }
 
   const isFriend = friendRequestStatus === "ACCEPTED";
-
-  const onSendFriendRequest = () => {
-    if (friendRequestStatus === "ACCEPTED") {
-      deleteFriend(user.userId);
-    } else if (friendRequestStatus === "PENDING") {
-      deleteFriendRequest(user.userId);
-    } else {
-      sendFriendRequest(user.userId);
-    }
-  };
-
-  const getFriendStatus = () => {
-    switch (friendRequestStatus) {
-      case "ACCEPTED":
-        return (
-          <>
-            <Check className={"size-5"} />
-            <p>Friends</p>
-          </>
-        );
-      case "PENDING":
-        return (
-          <>
-            <Clock className={"size-5"} />
-            <p>Waiting</p>
-          </>
-        );
-      case "NONE":
-        return (
-          <>
-            <Send className={"size-5"} />
-            <p>Send Friend Request</p>
-          </>
-        );
-      default:
-        return (
-          <>
-            <Send className={"size-5"} />
-            <p>Send Friend Request</p>
-          </>
-        );
-    }
-  };
-
-  const getBorderColor = () => {
-    switch (friendRequestStatus) {
-      case "PENDING":
-        return "#eab308";
-      default:
-        return "#14b8a6";
-    }
-  };
-
-  const getTextColor = () => {
-    switch (friendRequestStatus) {
-      case "ACCEPTED":
-      case "NONE":
-        return "#14b8a6";
-      case "PENDING":
-        return "#eab308";
-      default:
-        return "#111111";
-    }
-  };
-
-  const getTextColorHover = () => {
-    switch (friendRequestStatus) {
-      case "ACCEPTED":
-      case "PENDING":
-        return "#ef4444";
-      default:
-        return "#111111";
-    }
-  };
-
-  const getBgColorHover = () => {
-    switch (friendRequestStatus) {
-      case "ACCEPTED":
-      case "PENDING":
-        return "#222222";
-      default:
-        return "#14b8a6";
-    }
-  };
-
-  const getBorderColorHover = () => {
-    switch (friendRequestStatus) {
-      case "ACCEPTED":
-      case "PENDING":
-        return "#ef4444";
-      default:
-        return "#14b8a6";
-    }
-  };
 
   return (
     <motion.div
@@ -189,60 +65,12 @@ const UserSearchCard = ({
         </div>
 
         <div className={"flex gap-2 w-full"}>
-          <AnimatedButton
-            className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 border-2`}
-            bgColor={isFollowed ? "#14b8a6" : "#222222"}
-            bgColorHover={isFollowed ? "#0d9488" : "#14b8a6"}
-            textColor={isFollowed ? "#111111" : "#14b8a6"}
-            textColorHover={"#111111"}
-            borderColor={"#14b8a6"}
-            borderColorHover={isFollowed ? "#0d9488" : "#14b8a6"}
-            loading={followingUser || unfollowingUser}
-            onClick={(event) => {
-              event.stopPropagation();
-              onFollowUserClick();
-            }}
-          >
-            {isFollowed ? (
-              <Check className={"size-5"} />
-            ) : (
-              <UserPlus className={"size-5"} />
-            )}
-            {isFollowed ? "Followed" : "Follow"}
-          </AnimatedButton>
-          <AnimatedButton
-            className={`w-full px-4  py-2 rounded-lg flex items-center gap-2 border-2`}
-            bgColor={isFriend ? "#14b8a6" : "#222222"}
-            bgColorHover={getBgColorHover()}
-            textColor={getTextColor()}
-            textColorHover={getTextColorHover()}
-            borderColor={getBorderColor()}
-            borderColorHover={getBorderColorHover()}
-            loading={
-              sendingFriendRequest || deletingFriend || deletingFriendRequest
-            }
-            onClick={(event) => {
-              event.stopPropagation();
-              onSendFriendRequest();
-            }}
-            onMouseEnter={() => setIsFriendButtonHovered(true)}
-            onMouseLeave={() => setIsFriendButtonHovered(false)}
-          >
-            {friendRequestStatus === "ACCEPTED" ? (
-              <AnimatePresence mode={"wait"}>
-                {isFriendButtonHovered ? (
-                  <XIcon className={"size-5"} />
-                ) : (
-                  getFriendStatus()
-                )}
-              </AnimatePresence>
-            ) : (
-              getFriendStatus()
-            )}
-            {friendRequestStatus === "ACCEPTED" && isFriendButtonHovered && (
-              <p>Delete Friend</p>
-            )}
-          </AnimatedButton>
+          <FollowButton isFollowed={isFollowed} userId={user.userId} />
+          <FriendButton
+            isFriend={isFriend}
+            friendRequestStatus={friendRequestStatus}
+            receiverId={user.userId}
+          />
         </div>
       </footer>
     </motion.div>

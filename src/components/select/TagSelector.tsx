@@ -21,6 +21,7 @@ const TagSelector = ({ onSelectTag, initialTags }: TagSelectorProps) => {
     selectedTags,
     selectTag,
     filteredTags,
+    onCreateCommonTag,
     setSearchQuery,
     searchQuery,
     fetchingAllTagsData,
@@ -87,6 +88,17 @@ const TagSelector = ({ onSelectTag, initialTags }: TagSelectorProps) => {
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
+            onKeyDown={async (event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+
+                const value = searchQuery.trim();
+                if (!value) return;
+
+                const updatedTags = await onCreateCommonTag(value);
+                onSelectTag(updatedTags.map((tag) => tag.name));
+              }
+            }}
             className={
               "flex-1 bg-transparent outline-none text-sm text-white-100"
             }
@@ -102,13 +114,14 @@ const TagSelector = ({ onSelectTag, initialTags }: TagSelectorProps) => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
             className={
-              "absolute top-full left-0 right-0 mt-2 bg-black-200 border-gray-600 rounded-lg border-2 overflow-hidden z-50"
+              "absolute top-full left-0 right-0 mt-2 bg-black-200 border-gray-600 rounded-lg border-2 overflow-hidden z-50 "
             }
           >
             {searchQuery.trim() &&
               filteredTags.length <= 0 &&
               !selectedTags.some((t) => t.name === searchQuery) && (
                 <button
+                  type={"button"}
                   className={
                     "w-full flex items-center gap-3 px-4 py-3 border-b border-gray-600"
                   }
@@ -135,6 +148,7 @@ const TagSelector = ({ onSelectTag, initialTags }: TagSelectorProps) => {
               <div className={"max-h-48 overflow-y-auto"}>
                 {filteredTags.map((tag) => (
                   <motion.button
+                    type={"button"}
                     whileHover={{
                       backgroundColor: "#4d4d4c",
                     }}

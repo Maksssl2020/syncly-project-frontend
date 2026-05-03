@@ -326,10 +326,18 @@ const DashboardPostCard = ({
         postToEdit={post}
         onSubmit={(data) => {
           console.log(data);
-          updatePost({
-            type: post.postType,
-            updateRequest: data,
-          });
+          updatePost(
+            {
+              userId: authorId,
+              type: post.postType,
+              updateRequest: data,
+            },
+            {
+              onSuccess: () => {
+                setEditModalOpen(false);
+              },
+            },
+          );
         }}
       />
     </div>

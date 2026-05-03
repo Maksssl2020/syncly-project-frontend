@@ -10,20 +10,30 @@ function useConversationInfiniteQuery(
 
   return useInfiniteQuery({
     queryKey: ["conversation", userId, recipientId],
-    // @ts-ignore
     queryFn: ({ pageParam = 0 }) => {
-      if (!recipientId) return Promise.resolve({ content: [], totalPages: 0 });
-      return fetchConversation(recipientId, pageParam, size);
+      if (!recipientId) {
+        return Promise.resolve({
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
+          number: 0,
+        });
+      }
+
+      return fetchConversation(recipientId, pageParam as number, size);
     },
     getNextPageParam: (lastPage, allPages) => {
       if (allPages.length < lastPage.totalPages) {
         return allPages.length;
       }
+
       return undefined;
     },
     initialPageParam: 0,
-    enabled: !!recipientId,
-    staleTime: 1000 * 60 * 5,
+    enabled: !!userId && !!recipientId,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
 

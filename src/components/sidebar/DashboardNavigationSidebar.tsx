@@ -1,22 +1,12 @@
 import Logo from "../logo/Logo.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import {
-  Bookmark,
-  Home,
-  LogOut,
-  MessageCircle,
-  Search,
-  Settings,
-  Shield,
-  Tag,
-  User,
-  Users,
-} from "lucide-react";
+import { Bookmark, Home, LogOut, MessageCircle, Search, Settings, Shield, Tag, User, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { NavigationData } from "../../types/types.ts";
 import useAuthentication from "../../hooks/useAuthentication.ts";
 import { useAuthenticationStore } from "../../store/authenticationStore.ts";
 import { usePresenceStore } from "../../store/presenceStore.ts";
+import { disconnectStomp, sendPresenceUpdate } from "../../config/stompClient.ts";
 
 const navigationData: NavigationData[] = [
   {
@@ -95,7 +85,9 @@ const DashboardNavigationSidebar = () => {
 
         <div className={"mt-auto flex flex-col gap-4"}>
           <AnimatedButton
-            onClick={() => {
+            onClick={async () => {
+              await sendPresenceUpdate("offline");
+              await disconnectStomp();
               useAuthenticationStore.getState().logout();
               usePresenceStore.persist.clearStorage();
               navigate("/");

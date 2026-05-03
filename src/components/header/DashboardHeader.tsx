@@ -3,11 +3,15 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Logo from "../logo/Logo.tsx";
 import { ArrowLeft, Bookmark, FolderPlus, Hash, Home, Settings, Tag, Users } from "lucide-react";
 import Avatar from "../img/Avatar.tsx";
+import useAuthentication from "../../hooks/useAuthentication.ts";
 
 const DashboardHeader = () => {
   const navigate = useNavigate();
+  const { username, profileImage } = useAuthentication();
   const pathname = useLocation().pathname;
   const { tag } = useParams();
+
+  console.log("profileImage: " + profileImage);
 
   const getHeaderTitle = () => {
     if (pathname.includes("user-blog") || pathname.includes("search")) {
@@ -63,10 +67,10 @@ const DashboardHeader = () => {
     if (pathname.includes("conversation")) {
       return (
         <div className={"flex items-center gap-3"}>
-          <Avatar size={"size-10"} />
+          <Avatar size={"size-10"} avatar={profileImage} />
           <div className={"flex flex-col "}>
-            <p className={"text-lg text-white-100"}>dev_mike</p>
-            <p className={"text-sm text-gray-400"}>offline</p>
+            <p className={"text-lg text-white-100"}>{username}</p>
+            <p className={"text-sm text-gray-400"}>online</p>
           </div>
         </div>
       );

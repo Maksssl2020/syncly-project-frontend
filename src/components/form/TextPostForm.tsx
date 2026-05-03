@@ -88,7 +88,7 @@ const TextPostForm = forwardRef<HTMLFormElement, TextPostFormProps>(
           initialTags={props.postToEdit?.tags ?? []}
           onSelectTag={(value) => setValue("tags", value)}
         />
-        <button type="submit" className="hidden" />
+        <button type="button" className="hidden" />
       </form>
     );
   },

@@ -58,7 +58,7 @@ const Footer = () => {
             "border-t-2 pt-16 text-center border-gray-600 text-gray-400"
           }
         >
-          <p>&copy; 2024 Syncly. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Syncly. All rights reserved.</p>
         </div>
       </div>
     </footer>

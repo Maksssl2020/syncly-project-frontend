@@ -32,6 +32,8 @@ const ConversationCard = ({
   const { userProfileAvatar, fetchingUserProfileAvatar } =
     useUserProfileAvatarByUserIdQuery(conversation.recipientId);
 
+  console.log(conversation.lastMessageTimestamp);
+
   if (fetchingUserProfileAvatar) {
     return (
       <div
@@ -84,9 +86,14 @@ const ConversationCard = ({
           <h3 className={"font-medium text-white-100 truncate"}>
             {conversation.recipientUsername}
           </h3>
-          <span className={"text-xs text-gray-400"}>
-            {format(new Date(conversation.lastMessageTimestamp), "dd.MM.yyyy")}
-          </span>
+          {conversation.lastMessageTimestamp && (
+            <span className={"text-xs text-gray-400"}>
+              {format(
+                new Date(conversation.lastMessageTimestamp),
+                "dd.MM.yyyy",
+              )}
+            </span>
+          )}
         </div>
         <div className={"flex justify-between items-center"}>
           <p className={`text-sm truncate text-gray-400`}>

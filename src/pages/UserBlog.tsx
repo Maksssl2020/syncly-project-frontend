@@ -6,6 +6,7 @@ import {
   Grid3X3,
   ImageIcon,
   LinkIcon,
+  MailIcon,
   MapPin,
   Quote,
   TextIcon,
@@ -27,6 +28,11 @@ import type { PostUnion } from "../types/post.ts";
 import type { UserItem } from "../types/user.ts";
 import SharedPostCard from "../components/card/SharedPostCard.tsx";
 import useUserSettingsByUserIdQuery from "../hooks/queries/useUserSettingsByUserIdQuery.ts";
+import useIsUserFollowedByUserProfileIdQuery from "../hooks/queries/useIsUserFollowedByUserProfileIdQuery.ts";
+import ComponentSpinner from "../components/spinner/ComponentSpinner.tsx";
+import useFriendRequestStatusQuery from "../hooks/queries/useFriendRequestStatusQuery.ts";
+import FollowButton from "../components/button/FollowButton.tsx";
+import FriendButton from "../components/button/FriendButton.tsx";
 
 type FilterType =
   | "ALL"
@@ -63,6 +69,10 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
   const { userSettings, fetchingUserSettings } = useUserSettingsByUserIdQuery(
     isSignedInUserBlog ? userId : id,
   );
+  const { isUserFollowedData, fetchingIsUserFollowed } =
+    useIsUserFollowedByUserProfileIdQuery(id);
+  const { friendRequestStatus, fetchingFriendRequestStatus } =
+    useFriendRequestStatusQuery(id);
 
   const { sharedPostsByUserId, fetchingSharedPostsByUserId } =
     useSharedPostsByUserIdQuery(isSignedInUserBlog ? userId : id);
@@ -190,6 +200,7 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
     username,
     bio,
     location,
+    email,
     joinedAt,
     website,
     followersCount,
@@ -213,49 +224,80 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
       <div className={"max-w-6xl w-full flex flex-col gap-8"}>
-        <div className={"w-full h-full gap-8 flex rounded-lg bg-black-200 p-8"}>
-          <div className={"flex flex-col gap-4 items-center lg:items-start"}>
-            <Avatar size={"size-32"} avatar={avatar} />
-            <div className={"text-center lg:text-left"}>
-              <h1 className={"text-3xl font-bold text-white-100"}>
-                {displayName}
-              </h1>
-              <p className={"text-xl text-gray-300"}>@{username}</p>
-            </div>
-          </div>
-          <div className={"flex-1 space-y-4"}>
-            <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
-              {userStats.map((stat, index) => (
-                <div key={index} className={"text-center lg:text-left"}>
-                  <div className={"text-2xl font-bold text-white-100"}>
-                    {stat.value}
-                  </div>
-                  <div className={"text-gray-400"}>{stat.label}</div>
-                </div>
-              ))}
-            </div>
-            <div className={"flex flex-wrap gap-4 text-gray-300"}>
-              {userSettings?.showLocation && location && (
-                <div className={"flex items-center gap-2"}>
-                  <MapPin className={"size-4"} />
-                  <span>{location}</span>
-                </div>
-              )}
-              <div className={"flex items-center gap-2"}>
-                <Calendar className={"size-4"} />
-                <span>Joined in {format(joinedAt, "yyyy")}</span>
+        <div className={"w-full flex-col rounded-lg bg-black-200 p-8"}>
+          <div className={"w-full h-full gap-8 flex "}>
+            <div className={"flex flex-col gap-4 items-center lg:items-start"}>
+              <Avatar size={"size-32"} avatar={avatar} />
+              <div className={"text-center lg:text-left"}>
+                <h1 className={"text-3xl font-bold text-white-100"}>
+                  {displayName}
+                </h1>
+                <p className={"text-xl text-gray-300"}>@{username}</p>
               </div>
-              {website && (
+            </div>
+            <div className={"flex-1 space-y-4"}>
+              <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
+                {userStats.map((stat, index) => (
+                  <div key={index} className={"text-center lg:text-left"}>
+                    <div className={"text-2xl font-bold text-white-100"}>
+                      {stat.value}
+                    </div>
+                    <div className={"text-gray-400"}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div className={"flex flex-wrap gap-4 text-gray-300"}>
+                {userSettings?.showLocation && location && (
+                  <div className={"flex items-center gap-2"}>
+                    <MapPin className={"size-4"} />
+                    <span>{location}</span>
+                  </div>
+                )}
+                {userSettings?.showEmail && (
+                  <div className={"flex items-center gap-2"}>
+                    <MailIcon className={"size-4"} />
+                    <span>{email}</span>
+                  </div>
+                )}
+
                 <div className={"flex items-center gap-2"}>
-                  <LinkIcon className={"size-4"} />
-                  <a href={"#"} className={"hover:underline text-teal-100"}>
-                    {website}
-                  </a>
+                  <Calendar className={"size-4"} />
+                  <span>Joined in {format(joinedAt, "yyyy")}</span>
                 </div>
+                {website && (
+                  <div className={"flex items-center gap-2"}>
+                    <LinkIcon className={"size-4"} />
+                    <a href={"#"} className={"hover:underline text-teal-100"}>
+                      {website}
+                    </a>
+                  </div>
+                )}
+              </div>
+              <p className={"text-lg leading-relaxed text-white-100"}>{bio}</p>
+            </div>
+          </div>
+          {!isSignedInUserBlog && (
+            <div className={"flex gap-3 w-auto items-center mt-5"}>
+              {fetchingIsUserFollowed ? (
+                <ComponentSpinner size={12} />
+              ) : (
+                <FollowButton
+                  isFollowed={isUserFollowedData ?? false}
+                  userId={id}
+                />
+              )}
+
+              {fetchingFriendRequestStatus ? (
+                <ComponentSpinner size={12} />
+              ) : (
+                <FriendButton
+                  isFriend={friendRequestStatus === "ACCEPTED"}
+                  friendRequestStatus={friendRequestStatus}
+                  receiverId={id}
+                />
               )}
             </div>
-            <p className={"text-lg leading-relaxed text-white-100"}>{bio}</p>
-          </div>
+          )}
         </div>
 
         <div

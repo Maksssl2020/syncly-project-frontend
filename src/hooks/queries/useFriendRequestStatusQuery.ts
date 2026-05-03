@@ -13,7 +13,7 @@ function useFriendRequestStatusQuery(receiverId?: string | number) {
           return fetchFriendRequestStatus(receiverId);
         }
       },
-      enabled: !!receiverId && !!userId,
+      enabled: !!receiverId && !!userId && userId != receiverId,
     });
 
   return { friendRequestStatus, fetchingFriendRequestStatus };

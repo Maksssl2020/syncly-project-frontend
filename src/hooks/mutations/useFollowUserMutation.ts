@@ -13,12 +13,15 @@ function useFollowUserMutation() {
     mutationKey: ["followUser"],
     mutationFn: async (followedUserId: string | number) =>
       handleFollowUser(followedUserId),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["followedUsers", userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["followedUsersIds", userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["isUserFollowedData", userId, variables],
       });
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {

@@ -26,6 +26,12 @@ function useSendFriendRequestMutation() {
         queryClient.invalidateQueries({
           queryKey: ["friendRequestStatus", userId, variables],
         });
+        queryClient.invalidateQueries({
+          queryKey: ["userSuggestedFriendsData", userId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["userSentFriendRequestsData", userId],
+        });
       },
       onError: (error: AxiosError<ApiErrorResponse>) => {
         const errorMessage = error.response?.data?.message;

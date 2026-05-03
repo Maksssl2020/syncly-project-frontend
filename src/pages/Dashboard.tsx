@@ -45,8 +45,12 @@ const Dashboard = () => {
       | LinkPostRequest,
   ) => {
     if (selectedPostType) {
-      createPost({ data, type: selectedPostType });
-      setIsCreatePostModalOpen(false);
+      createPost(
+        { data, type: selectedPostType },
+        {
+          onSuccess: () => setIsCreatePostModalOpen(false),
+        },
+      );
     }
   };
 

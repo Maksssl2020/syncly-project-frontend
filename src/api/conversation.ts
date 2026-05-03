@@ -19,7 +19,7 @@ export async function fetchConversation(
     content: ConversationMessage[];
     totalElements: number;
     totalPages: number;
-    number: number; // current page
+    number: number;
   }>(`conversation/messages/by-user-ids/${recipientId}`, {
     params: { page, size },
   });

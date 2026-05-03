@@ -1,8 +1,19 @@
-import type { MainTag, MainTagRequest, TagUsage } from "../types/tags.ts";
+import type {
+  CommonTagRequest,
+  MainTag,
+  MainTagRequest,
+  Tag,
+  TagUsage,
+} from "../types/tags.ts";
 import axiosConfig from "../config/axiosConfig.ts";
 
 export async function handleCreateMainTag(data: MainTagRequest) {
   const response = await axiosConfig.post<void>("/tags/create/main", data);
+  return response.data;
+}
+
+export async function handleCreateCommonTag(data: CommonTagRequest) {
+  const response = await axiosConfig.post<Tag>('/tags/create/common', data)
   return response.data;
 }
 

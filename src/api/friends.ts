@@ -1,6 +1,6 @@
 import axiosConfig from "../config/axiosConfig.ts";
 import type { UserItem } from "../types/user.ts";
-import type { FriendRequest, FriendUser } from "../types/friends.ts";
+import type { FriendRequest, FriendStatus, FriendUser } from "../types/friends.ts";
 
 export async function fetchUserFriends() {
   const response = await axiosConfig.get<FriendUser[]>("/friends");
@@ -28,9 +28,18 @@ export async function fetchUserSuggestedFriends() {
 }
 
 export async function fetchFriendRequestStatus(receiverId: string | number) {
-  const response = await axiosConfig.get<string>(
+  const response = await axiosConfig.get<FriendStatus>(
     `/friends/request/status/${receiverId}`,
   );
+  return response.data;
+}
+
+export async function checkIsUserFriend(userId: string | number) {
+  const response = await axiosConfig.get<boolean>("/friends/user/is-friend", {
+    params: {
+      userId,
+    },
+  });
   return response.data;
 }
 

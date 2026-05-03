@@ -1,8 +1,6 @@
-import type {
-  ConversationResponse,
-  SelectedConversation,
-} from "../../types/conversation.ts";
+import type { ConversationResponse, SelectedConversation } from "../../types/conversation.ts";
 import ConversationCard from "../card/ConversationCard.tsx";
+import { getConversationId } from "../../utils/conversationUtils.ts";
 
 interface ConversationListProps {
   conversations: ConversationResponse[];
@@ -24,7 +22,16 @@ const ConversationList = ({
   return (
     <div className={"flex flex-col gap-2"}>
       {sortedConversations.map((conversation) => {
-        const isActive = selectedConversationId === conversation.id;
+        const isActive =
+          selectedConversationId ===
+          (getConversationId(
+            conversation.senderUsername,
+            conversation.recipientUsername,
+          ) ||
+            getConversationId(
+              conversation.recipientUsername,
+              conversation.senderUsername,
+            ));
 
         return (
           <ConversationCard

@@ -144,7 +144,6 @@ export async function handleUpdatePost<K extends PostType>(
   type: K,
   data: UpdateRequestByType[K],
 ) {
-  console.log(type);
   const formData = new FormData();
   let updatedDataDto: any = { type };
 

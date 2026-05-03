@@ -13,4 +13,9 @@ export interface FriendUser {
   mutualFriendsCount: number;
 }
 
-export type FriendStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "BLOCKED";
+export type FriendStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "BLOCKED"
+  | "NONE";

@@ -184,13 +184,13 @@ const CreatePostModal = ({
           <X className={"size-5"} />
         </button>
       </header>
-      <div className={"p-6 max-h-[70vh] overflow-y-auto"}>
+      <div className={"px-6 max-h-[75vh] overflow-y-auto py-6"}>
         {section(postType)}
       </div>
 
       <footer
         className={
-          "flex items-center justify-end p-6 border-t-2 border-gray-600"
+          "flex items-center justify-end p-6 border-t-2 border-gray-600 mt-2"
         }
       >
         <div className={"flex gap-3"}>
@@ -212,6 +212,7 @@ const CreatePostModal = ({
             textColor={config.color}
             textColorHover={"#111111"}
             onClick={handlePostClick}
+            type={"submit"}
             className={"px-6 py-3 rounded-lg flex gap-2 items-center border-2"}
           >
             <Send className={"size-4"} />

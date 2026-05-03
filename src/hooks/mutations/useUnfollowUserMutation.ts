@@ -13,12 +13,15 @@ function useUnfollowUserMutation() {
     mutationKey: ["unfollowTag"],
     mutationFn: async (followedUserId: string | number) =>
       handleUnfollowUser(followedUserId),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["followedUsers", userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["followedUsersIds", userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["isUserFollowedData", userId, variables],
       });
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {

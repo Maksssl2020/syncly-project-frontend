@@ -1,14 +1,13 @@
-import { Client, type IMessage } from "@stomp/stompjs";
+import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import type {
-  ConversationMessage,
-  ConversationRequest,
-} from "../types/conversation.ts";
+import type { ConversationMessage, ConversationRequest } from "../types/conversation.ts";
 
 let stompClient: Client | null = null;
 let connectedPromise: Promise<Client> | null = null;
 let resolveConnected: ((client: Client) => void) | null = null;
 let connectedUserUsername: string | null = null;
+let messageSubscription: StompSubscription | null = null;
+let errorSubscription: StompSubscription | null = null;
 
 // const presenceCallbacks: Set<(presence: PresenceMessage) => void> = new Set();
 const messageCallbacks: Set<(message: any) => void> = new Set();
@@ -66,32 +65,32 @@ export const connectStomp = (
 const initializeSubscriptions = () => {
   if (!stompClient?.connected) return;
 
-  stompClient.subscribe(
+  if (messageSubscription) {
+    return;
+  }
+
+  messageSubscription = stompClient.subscribe(
     `/user/${connectedUserUsername}/queue/messages`,
     (message: IMessage) => {
-      try {
-        const parsed: ConversationMessage = JSON.parse(message.body);
-        console.log("📩 Otrzymano wiadomość:", parsed);
+      const parsed: ConversationMessage = JSON.parse(message.body);
+      console.log("📩 Otrzymano wiadomość:", parsed);
 
-        // Powiadom wszystkich subskrybentów
-        messageCallbacks.forEach((cb) => cb(parsed));
-
-        // Dodatkowo powiadom o wiadomościach wysłanych przez siebie
-        if (parsed.senderUsername === connectedUserUsername) {
-          messageCallbacks.forEach((cb) => cb(parsed));
-        }
-      } catch (e) {
-        console.error("Błąd parsowania wiadomości:", e);
-      }
+      messageCallbacks.forEach((cb) => cb(parsed));
     },
   );
 
-  stompClient.subscribe("/user/queue/errors", (message: IMessage) => {
+  errorSubscription = stompClient.subscribe("/user/queue/errors", (message) => {
     console.error("🚨 Błąd z serwera:", message.body);
   });
 };
 
 const cleanup = () => {
+  messageSubscription?.unsubscribe();
+  errorSubscription?.unsubscribe();
+
+  messageSubscription = null;
+  errorSubscription = null;
+
   stompClient = null;
   connectedPromise = null;
   resolveConnected = null;
@@ -107,13 +106,13 @@ export const getStompClient = async (): Promise<Client> => {
   throw new Error("STOMP client not initialized - call connectStomp() first");
 };
 
-export const disconnectStomp = (): void => {
-  if (stompClient?.connected) {
-    stompClient.deactivate().then(() => {
-      console.log("STOMP client deactivated");
-      cleanup();
-    });
+export const disconnectStomp = async (): Promise<void> => {
+  if (stompClient) {
+    stompClient.reconnectDelay = 0;
+    await stompClient.deactivate();
   }
+
+  cleanup();
 };
 
 export const sendMessage = async (
@@ -131,8 +130,6 @@ export const sendMessage = async (
       content: data.message,
       timestamp: new Date().toISOString(),
     };
-
-    messageCallbacks.forEach((cb) => cb(message));
 
     await client.publish({
       destination: "/app/conversation",

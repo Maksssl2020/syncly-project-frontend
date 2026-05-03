@@ -27,6 +27,10 @@ export interface MainTagRequest {
   trending: boolean;
 }
 
+export interface CommonTagRequest {
+  name: string;
+}
+
 export interface Tag {
   id: string | number;
   name: string;

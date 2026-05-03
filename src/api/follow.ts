@@ -21,6 +21,15 @@ export async function fetchFollowedUsersIds(userId: string | number) {
   return response.data;
 }
 
+export async function checkIsUserFollowedByUserProfileId(
+  userProfileId: string | number,
+) {
+  const response = await axiosConfig.get<boolean>(
+    `/follows/user/is-followed/${userProfileId}`,
+  );
+  return response.data;
+}
+
 export async function handleFollowTag(
   userId: string | number,
   tagId: string | number,
