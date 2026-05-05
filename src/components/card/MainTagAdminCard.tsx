@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import type { MainTag } from "../../types/tags.ts";
+import type { AdminTag } from "../../types/tags.ts";
 import {
   Edit,
   Hash,
@@ -13,11 +13,17 @@ import Badge from "../badge/Badge.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
 
 type MainTagAdminCardProps = {
-  tag: MainTag;
+  tag: AdminTag;
   index: number;
+  onChangeCategory: (data: AdminTag) => void;
+  isChanging?: boolean;
 };
 
-const MainTagAdminCard = ({ tag }: MainTagAdminCardProps) => {
+const MainTagAdminCard = ({
+  tag,
+  onChangeCategory,
+  isChanging,
+}: MainTagAdminCardProps) => {
   return (
     <motion.div
       key={tag.id}
@@ -73,6 +79,19 @@ const MainTagAdminCard = ({ tag }: MainTagAdminCardProps) => {
           </div>
         </div>
         <div className={"flex items-center gap-2"}>
+          <AnimatedButton
+            bgColor={"#222222"}
+            borderColor={"#b0b0b0"}
+            bgColorHover={"#393939"}
+            borderColorHover={"#393939"}
+            textColor={"#b0b0b0"}
+            textColorHover={"#b0b0b0"}
+            className={"p-2 rounded-lg border-2 mr-4"}
+            onClick={() => onChangeCategory(tag)}
+            loading={isChanging}
+          >
+            Change Category
+          </AnimatedButton>
           <AnimatedButton
             textColor={tag.trending ? "#22c55e" : "#b0b0b0"}
             bgColor={"#222222"}

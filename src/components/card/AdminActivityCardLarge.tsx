@@ -1,27 +1,13 @@
 import { motion } from "framer-motion";
 import type { ActivityStats } from "../../types/admin.ts";
-import { Activity, Clock, Flag, MessageSquare, Tag, User } from "lucide-react";
+import { Clock } from "lucide-react";
 import { getActivityColor } from "../../utils/colorUtils.ts";
 import { formatTimeAgo } from "../../utils/dateUtils.ts";
+import { getActivityIcon } from "../../utils/activityUtils.tsx";
 
 type AdminActivityCardLargeProps = {
   activity: ActivityStats;
   index: number;
-};
-
-const getActivityIcon = (type: string) => {
-  switch (type) {
-    case "user":
-      return <User className="size-5" />;
-    case "report":
-      return <Flag className="size-5" />;
-    case "tag":
-      return <Tag className="size-5" />;
-    case "comment":
-      return <MessageSquare className="size-5" />;
-    default:
-      return <Activity className="size-5" />;
-  }
 };
 
 const AdminActivityCardLarge = ({
@@ -40,22 +26,22 @@ const AdminActivityCardLarge = ({
         <div
           className={"p-2 rounded-full flex-shrink-0 text-black-100"}
           style={{
-            backgroundColor: getActivityColor(activity.action),
+            backgroundColor: getActivityColor(activity.actionType),
           }}
         >
-          {getActivityIcon(activity.type)}
+          {getActivityIcon(activity.targetType)}
         </div>
 
         <div className={"flex-1 min-w-0"}>
           <div className={"flex items-start justify-between"}>
             <div className={"flex-1 flex flex-col gap-2"}>
               <p className={"text-white-100 gap-2 flex"}>
-                <span className={"font-medium"}>{activity.user}</span>
-                <span className={"text-gray-400"}>{activity.action}</span>
+                <span className={"font-medium"}>{activity.userUsername}</span>
+                <span className={"text-gray-400"}>{activity.actionType}</span>
                 <span className={"font-medium"}>{activity.target}</span>
               </p>
               <div className={"flex items-center gap-4 "}>
-                <div className={"flex items-center gap-1 text-gray-200"}>
+                <div className={"flex items-center gap-2 text-gray-200"}>
                   <Clock className={"size-5 "} />
                   <span className={"text-sm"}>
                     {formatTimeAgo(activity.timestamp)}

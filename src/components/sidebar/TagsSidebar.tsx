@@ -1,12 +1,12 @@
 import Searchbar from "../input/Searchbar.tsx";
 import SidebarElementBanner from "../banner/SidebarElementBanner.tsx";
 import { Star, TrendingUp } from "lucide-react";
-import type { MainTag, TagsStatistics } from "../../types/tags.ts";
+import type { AdminTag, TagsStatistics } from "../../types/tags.ts";
 import TagsStatisticsCard from "../card/TagsStatisticsCard.tsx";
 import { isThisWeek } from "date-fns";
 
 type TagsSidebarProps = {
-  tagsData: MainTag[];
+  tagsData: AdminTag[];
   followedTags: Set<string>;
   searchQuery: string;
   onChange: (value: string) => void;

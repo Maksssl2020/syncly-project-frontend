@@ -14,6 +14,7 @@ import type {
 } from "../../types/post.ts";
 import toast from "react-hot-toast";
 import type { InferType } from "yup";
+import { XIcon } from "lucide-react";
 
 type LinkPostFormProps =
   | {
@@ -35,6 +36,8 @@ const LinkPostForm = forwardRef<HTMLFormElement, LinkPostFormProps>(
     const [urlsPreview, setUrlsPreview] = useState<LinkPreviewResponse[]>([]);
     const { getLinkPreview } = useFetchLinkPreviewMutation();
 
+    console.log(props.postToEdit);
+
     const {
       register,
       handleSubmit,
@@ -51,8 +54,22 @@ const LinkPostForm = forwardRef<HTMLFormElement, LinkPostFormProps>(
         setValue("description", props.postToEdit.description);
         setValue("tags", mappedTags);
         setAddedUrls(props.postToEdit.urls);
+
+        const fetchPreviews = async () => {
+          const previews = await Promise.all(
+            props.postToEdit.urls.map((url) => getLinkPreview(url)),
+          );
+
+          setUrlsPreview(
+            previews.filter(
+              (preview): preview is LinkPreviewResponse => !!preview,
+            ),
+          );
+        };
+
+        fetchPreviews();
       }
-    }, [props.isEdit, props.postToEdit, setValue]);
+    }, [getLinkPreview, props.isEdit, props.postToEdit, setValue]);
 
     const onCreateLinkPostSubmit = (data: LinkPostFormType) => {
       const linkPostRequest = {
@@ -115,9 +132,21 @@ const LinkPostForm = forwardRef<HTMLFormElement, LinkPostFormProps>(
                 <div
                   key={index}
                   className={
-                    "border-2 border-gray-500 bg-black-300 rounded-lg p-4 flex flex-col gap-4 items-center "
+                    "border-2 border-gray-500 bg-black-300 rounded-lg p-4 flex flex-col gap-4 items-center relative"
                   }
                 >
+                  <button
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setAddedUrls(addedUrls.filter((_, i) => i !== index));
+                      setUrlsPreview(urlsPreview.filter((_, i) => i !== index));
+                    }}
+                    className="absolute top-2 right-2 text-red-100 bg-black p-2  rounded border border-red-100 cursor-pointer"
+                    type={"button"}
+                  >
+                    <XIcon className={"size-3"} />
+                  </button>
+
                   {url.image && (
                     <img
                       src={url.image}

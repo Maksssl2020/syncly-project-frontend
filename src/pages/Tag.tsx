@@ -17,11 +17,11 @@ import useRelatedTagsByCategoryQuery from "../hooks/queries/useRelatedTagsByCate
 
 const options: DropdownOption[] = [
   {
-    value: "recent",
+    value: "RECENT",
     label: "Recent",
   },
   {
-    value: "oldest",
+    value: "OLDEST",
     label: "Oldest",
   },
 ];
@@ -31,12 +31,14 @@ const trendingColor = getRandomTagColor();
 export const Tag = () => {
   const { tag } = useParams();
   const { ref, inView } = useInView();
-  const [selectedOption, setSelectedOption] = useState<string>("recent");
+  const [selectedSortOption, setSelectedSortOption] = useState<
+    "RECENT" | "OLDEST"
+  >("RECENT");
 
   const { tagDataByTagName, fetchingTagDataByTagName } =
     useTagByTagNameQuery(tag);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    usePostsByTagInfiniteQuery(tag);
+    usePostsByTagInfiniteQuery(tag, selectedSortOption);
   const { relatedTagsByCategory, fetchingRelatedTagsByCategory } =
     useRelatedTagsByCategoryQuery(tagDataByTagName?.tagCategory);
 
@@ -116,7 +118,9 @@ export const Tag = () => {
                 <div className={"text-gray-400"}>Trending</div>
               </div>
               <div className={"text-center"}>
-                <div className={"text-2xl font-bold text-teal-100"}>223</div>
+                <div className={"text-2xl font-bold text-teal-100"}>
+                  {tagDataByTagName?.postsThisWeek}
+                </div>
                 <div className={"text-gray-400"}>New Posts This Week</div>
               </div>
             </div>
@@ -138,8 +142,10 @@ export const Tag = () => {
               <div className={"w-[150px]"}>
                 <DropdownMenu
                   options={options}
-                  onChange={(value) => setSelectedOption(value)}
-                  value={selectedOption}
+                  onChange={(value) =>
+                    setSelectedSortOption(value as "RECENT" | "OLDEST")
+                  }
+                  value={selectedSortOption}
                 />
               </div>
             </div>

@@ -8,6 +8,8 @@ type PageStatsCardProps = {
 };
 
 const PageStatsCard = ({ data, index }: PageStatsCardProps) => {
+  const change = data.change != "" ? Number(data.change) : 0;
+
   return (
     <motion.div
       key={data.title}
@@ -25,18 +27,25 @@ const PageStatsCard = ({ data, index }: PageStatsCardProps) => {
         >
           {data.icon}
         </div>
-        {data.change !== "" && (
-          <div
-            className={`flex items-center ${Number(data.change) >= 0 ? "text-green-500" : "text-red-500"}`}
-          >
-            {Number(data.change) >= 0 ? (
-              <TrendingUp className={"size-5 mr-1"} />
+        <div
+          className={`flex items-center ${
+            change >= 0 ? "text-green-500" : "text-red-500"
+          }`}
+        >
+          {change !== 0 &&
+            (change >= 0 ? (
+              <TrendingUp className="size-5 mr-1" />
             ) : (
-              <TrendingDown className={"size-5 mr-1"} />
-            )}
-            <span>+{Math.abs(Number(data.change))}</span>
-          </div>
-        )}
+              <TrendingDown className="size-5 mr-1" />
+            ))}
+
+          {change !== 0 && (
+            <span>
+              {change > 0 ? "+" : "-"}
+              {Math.abs(change)}
+            </span>
+          )}
+        </div>
       </div>
       <h3 className="text-2xl font-bold mb-1 text-white-100">
         {data.value.toLocaleString()}

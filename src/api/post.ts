@@ -6,7 +6,7 @@ import type {
   QuotePostRequest,
   TextPostRequest,
   UpdateRequestByType,
-  VideoPostRequest,
+  VideoPostRequest
 } from "../types/post.ts";
 import axiosConfig from "../config/axiosConfig.ts";
 import { mapToPostType } from "../utils/postMapperUtils.ts";
@@ -81,12 +81,14 @@ export async function fetchPostsByTagInfinity(
   tag: string,
   offset: number = 0,
   limit: number = 10,
+  sortOption: "RECENT" | "OLDEST",
 ) {
   const response = await axiosConfig.get<Post[]>(`posts/by-tag`, {
     params: {
       tag,
       offset,
       limit,
+      sortOption,
     },
   });
 

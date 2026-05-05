@@ -2,7 +2,7 @@ import Page from "../animation/Page.tsx";
 import Searchbar from "../components/input/Searchbar.tsx";
 import type { DropdownOption } from "../types/types.ts";
 import type { UserItem, UserRole, UserStatus } from "../types/user.ts";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import UsersTable from "../components/table/UsersTable.tsx";
 import AdminManagementPanelHeader from "../components/header/AdminManagementPanelHeader.tsx";
@@ -10,6 +10,8 @@ import useAllUsersQuery from "../hooks/queries/useAllUsersQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
 import { Shield, User } from "lucide-react";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
+import useSearch from "../hooks/useSearch.ts";
+import Pagination from "../components/pagination/Pagination.tsx";
 
 const roleFilterOptions: DropdownOption[] = [
   {
@@ -26,7 +28,7 @@ const roleFilterOptions: DropdownOption[] = [
   },
   {
     label: "USER",
-    value: "USER",
+    value: "REGISTERED",
   },
 ];
 
@@ -36,71 +38,63 @@ const statusFilterOptions: DropdownOption[] = [
     value: "ALL",
   },
   {
-    label: "ACTIVE",
-    value: "ACTIVE",
+    label: "ONLINE",
+    value: "ONLINE",
   },
   {
     label: "BLOCKED",
     value: "BLOCKED",
   },
   {
-    label: "INACTIVE",
-    value: "INACTIVE",
+    label: "OFFLINE",
+    value: "OFFLINE",
   },
 ];
 
 type FilterConfig = {
-  role: UserRole | "ALL";
-  status: UserStatus | "ALL";
+  role: UserRole | undefined;
+  status: UserStatus | undefined;
   search: string;
 };
 
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserItem[]>([]);
-
-  const { allUsersData, fetchingAllUsersData } = useAllUsersQuery();
-  const [inputValue, setInputValue] = useState("");
-
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage] = useState(20);
   const [filterConfig, setFilterConfig] = useState<FilterConfig>({
-    role: "ALL",
-    status: "ALL",
-    search: "",
+    role: undefined,
+    status: undefined,
+    search: searchQuery,
   });
+
+  useSearch({
+    inputValue: searchInputValue,
+    setSearch: setSearchQuery,
+    saveSearchEnabled: false,
+  });
+
+  const { allUsersData, fetchingAllUsersData } = useAllUsersQuery(
+    currentPage,
+    itemsPerPage,
+    "RECENT",
+    filterConfig.role,
+    filterConfig.status,
+    filterConfig.search,
+  );
 
   useEffect(() => {
     if (!fetchingAllUsersData && allUsersData) {
-      setUsers(allUsersData);
+      setUsers(allUsersData.content);
     }
   }, [allUsersData, fetchingAllUsersData]);
 
-  const filteredUsers = useMemo(() => {
-    let result = [...users];
-
-    if (filterConfig.role !== "ALL") {
-      result = result.filter((user) => user.role === filterConfig.role);
-    }
-
-    if (filterConfig.status !== "ALL") {
-      result = result.filter((user) => user.status === filterConfig.status);
-    }
-
-    if (filterConfig.search) {
-      const searchLower = filterConfig.search.toLowerCase();
-      result = result.filter(
-        (user) =>
-          user.username.toLowerCase().includes(searchLower) ||
-          user.email.toLowerCase().includes(searchLower),
-      );
-    }
-
-    return result;
-  }, [users, filterConfig]);
-
-  const handleRoleFilter = (role: UserRole | "ALL") => {
+  const handleRoleFilter = (role: UserRole | undefined) => {
     setFilterConfig((prev) => ({ ...prev, role }));
   };
 
-  const handleStatusFilter = (status: UserStatus | "ALL") => {
+  const handleStatusFilter = (status: UserStatus | undefined) => {
     setFilterConfig((prev) => ({ ...prev, status }));
   };
 
@@ -109,9 +103,9 @@ const AdminUsers = () => {
   };
 
   useEffect(() => {
-    const id = setTimeout(() => handleSearch(inputValue), 500);
+    const id = setTimeout(() => handleSearch(searchInputValue), 500);
     return () => clearTimeout(id);
-  }, [inputValue]);
+  }, [searchInputValue]);
 
   if (fetchingAllUsersData || !allUsersData) {
     return <Spinner />;
@@ -121,7 +115,7 @@ const AdminUsers = () => {
     <Page className={"min-h-screen p-6 flex flex-col gap-8 w-full"}>
       <AdminManagementPanelHeader
         title={"User Management"}
-        content={`${filteredUsers.length} Users`}
+        content={`${allUsersData.totalElements} Users`}
       />
 
       <div
@@ -130,10 +124,11 @@ const AdminUsers = () => {
         }
       >
         <Searchbar
-          onChange={(value) => setInputValue(value)}
-          value={inputValue}
+          onChange={(value) => setSearchInputValue(value)}
+          value={searchInputValue}
           placeholder={""}
         />
+
         <DropdownMenu
           className={"h-[50px]"}
           placeholderChildren={
@@ -143,8 +138,14 @@ const AdminUsers = () => {
             </div>
           }
           options={roleFilterOptions}
-          onChange={(value) => handleRoleFilter(value as UserRole)}
-          value={filterConfig.role}
+          onChange={(value) => {
+            if (value === "ALL") {
+              handleRoleFilter(undefined);
+            } else {
+              handleRoleFilter(value as UserRole);
+            }
+          }}
+          value={filterConfig.role === undefined ? "ALL" : filterConfig.role}
         />
         <DropdownMenu
           className={"h-[50px]"}
@@ -155,15 +156,23 @@ const AdminUsers = () => {
             </div>
           }
           options={statusFilterOptions}
-          onChange={(value) => handleStatusFilter(value as UserStatus)}
-          value={filterConfig.status}
+          onChange={(value) => {
+            if (value === "ALL") {
+              handleStatusFilter(undefined);
+            } else {
+              handleStatusFilter(value as UserStatus);
+            }
+          }}
+          value={
+            filterConfig.status === undefined ? "ALL" : filterConfig.status
+          }
         />
         <AnimatedButton
           bgColor={"#171719"}
           borderColor={"#4a4a4d"}
           borderColorHover={"#14b8a6"}
           onClick={() =>
-            setFilterConfig({ role: "ALL", status: "ALL", search: "" })
+            setFilterConfig({ role: undefined, status: undefined, search: "" })
           }
           className={
             "rounded-lg h-[50px] px-4 w-auto py-2 uppercase lg:min-w-[200px]"
@@ -179,14 +188,29 @@ const AdminUsers = () => {
         }
       >
         <div className={"overflow-x-auto"}>
-          <UsersTable users={filteredUsers} />
+          <UsersTable users={users} />
         </div>
 
-        {filteredUsers.length === 0 && (
+        {users.length === 0 && (
           <div className="p-8 text-center text-gray-400">
             <p>No users found matching your filters.</p>
           </div>
         )}
+      </div>
+
+      <div
+        className={
+          "w-full flex justify-center  bg-black-200 border-gray-600 border-2 rounded-lg"
+        }
+      >
+        <Pagination
+          totalPages={allUsersData.totalPages}
+          totalItems={allUsersData.totalElements}
+          currentPageValue={currentPage}
+          currentPageDisplay={currentPage + 1}
+          perPage={itemsPerPage}
+          onPageChange={(newPage) => setCurrentPage(newPage)}
+        />
       </div>
     </Page>
   );

@@ -1,14 +1,6 @@
 import Page from "../animation/Page.tsx";
-import type { ActivityStats, PageStats } from "../types/admin.ts";
-import {
-  AlertCircle,
-  ArrowRight,
-  Flag,
-  MessageSquare,
-  Settings,
-  Tag,
-  Users,
-} from "lucide-react";
+import type { PageStats } from "../types/admin.ts";
+import { AlertCircle, ArrowRight, Flag, MessageSquare, Settings, Tag, Users } from "lucide-react";
 import PageStatsCard from "../components/card/PageStatsCard.tsx";
 import { motion } from "framer-motion";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
@@ -16,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import AdminActivityCard from "../components/card/AdminActivityCard.tsx";
 import useAdminPanelStatsQuery from "../hooks/queries/useAdminPanelStatsQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
+import useAdminMostRecentActivityDataQuery from "../hooks/queries/useAdminMostRecentActivityDataQuery.ts";
 
 const quickActions = [
   {
@@ -40,63 +33,15 @@ const quickActions = [
   },
 ];
 
-const recentActivities: ActivityStats[] = [
-  {
-    id: "1",
-    action: "blocked",
-    user: "admin",
-    target: "spam_user123",
-    timestamp: "2023-06-04T15:30:00Z",
-    type: "user",
-  },
-  {
-    id: "2",
-    action: "resolved",
-    user: "moderator1",
-    target: "harassment report #45",
-    timestamp: "2023-06-04T14:45:00Z",
-    type: "report",
-  },
-  {
-    id: "3",
-    action: "created",
-    user: "admin",
-    target: "photography",
-    timestamp: "2023-06-04T13:20:00Z",
-    type: "tag",
-  },
-  {
-    id: "4",
-    action: "deleted",
-    user: "moderator2",
-    target: "inappropriate comment #89",
-    timestamp: "2023-06-04T12:10:00Z",
-    type: "comment",
-  },
-  {
-    id: "5",
-    action: "promoted",
-    user: "admin",
-    target: "helpful_user456",
-    timestamp: "2023-06-04T11:05:00Z",
-    type: "user",
-  },
-  {
-    id: "6",
-    action: "rejected",
-    user: "moderator1",
-    target: "spam report #32",
-    timestamp: "2023-06-04T10:30:00Z",
-    type: "report",
-  },
-];
-
 const AdminPanel = () => {
   const navigate = useNavigate();
   const { adminPanelStats, fetchingAdminPanelStats } =
     useAdminPanelStatsQuery();
 
-  if (fetchingAdminPanelStats) {
+  const { adminMostRecentActivityData, fetchingAdminMostRecentActivityData } =
+    useAdminMostRecentActivityDataQuery();
+
+  if (fetchingAdminPanelStats || fetchingAdminMostRecentActivityData) {
     return <Spinner />;
   }
 
@@ -130,6 +75,8 @@ const AdminPanel = () => {
       color: "#0d9488",
     },
   ];
+
+  console.log(adminPanelStats);
 
   return (
     <Page className={"min-h-screen p-6 flex flex-col gap-8 w-full"}>
@@ -191,7 +138,7 @@ const AdminPanel = () => {
             Recent Activity
           </h2>
           <div className={"space-y-4"}>
-            {recentActivities.map((data) => (
+            {adminMostRecentActivityData?.map((data) => (
               <AdminActivityCard activity={data} />
             ))}
           </div>

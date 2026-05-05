@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import type { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../../types/types.ts";
 
-function useCreatePostCollectionMutation() {
+function useCreatePostCollectionMutation(onSuccess?: () => void) {
   const { userId } = useAuthentication();
 
   const { mutate: createPostCollection, isPending: creatingPostCollection } =
@@ -19,6 +19,7 @@ function useCreatePostCollectionMutation() {
       },
       onSuccess: () => {
         toast.success("Post collection created successfully.");
+        onSuccess?.();
       },
       onError: (error: AxiosError<ApiErrorResponse>) => {
         const errorMessage = error.response?.data?.message;

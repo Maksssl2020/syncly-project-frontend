@@ -4,7 +4,6 @@ import AdminManagementPanelHeader from "../components/header/AdminManagementPane
 import { Hash, Save, X } from "lucide-react";
 import FormInput from "../components/input/FormInput.tsx";
 import { useForm } from "react-hook-form";
-import FormTextArea from "../components/input/FormTextarea.tsx";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import Badge from "../components/badge/Badge.tsx";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +54,6 @@ const AdminTagForm = () => {
   const { createMainTag, creatingMainTag } = useCreateMainTagMutation(() => {
     reset({
       tagName: "",
-      description: "",
       category: "",
     });
     setChosenTagCategory(undefined);
@@ -63,19 +61,15 @@ const AdminTagForm = () => {
 
   const onCreateMainTag = ({
     tagName,
-    description,
     category,
   }: {
     tagName: string;
-    description: string;
     category: string;
   }) => {
     createMainTag({
       name: tagName,
-      description: description,
       tagCategoryName: category,
       color: chosenTagCategory?.color ?? "#14b8a6",
-      trending: false,
     });
   };
 
@@ -89,7 +83,6 @@ const AdminTagForm = () => {
   } = useForm({
     defaultValues: {
       tagName: "",
-      description: "",
       category: "",
     },
     resolver: yupResolver(tagValidator),
@@ -124,7 +117,7 @@ const AdminTagForm = () => {
                 Tag Information
               </h2>
               <p className={"text-gray-400"}>
-                Create a new main tag for your platform
+                Create a new tag for your platform
               </p>
             </div>
           </header>
@@ -139,15 +132,6 @@ const AdminTagForm = () => {
               register={register("tagName")}
               placeholder={"e.g., photography, technology, art"}
               error={errors?.tagName?.message}
-            />
-            <FormTextArea
-              title={"Description*"}
-              register={register("description")}
-              placeholder={
-                "Describe what this tag is about and how it should be used..."
-              }
-              error={errors?.description?.message}
-              rows={6}
             />
 
             <div className={"w-full h-[50px]"}>
@@ -209,9 +193,10 @@ const AdminTagForm = () => {
           <h3 className={"text-lg font-bold text-white-100"}>Preview</h3>
           <div className={"flex items-center gap-4"}>
             <div
-              className={
-                "flex size-12 rounded-lg items-center justify-center bg-teal-100"
-              }
+              className={"flex size-12 rounded-lg items-center justify-center"}
+              style={{
+                backgroundColor: chosenTagCategory?.color ?? "#14b8a6",
+              }}
             >
               <Hash className={"size-6 text-black-100"} />
             </div>
@@ -224,17 +209,12 @@ const AdminTagForm = () => {
                   className={
                     "px-2 rounded-full text-xs bg-gray-600 text-black-100"
                   }
-                  bgColor={chosenTagCategory?.color}
+                  bgColor={chosenTagCategory?.color ?? "#14b8a6"}
                   title={
                     watch("category") !== "" ? watch("category") : "category"
                   }
                 />
               </div>
-              <p className={"text-gray-400"}>
-                {watch("description") !== ""
-                  ? watch("description")
-                  : "Tag description will appear here..."}
-              </p>
             </div>
           </div>
         </motion.div>

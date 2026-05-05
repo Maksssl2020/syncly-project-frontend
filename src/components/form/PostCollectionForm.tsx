@@ -32,7 +32,7 @@ const PostCollectionForm = ({ onClose }: PostCollectionFormProps) => {
   });
 
   const { createPostCollection, creatingPostCollection } =
-    useCreatePostCollectionMutation();
+    useCreatePostCollectionMutation(onClose);
   const { checkPostCollectionExists } = useCheckPostCollectionExistsMutation();
 
   const onSubmit = async ({
@@ -68,7 +68,6 @@ const PostCollectionForm = ({ onClose }: PostCollectionFormProps) => {
         register={register("title")}
       />
 
-      {/* Color Selection */}
       <div>
         <label className="block text-white-100 font-medium mb-3">
           Collection Color

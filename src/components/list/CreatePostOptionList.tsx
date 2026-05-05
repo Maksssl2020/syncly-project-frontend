@@ -65,7 +65,7 @@ const CreatePostOptionList = ({
         opacity: 0,
         scale: 0.8,
       }}
-      className={`absolute space-y-3 ${className}`}
+      className={`absolute space-y-3 ${className} bg-black-100/40 p-4 rounded-lg backdrop-blur-lg`}
     >
       {postOptions.map((option, index) => (
         <motion.li
@@ -77,11 +77,12 @@ const CreatePostOptionList = ({
             backgroundColor: "#2c2c2e",
             borderColor: option.color,
             color: option.color,
+            transition: { duration: 0.15 },
           }}
           whileTap={{ scale: 0.95 }}
           transition={{ delay: index * 0.05 }}
           onClick={() => handleClick(option.type)}
-          className={`flex bg-black-200 border-gray-600 text-white-100 items-center gap-3 cursor-pointer px-4 py-3 shadow-lg border-2 min-w-[140px] rounded-lg `}
+          className={`flex border-gray-600 text-white-100 items-center gap-3 cursor-pointer px-4 py-3 shadow-lg border-2 min-w-[140px] rounded-lg`}
         >
           <option.icon className={"size-5"} />
           <span className={"font-medium"}>{option.label}</span>

@@ -1,9 +1,9 @@
 import axiosConfig from "../config/axiosConfig.ts";
-import type { MainTag } from "../types/tags.ts";
+import type { AdminTag } from "../types/tags.ts";
 import type { UserProfile } from "../types/userProfile.ts";
 
 export async function fetchUserFollowedTags(userId: string | number) {
-  const response = await axiosConfig.get<MainTag[]>(`/follows/tags/${userId}`);
+  const response = await axiosConfig.get<AdminTag[]>(`/follows/tags/${userId}`);
   return response.data;
 }
 

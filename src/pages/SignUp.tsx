@@ -27,7 +27,7 @@ const SignUp = () => {
     resolver: yupResolver(signUpValidator),
   });
 
-  const { signingUp, signUp } = useSignUpMutation();
+  const { signingUp, signUp } = useSignUpMutation(() => navigate("/sign-in"));
 
   const onSubmit = (data: SignUpRequest) => {
     if (!isHuman) {

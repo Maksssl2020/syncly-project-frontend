@@ -4,7 +4,7 @@ import {
   getBorderColor,
   getBorderColorHover,
   getTextColor,
-  getTextColorHover,
+  getTextColorHover
 } from "../../utils/friendStatusUtils.ts";
 import { AnimatePresence } from "framer-motion";
 import { Check, Clock, Send, XIcon } from "lucide-react";
@@ -83,7 +83,7 @@ const FriendButton = ({
   return (
     <AnimatedButton
       className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 border-2`}
-      bgColor={isFriend ? "#14b8a6" : "#222222"}
+      bgColor={isFriend ? "#222222" : "#14b8a6"}
       bgColorHover={getBgColorHover(friendRequestStatus)}
       textColor={getTextColor(friendRequestStatus)}
       textColorHover={getTextColorHover(friendRequestStatus)}

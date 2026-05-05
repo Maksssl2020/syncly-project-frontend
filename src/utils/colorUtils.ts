@@ -44,7 +44,7 @@ export const getUserRoleBadgeColor = (role: UserRole) => {
 
 export const getUserStatusBadgeColor = (status: UserStatus) => {
   switch (status) {
-    case "ACTIVE":
+    case "ONLINE":
       return "#22c55e";
     case "BLOCKED":
       return "#ef4444";

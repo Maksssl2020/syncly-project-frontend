@@ -1,4 +1,4 @@
-import type { MainTag } from "../../types/tags";
+import type { AdminTag } from "../../types/tags";
 import { motion } from "framer-motion";
 import { Check, Flame, Hash, MessageCircle, Plus, Users } from "lucide-react";
 import AnimatedButton from "../button/AnimatedButton.tsx";
@@ -7,7 +7,7 @@ import Badge from "../badge/Badge.tsx";
 import { getTagColor } from "../../utils/colorUtils.ts";
 
 type TagCardProps = {
-  tag: MainTag;
+  tag: AdminTag;
   index: number;
   isFollowed: boolean;
   loading?: boolean;

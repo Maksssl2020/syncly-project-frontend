@@ -1,18 +1,21 @@
 import Page from "../animation/Page.tsx";
 import AdminManagementPanelHeader from "../components/header/AdminManagementPanelHeader.tsx";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
-import { useEffect, useState } from "react";
-import { Download, Filter } from "lucide-react";
+import { useState } from "react";
+import { Download, Filter, SortDesc } from "lucide-react";
 import type { DropdownOption } from "../types/types.ts";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Searchbar from "../components/input/Searchbar.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
-import type {
-  ActivityActionType,
-  ActivityStats,
-  ActivityTargetType,
-} from "../types/admin.ts";
+import type { ActivityActionType, ActivityTargetType } from "../types/admin.ts";
 import AdminActivityCardLarge from "../components/card/AdminActivityCardLarge.tsx";
+import useAdminActivityDataQuery from "../hooks/queries/useAdminActivityDataQuery.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import Pagination from "../components/pagination/Pagination.tsx";
+import useSearch from "../hooks/useSearch.ts";
+import { CSVLink } from "react-csv";
+import { mapActivityToCsv } from "../utils/xlsxUtils.ts";
+import { activityCsvColumns } from "../utils/csvData.ts";
 
 // @ts-ignore
 const exportDropdownOptions: DropdownOption[] = [
@@ -26,192 +29,68 @@ const exportDropdownOptions: DropdownOption[] = [
   },
 ];
 
-interface ActivityFilters {
-  search: string;
-  type: string;
-  user: string;
-  dateFrom: string;
-  dateTo: string;
-  status: string;
-  severity: string;
-}
+const activityTypes: DropdownOption[] = [
+  { value: "ALL", label: "All" },
+  { value: "BLOCKED", label: "Blocked" },
+  { value: "CREATED", label: "Created" },
+  { value: "DELETED", label: "Deleted" },
+  { value: "RESOLVED", label: "Resolved" },
+  { value: "PROMOTED", label: "Promoted" },
+  { value: "REJECTED", label: "Rejected" },
+  { value: "UPDATED", label: "Updated" },
+];
+
+const activityTargets: DropdownOption[] = [
+  { value: "ALL", label: "All" },
+  { value: "TAG", label: "Tag" },
+  { value: "COMMENT", label: "Comment" },
+  { value: "REPORT", label: "Report" },
+  { value: "USER", label: "User" },
+  { value: "TAG_CATEGORY", label: "Tag Category" },
+];
+
+const sortOptions: DropdownOption[] = [
+  { value: "RECENT", label: "Recent" },
+  { value: "OLDEST", label: "Oldest" },
+];
 
 const AdminAllActivity = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
-  const [activities, setActivities] = useState<ActivityStats[]>([]);
-  const [filteredActivities, setFilteredActivities] = useState<ActivityStats[]>(
-    [],
-  );
-  // @ts-ignore
-  const [sortBy, setSortBy] = useState<"timestamp" | "type" | "user">(
-    "timestamp",
-  );
-  // @ts-ignore
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  // @ts-ignore
-  const [filters, setFilters] = useState<ActivityFilters>({
-    search: "",
-    type: "",
-    user: "",
-    dateFrom: "",
-    dateTo: "",
-    status: "",
-    severity: "",
-  });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage] = useState(20);
+  const [activityActionType, setActivityActionType] = useState<
+    ActivityActionType | undefined
+  >(undefined);
+  const [activityTargetType, setActivityTargetType] = useState<
+    ActivityTargetType | undefined
+  >(undefined);
+  const [sortBy, setSortBy] = useState<"RECENT" | "OLDEST">("RECENT");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQueryValue, setSearchQueryValue] = useState<string>("");
 
-  const activityTypes: ActivityActionType[] = [
-    "blocked",
-    "created",
-    "deleted",
-    "resolved",
-    "promoted",
-    "rejected",
-  ];
-  const activityTargets: ActivityTargetType[] = [
-    "tag",
-    "comment",
-    "report",
-    "user",
-  ];
+  const { adminActivityData, fetchingAdminActivityData } =
+    useAdminActivityDataQuery(
+      0,
+      itemsPerPage,
+      sortBy,
+      activityActionType,
+      activityTargetType,
+      searchQuery,
+    );
 
-  useEffect(() => {
-    const mockActivities: ActivityStats[] = [
-      {
-        id: "1",
-        action: "blocked",
-        user: "admin",
-        target: "spam_user123",
-        timestamp: "2024-01-15T15:30:00Z",
-        type: "user",
-      },
-      {
-        id: "2",
-        action: "resolved",
-        user: "moderator1",
-        target: "harassment report #45",
-        timestamp: "2024-01-15T14:45:00Z",
-        type: "report",
-      },
-      {
-        id: "3",
-        action: "created",
-        user: "admin",
-        target: "photography",
-        timestamp: "2024-01-15T13:20:00Z",
-        type: "tag",
-      },
-      {
-        id: "4",
-        action: "deleted",
-        user: "moderator2",
-        target: "inappropriate comment #89",
-        timestamp: "2024-01-15T12:10:00Z",
-        type: "comment",
-      },
-      {
-        id: "5",
-        action: "promoted",
-        user: "admin",
-        target: "helpful_user456",
-        timestamp: "2024-01-15T11:05:00Z",
-        type: "user",
-      },
-      {
-        id: "6",
-        action: "created",
-        user: "admin",
-        target: "Technology",
-        timestamp: "2024-01-15T10:30:00Z",
-        type: "comment",
-      },
-      // Add more mock data...
-      ...Array.from({ length: 50 }, (_, i) => ({
-        id: `mock-${i + 7}`,
-        action: activityTypes[Math.floor(Math.random() * activityTypes.length)],
-        user: ["admin", "moderator1", "moderator2", "system"][
-          Math.floor(Math.random() * 4)
-        ],
-        target: `Target ${i + 7}`,
-        timestamp: new Date(
-          Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-        type: activityTargets[
-          Math.floor(Math.random() * activityTargets.length)
-        ],
-      })),
-    ];
-
-    setTimeout(() => {
-      setActivities(mockActivities);
-      setFilteredActivities(mockActivities);
-    }, 1000);
-  }, []);
-
-  useEffect(() => {
-    let filtered = [...activities];
-
-    // Apply filters
-    if (filters.search) {
-      filtered = filtered.filter(
-        (activity) =>
-          activity.action
-            .toLowerCase()
-            .includes(filters.search.toLowerCase()) ||
-          activity.user.toLowerCase().includes(filters.search.toLowerCase()) ||
-          activity.target.toLowerCase().includes(filters.search.toLowerCase()),
-      );
-    }
-
-    if (filters.type) {
-      filtered = filtered.filter((activity) => activity.type === filters.type);
-    }
-
-    if (filters.user) {
-      filtered = filtered.filter((activity) => activity.user === filters.user);
-    }
-
-    if (filters.dateFrom) {
-      filtered = filtered.filter(
-        (activity) =>
-          new Date(activity.timestamp) >= new Date(filters.dateFrom),
-      );
-    }
-
-    if (filters.dateTo) {
-      filtered = filtered.filter(
-        (activity) => new Date(activity.timestamp) <= new Date(filters.dateTo),
-      );
-    }
-
-    filtered.sort((a, b) => {
-      // @ts-ignore
-      let aValue: any = a[sortBy];
-      // @ts-ignore
-      let bValue: any = b[sortBy];
-
-      if (sortBy === "timestamp") {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
-      }
-
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-    setFilteredActivities(filtered);
-    setCurrentPage(1);
-  }, [activities, filters, sortBy, sortOrder]);
-
-  const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentActivities = filteredActivities.slice(startIndex, endIndex);
+
+  useSearch({
+    inputValue: searchQueryValue,
+    setSearch: setSearchQuery,
+    saveSearchEnabled: false,
+  });
+
+  if (fetchingAdminActivityData || !adminActivityData) {
+    return <Spinner />;
+  }
 
   return (
     <Page className={"min-h-screen p-6 flex flex-col gap-8 w-full"}>
@@ -254,7 +133,12 @@ const AdminAllActivity = () => {
               }}
               className={"w-full h-[50px] text-white-100  cursor-pointer"}
             >
-              Export as CSV
+              <CSVLink
+                data={mapActivityToCsv(adminActivityData.content)}
+                headers={activityCsvColumns}
+              >
+                Export as CSV
+              </CSVLink>
             </motion.button>
             <motion.button
               whileHover={{
@@ -269,37 +153,86 @@ const AdminAllActivity = () => {
         </div>
       </div>
 
-      <motion.div
-        animate={{
-          opacity: showFilters ? 1 : 0,
-          height: showFilters ? "auto" : 0,
-        }}
-        className={
-          "w-full p-4 rounded-lg border-2 bg-black-200 border-gray-600"
-        }
-      >
-        <div className={"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"}>
-          <Searchbar onChange={() => {}} value={""} />
-          <DropdownMenu options={[]} onChange={() => {}} value={""} />
-          <DropdownMenu options={[]} onChange={() => {}} value={""} />
-          <DropdownMenu options={[]} onChange={() => {}} value={""} />
-        </div>
-      </motion.div>
+      <AnimatePresence initial={false}>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="w-full overflow-hidden rounded-lg border-2 bg-black-200 border-gray-600"
+          >
+            <div className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Searchbar
+                  value={searchQueryValue}
+                  onChange={(value) => setSearchQueryValue(value)}
+                />
+
+                <DropdownMenu
+                  options={activityTypes}
+                  onChange={(value) => {
+                    setActivityActionType(
+                      value === "ALL"
+                        ? undefined
+                        : (value as ActivityActionType),
+                    );
+                  }}
+                  value={activityActionType ?? "ALL"}
+                />
+
+                <DropdownMenu
+                  options={activityTargets}
+                  onChange={(value) => {
+                    setActivityTargetType(
+                      value === "ALL"
+                        ? undefined
+                        : (value as ActivityTargetType),
+                    );
+                  }}
+                  value={activityTargetType ?? "ALL"}
+                />
+
+                <div className="flex items-center gap-2">
+                  <SortDesc className="size-5 text-gray-400" />
+                  <div className="w-full">
+                    <DropdownMenu
+                      options={sortOptions}
+                      onChange={(value) =>
+                        setSortBy(value as "RECENT" | "OLDEST")
+                      }
+                      value={sortBy}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className={"flex flex-col gap-3"}>
-        {currentActivities.map((activity, index) => (
+        {adminActivityData.content.map((activity, index) => (
           <AdminActivityCardLarge index={index} activity={activity} />
         ))}
       </div>
 
-      {totalPages > 1 && (
+      {adminActivityData.totalPages > 1 && (
         <div className={"mt-8 flex items-center justify-between"}>
           <p className={"text-gray-400"}>
             Showing {startIndex + 1} -{" "}
-            {Math.min(endIndex, filteredActivities.length)} of{" "}
-            {filteredActivities.length} activities
+            {Math.min(endIndex, adminActivityData.size)} of{" "}
+            {adminActivityData.totalElements} activities
           </p>
           <div className={"flex items-center gap-2"}>
+            <Pagination
+              totalPages={adminActivityData.totalPages}
+              totalItems={adminActivityData.totalElements}
+              currentPageValue={currentPage}
+              currentPageDisplay={currentPage}
+              perPage={itemsPerPage}
+              onPageChange={() => {}}
+            />
             <AnimatedButton
               bgColor={"#222222"}
               borderColorHover={"#14b8a6"}
@@ -310,12 +243,12 @@ const AdminAllActivity = () => {
               Previous
             </AnimatedButton>
             <span className={"text-white-100"}>
-              Page {currentPage} of {totalPages}
+              Page {currentPage} of {adminActivityData.totalPages}
             </span>
             <AnimatedButton
               bgColor={"#222222"}
               borderColorHover={"#14b8a6"}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === adminActivityData.totalPages}
               onClick={() => setCurrentPage(Math.max(1, currentPage + 1))}
               className={"px-4 py-2 rounded-lg disabled:opacity-65"}
             >

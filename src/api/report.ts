@@ -4,7 +4,7 @@ import type {
   ReportRequest,
   ResolveReportRequest,
 } from "../types/report.ts";
-import { mapToReportType } from "../utils/reportMapperUtils.ts";
+import { mapToReportType } from "../utils/reportUtils.tsx";
 
 export async function fetchAllReports() {
   const response = await axiosConfig.get<ReportData[]>("/reports");

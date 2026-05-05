@@ -43,8 +43,10 @@ const LinkPostCard = ({ post, className }: LinkPostCardProps) => {
   }, [getLinkPreview, post.urls]);
 
   return (
-    <div className={`w-full flex flex-col gap-4 text-white-100 ${className}`}>
-      {post.description && <p className="text-lg">{post.description}</p>}
+    <div className={`w-full flex flex-col gap-4 text-gray-100 ${className}`}>
+      {post.description && (
+        <p className="text-lg text-white-100">{post.description}</p>
+      )}
 
       <a
         href={mainUrl}
@@ -53,7 +55,7 @@ const LinkPostCard = ({ post, className }: LinkPostCardProps) => {
         className="block rounded-lg border-gray-600 border-2 overflow-hidden hover:border-cyan-400 transition-colors"
       >
         <div
-          className="aspect-video flex items-center justify-center bg-black-100"
+          className="aspect-video flex items-center justify-center bg-gray-900 bg-cover bg-center"
           style={{
             backgroundImage: previewMain?.image
               ? `url(${previewMain.image})`
@@ -62,38 +64,23 @@ const LinkPostCard = ({ post, className }: LinkPostCardProps) => {
         >
           {!previewMain?.image && (
             <div className="text-center text-gray-400">
-              <ExternalLink className="size-12 mx-auto mb-2 " />
-              <p className="text-sm ">
+              <ExternalLink className="size-12 mx-auto mb-2" />
+              <p className="text-sm">
                 {loading ? "Loading preview..." : "Preview unavailable"}
               </p>
             </div>
           )}
         </div>
-        <div
-          className="p-4"
-          style={{ backgroundColor: "var(--color-black-300)" }}
-        >
-          <h3
-            className="font-semibold mb-2"
-            style={{ color: "var(--color-white-100)" }}
-          >
+        <div className="p-4 bg-gray-800">
+          <h3 className="font-semibold mb-2 text-gray-100">
             {previewMain?.title || post.title || "Link Title"}
           </h3>
-          <p
-            className="text-sm mb-2"
-            style={{ color: "var(--color-gray-400)" }}
-          >
+          <p className="text-sm mb-2 text-gray-400">
             {previewMain?.description || "No description available."}
           </p>
           <div className="flex items-center gap-2">
-            <ExternalLink
-              className="size-3"
-              style={{ color: "var(--color-cyan-100)" }}
-            />
-            <span
-              className="text-xs"
-              style={{ color: "var(--color-cyan-100)" }}
-            >
+            <ExternalLink className="size-3 text-cyan-400" />
+            <span className="text-xs text-cyan-400">
               {new URL(mainUrl).hostname}
             </span>
           </div>
@@ -101,67 +88,48 @@ const LinkPostCard = ({ post, className }: LinkPostCardProps) => {
       </a>
 
       {otherUrls.length > 0 && (
-        <div className="space-y-4">
-          <p
-            className="text-sm font-medium"
-            style={{ color: "var(--color-gray-400)" }}
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-gray-400">Additional Links:</p>
+          <div
+            className={`grid gap-3 ${otherUrls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
           >
-            Additional Links:
-          </p>
-          {otherUrls.map((url, index) => {
-            const preview = previewsOther[index];
-            return (
-              <a
-                key={url}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-lg border border-gray-700 hover:border-cyan-400 transition-colors"
-              >
-                <div
-                  className="aspect-[3/1] flex items-center justify-center bg-cover bg-center"
-                  style={{
-                    backgroundColor: "var(--color-black-100)",
-                    backgroundImage: preview?.image
-                      ? `url(${preview.image})`
-                      : undefined,
-                  }}
+            {otherUrls.map((url, index) => {
+              const preview = previewsOther[index];
+              return (
+                <a
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex gap-3 rounded-lg border border-gray-700 bg-gray-800/50 p-3 hover:border-cyan-400 hover:bg-gray-800 transition-all"
                 >
-                  {!preview?.image && (
-                    <div className="text-center p-4">
-                      <ExternalLink
-                        className="size-6 mx-auto mb-1"
-                        style={{ color: "var(--color-gray-400)" }}
-                      />
-                      <p
-                        className="text-xs"
-                        style={{ color: "var(--color-gray-400)" }}
-                      >
-                        Preview unavailable
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div
-                  className="p-3"
-                  style={{ backgroundColor: "var(--color-black-300)" }}
-                >
-                  <h4
-                    className="text-sm font-semibold"
-                    style={{ color: "var(--color-white-100)" }}
+                  <div
+                    className="w-16 h-16 flex-shrink-0 rounded-md flex items-center justify-center bg-cover bg-center bg-gray-900"
+                    style={{
+                      backgroundImage: preview?.image
+                        ? `url(${preview.image})`
+                        : undefined,
+                    }}
                   >
-                    {preview?.title || new URL(url).hostname}
-                  </h4>
-                  <p
-                    className="text-xs"
-                    style={{ color: "var(--color-gray-400)" }}
-                  >
-                    {preview?.description || "No description available"}
-                  </p>
-                </div>
-              </a>
-            );
-          })}
+                    {!preview?.image && (
+                      <ExternalLink className="size-5 text-gray-500" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <h4 className="text-sm font-semibold text-gray-100 truncate group-hover:text-cyan-400 transition-colors">
+                      {preview?.title || new URL(url).hostname}
+                    </h4>
+                    <p className="text-xs text-gray-400 line-clamp-2 mt-1">
+                      {preview?.description || "No description available"}
+                    </p>
+                    <span className="text-xs text-cyan-400/70 mt-1 truncate">
+                      {new URL(url).hostname}
+                    </span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

@@ -21,12 +21,15 @@ export interface AdminPanelStats {
 }
 
 export interface ActivityStats {
-  id: string;
-  action: ActivityActionType;
-  user: string;
+  id: number | string;
+  userId: number | string;
+  targetId: number | string;
   target: string;
   timestamp: string;
-  type: ActivityTargetType;
+  userUsername: string;
+  userRole: UserRole;
+  targetType: ActivityTargetType;
+  actionType: ActivityActionType;
 }
 
 export interface UpdateUserAsAdminRequest {
@@ -42,11 +45,17 @@ export interface AdminUserFormData {
 }
 
 export type ActivityActionType =
-  | "created"
-  | "promoted"
-  | "resolved"
-  | "blocked"
-  | "deleted"
-  | "rejected";
+  | "CREATED"
+  | "PROMOTED"
+  | "RESOLVED"
+  | "BLOCKED"
+  | "DELETED"
+  | "REJECTED"
+  | "UPDATED";
 
-export type ActivityTargetType = "user" | "report" | "tag" | "comment";
+export type ActivityTargetType =
+  | "USER"
+  | "REPORT"
+  | "TAG"
+  | "COMMENT"
+  | "TAG_CATEGORY";

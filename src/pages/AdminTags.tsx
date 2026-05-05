@@ -20,6 +20,9 @@ import MainTagAdminCard from "../components/card/MainTagAdminCard.tsx";
 import { useNavigate } from "react-router-dom";
 import useAllTagsQuery from "../hooks/queries/useAllTagsQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
+import useChangeTagCategoryMutation from "../hooks/mutations/useChangeTagCategoryMutation.ts";
+import ChangeTagCategoryModal from "../components/modal/ChangeTagCategoryModal.tsx";
+import type { AdminTag } from "../types/tags.ts";
 
 const AdminTags = () => {
   const navigate = useNavigate();
@@ -27,6 +30,13 @@ const AdminTags = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showTrendingOnly, setShowTrendingOnly] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<AdminTag | undefined>(
+    undefined,
+  );
+  const [isChangeCategoryModalOpen, setIsChangeCategoryModalOpen] =
+    useState(false);
+  const { changeTagCategory, changingTagCategory } =
+    useChangeTagCategoryMutation();
 
   const { allTagsData, fetchingAllTagsData } = useAllTagsQuery();
 
@@ -164,7 +174,15 @@ const AdminTags = () => {
         <div className={"flex flex-col gap-4"}>
           <AnimatePresence>
             {filteredTags.map((tag, index) => (
-              <MainTagAdminCard tag={tag} index={index} />
+              <MainTagAdminCard
+                tag={tag}
+                index={index}
+                onChangeCategory={(data) => {
+                  setSelectedTag(data);
+                  setIsChangeCategoryModalOpen(true);
+                }}
+                isChanging={changingTagCategory && selectedTag?.id === tag.id}
+              />
             ))}
           </AnimatePresence>
 
@@ -181,6 +199,16 @@ const AdminTags = () => {
           )}
         </div>
       </div>
+
+      <ChangeTagCategoryModal
+        isOpen={isChangeCategoryModalOpen}
+        onClose={() => setIsChangeCategoryModalOpen(false)}
+        selectedTag={selectedTag}
+        onChangeCategory={(tagId, categoryId) => {
+          changeTagCategory({ tagId: tagId, categoryId: categoryId });
+          setSelectedTag(undefined);
+        }}
+      />
     </Page>
   );
 };

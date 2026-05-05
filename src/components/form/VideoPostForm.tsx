@@ -4,15 +4,12 @@ import { useForm } from "react-hook-form";
 import { forwardRef, useEffect, useState } from "react";
 import FormInput from "../input/FormInput.tsx";
 import { extractYoutubeId } from "../../utils/youtube.ts";
-import type {
-  UpdateVideoPostRequest,
-  VideoPost,
-  VideoPostRequest,
-} from "../../types/post.ts";
+import type { UpdateVideoPostRequest, VideoPost, VideoPostRequest } from "../../types/post.ts";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { videoPostValidator } from "../../validators/postValidators.ts";
 import toast from "react-hot-toast";
 import type { InferType } from "yup";
+import { XIcon } from "lucide-react";
 
 type VideoPostFormProps =
   | {
@@ -104,6 +101,19 @@ const VideoPostForm = forwardRef<HTMLFormElement, VideoPostFormProps>(
             <div className="grid grid-cols-2 gap-4 mt-4">
               {addedVideoUrls.map((url, index) => (
                 <div key={index} className="relative">
+                  <button
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setAddedVideoUrls(
+                        addedVideoUrls.filter((_, i) => i !== index),
+                      );
+                    }}
+                    type={"button"}
+                    className="absolute top-2 right-2 text-red-100 border border-red-100 cursor-pointer bg-black p-2 rounded"
+                  >
+                    <XIcon className={"size-3"} />
+                  </button>
+
                   {url.includes("youtube.com") || url.includes("youtu.be") ? (
                     <iframe
                       src={`https://www.youtube.com/embed/${extractYoutubeId(url)}`}
@@ -117,16 +127,6 @@ const VideoPostForm = forwardRef<HTMLFormElement, VideoPostFormProps>(
                       className="w-full h-auto object-cover rounded-lg border border-gray-700"
                     />
                   )}
-                  <button
-                    onClick={() =>
-                      setAddedVideoUrls(
-                        addedVideoUrls.filter((_, i) => i !== index),
-                      )
-                    }
-                    className="absolute top-2 right-2 text-white bg-black bg-opacity-50 px-2 py-1 text-xs rounded"
-                  >
-                    ×
-                  </button>
                 </div>
               ))}
             </div>

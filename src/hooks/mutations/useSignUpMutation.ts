@@ -5,12 +5,13 @@ import toast from "react-hot-toast";
 import type { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../../types/types.ts";
 
-function useSignUpMutation() {
+function useSignUpMutation(onSuccess?: () => void) {
   const { mutate: signUp, isPending: signingUp } = useMutation({
     mutationKey: ["signUpUser"],
     mutationFn: (data: SignUpRequest) => handleSignUp(data),
     onSuccess: () => {
       toast.success("Signed Up successfully");
+      onSuccess?.();
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {
       const errorMessage = error.response?.data?.message;

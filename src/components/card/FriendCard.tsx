@@ -2,10 +2,12 @@ import { motion } from "framer-motion";
 import Avatar from "../img/Avatar.tsx";
 import type { DropdownOption } from "../../types/types.ts";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, MoreHorizontal, UserMinus } from "lucide-react";
+import { MoreHorizontal, UserMinus } from "lucide-react";
 import DropdownWithTrigger from "../dropdown/DropdownWithTrigger.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
 import type { FriendUser } from "../../types/friends.ts";
+import MessageButton from "../button/MessageButton.tsx";
+import { format } from "date-fns";
 
 type FriendCardProps = {
   friend: FriendUser;
@@ -50,7 +52,11 @@ const FriendCard = ({ friend }: FriendCardProps) => {
             {friend.user.username}
           </h3>
           <p className={"text-sm text-gray-400"}>{friend.user.email}</p>
-          <p className={"text-xs text-gray-400"}>{friend.user.lastActive}</p>
+          {friend.user.lastActive && (
+            <p className={"text-xs text-gray-400"}>
+              {format(friend.user.lastActive, "dd.MM.yyyy hh:mm")}
+            </p>
+          )}
         </div>
 
         <DropdownWithTrigger
@@ -61,25 +67,13 @@ const FriendCard = ({ friend }: FriendCardProps) => {
       </div>
 
       <div className={"flex gap-4"}>
-        <AnimatedButton
-          bgColor={"#14b8a6"}
-          bgColorHover={"#0d9488"}
-          borderColor={"#14b8a6"}
-          borderColorHover={"#0d9488"}
-          textColor={"#111111"}
-          textColorHover={"#111111"}
+        <MessageButton
           onClick={() =>
             navigate(
               `/conversation/${friend.user.userId}/${friend.user.username}`,
             )
           }
-          className={
-            "flex-1 flex px-4 items-center justify-center gap-2 py-2 rounded-lg"
-          }
-        >
-          <MessageCircle className={"size-4"} />
-          Message
-        </AnimatedButton>
+        />
         <AnimatedButton
           bgColor={"#222222"}
           borderColorHover={"#393939"}
@@ -94,7 +88,6 @@ const FriendCard = ({ friend }: FriendCardProps) => {
           Remove Friend
         </AnimatedButton>
       </div>
-
       {friend.mutualFriendsCount > 0 && (
         <p className="text-xs text-gray-400">
           {friend.mutualFriendsCount} mutual friend

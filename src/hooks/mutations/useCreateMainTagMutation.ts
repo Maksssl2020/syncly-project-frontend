@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { MainTagRequest } from "../../types/tags.ts";
+import type { AdminTagRequest } from "../../types/tags.ts";
 import type { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../../types/types.ts";
 import toast from "react-hot-toast";
@@ -10,7 +10,7 @@ function useCreateMainTagMutation(onSuccess?: () => void) {
 
   const { mutate: createMainTag, isPending: creatingMainTag } = useMutation({
     mutationKey: ["createMainTag"],
-    mutationFn: (data: MainTagRequest) => handleCreateMainTag(data),
+    mutationFn: (data: AdminTagRequest) => handleCreateMainTag(data),
     onSuccess: () => {
       toast.success("Created new tag!");
       onSuccess?.();

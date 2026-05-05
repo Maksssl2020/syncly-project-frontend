@@ -1,8 +1,9 @@
-export interface MainTag {
+export interface AdminTag {
   id: string | number;
   name: string;
   description: string;
   postsCount: number;
+  postsThisWeek: number;
   followersCount: number;
   trending: boolean;
   tagCategory: string;
@@ -19,12 +20,10 @@ export interface TagUsage {
 
 export type TagType = "MAIN" | "COMMON";
 
-export interface MainTagRequest {
+export interface AdminTagRequest {
   name: string;
-  description: string;
   tagCategoryName: string;
   color: string;
-  trending: boolean;
 }
 
 export interface CommonTagRequest {

@@ -73,6 +73,8 @@ const AdminReports = () => {
     }
   }, [fetchingReportsData, reportsData]);
 
+  console.log(reportsData);
+
   const filteredReports = reports.filter((report) => {
     const matchesTab = activeTab === "ALL" || report.reportType === activeTab;
     const matchesStatus =
