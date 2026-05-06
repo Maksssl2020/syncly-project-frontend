@@ -6,7 +6,7 @@ import FormInput from "../components/input/FormInput.tsx";
 import { useForm } from "react-hook-form";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import Badge from "../components/badge/Badge.tsx";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import useTagCategoriesQuery from "../hooks/queries/useTagCategoriesQuery.ts";
 import { useEffect, useState } from "react";
@@ -14,9 +14,14 @@ import type { DropdownOption } from "../types/types.ts";
 import type { TagCategory } from "../types/tagCategory.ts";
 import useCreateMainTagMutation from "../hooks/mutations/useCreateMainTagMutation.ts";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { tagValidator } from "../validators/tagValidator.ts";
+import { createUpdateTagValidator } from "../validators/createUpdateTagValidator.ts";
+import useTagToEditByIdQuery from "../hooks/queries/useTagToEditByIdQuery.ts";
+import type { TagToEdit } from "../types/tags.ts";
+import Spinner from "../components/spinner/Spinner.tsx";
+import useUpdateAdminTagRequestMutation from "../hooks/mutations/useUpdateAdminTagRequestMutation.ts";
 
-const AdminTagForm = () => {
+const AdminTagForm = ({ isEdit = false }: { isEdit: boolean }) => {
+  const { tagId } = useParams();
   const navigate = useNavigate();
   const [tagCategoriesToChoose, setTagCategoriesToChoose] = useState<
     DropdownOption[]
@@ -24,7 +29,42 @@ const AdminTagForm = () => {
   const [chosenTagCategory, setChosenTagCategory] = useState<
     TagCategory | undefined
   >(undefined);
+  const [tagToEditInitialData, setTagToEditInitialData] = useState<
+    TagToEdit | undefined
+  >(undefined);
   const { tagCategories, fetchingTagCategories } = useTagCategoriesQuery();
+  const { tagToEditData, fetchingTagToEditData } = useTagToEditByIdQuery(tagId);
+  const { updateTag, updatingTag } = useUpdateAdminTagRequestMutation(() =>
+    navigate(-1),
+  );
+  const { createMainTag, creatingMainTag } = useCreateMainTagMutation(() => {
+    reset({
+      tagName: "",
+      category: "",
+    });
+    setChosenTagCategory(undefined);
+  });
+
+  const {
+    register,
+    watch,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset,
+  } = useForm({
+    defaultValues: {
+      tagName: "",
+      category: "",
+    },
+    resolver: yupResolver(createUpdateTagValidator),
+  });
+
+  useEffect(() => {
+    if (isEdit && tagToEditData) {
+      setTagToEditInitialData(tagToEditData);
+    }
+  }, [isEdit, tagToEditData]);
 
   useEffect(() => {
     if (tagCategories && !fetchingTagCategories) {
@@ -40,6 +80,20 @@ const AdminTagForm = () => {
     }
   }, [fetchingTagCategories, tagCategories]);
 
+  useEffect(() => {
+    if (tagToEditInitialData) {
+      setValue("tagName", tagToEditInitialData.name);
+      setValue("category", tagToEditInitialData.tagCategoryName);
+
+      const foundTagCategory = tagCategories?.find(
+        (category) => category.name === tagToEditInitialData.tagCategoryName,
+      );
+      if (foundTagCategory) {
+        setChosenTagCategory(foundTagCategory);
+      }
+    }
+  }, [setValue, tagCategories, tagToEditInitialData]);
+
   const onSelectTagCategory = (tagCategoryName: string) => {
     const filteredTagCategories = tagCategories?.filter(
       (tagCategory) => tagCategory.name == tagCategoryName,
@@ -51,47 +105,36 @@ const AdminTagForm = () => {
     }
   };
 
-  const { createMainTag, creatingMainTag } = useCreateMainTagMutation(() => {
-    reset({
-      tagName: "",
-      category: "",
-    });
-    setChosenTagCategory(undefined);
-  });
+  const onSubmit = () => {
+    const requestData = watch();
 
-  const onCreateMainTag = ({
-    tagName,
-    category,
-  }: {
-    tagName: string;
-    category: string;
-  }) => {
-    createMainTag({
-      name: tagName,
-      tagCategoryName: category,
-      color: chosenTagCategory?.color ?? "#14b8a6",
-    });
+    if (isEdit && tagToEditInitialData && tagId) {
+      updateTag({
+        tagToUpdateId: tagId,
+        tagCategoryId: chosenTagCategory?.id,
+        name: requestData.tagName,
+        color: chosenTagCategory?.color ?? "#14b8a6",
+        initialTagData: tagToEditInitialData,
+      });
+    }
+
+    if (!isEdit) {
+      createMainTag({
+        name: requestData.tagName,
+        tagCategoryName: requestData.category,
+        color: chosenTagCategory?.color ?? "#14b8a6",
+      });
+    }
   };
 
-  const {
-    register,
-    watch,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    reset,
-  } = useForm({
-    defaultValues: {
-      tagName: "",
-      category: "",
-    },
-    resolver: yupResolver(tagValidator),
-  });
+  if (fetchingTagToEditData) {
+    return <Spinner />;
+  }
 
   return (
     <Page className={"min-h-screen p-6  flex flex-col gap-8 w-full"}>
       <AdminManagementPanelHeader
-        title={"Create New Main Tag"}
+        title={isEdit ? "Update Tag" : "Create New Tag"}
         content={""}
         link={"-1"}
       />
@@ -117,13 +160,15 @@ const AdminTagForm = () => {
                 Tag Information
               </h2>
               <p className={"text-gray-400"}>
-                Create a new tag for your platform
+                {isEdit
+                  ? "Edit chosen tag"
+                  : "Create a new tag for your platform"}
               </p>
             </div>
           </header>
 
           <form
-            onSubmit={handleSubmit(onCreateMainTag)}
+            onSubmit={handleSubmit(onSubmit)}
             className={"p-6 flex flex-col gap-6"}
           >
             <FormInput
@@ -174,11 +219,11 @@ const AdminTagForm = () => {
                 className={
                   "flex gap-2 w-full justify-center items-center py-3 rounded-lg"
                 }
-                loading={creatingMainTag}
+                loading={creatingMainTag || updatingTag}
                 type={"submit"}
               >
                 <Save className={"size-5"} />
-                Create Tag
+                {isEdit ? "Update Tag" : "Create Tag"}
               </AnimatedButton>
             </div>
           </form>

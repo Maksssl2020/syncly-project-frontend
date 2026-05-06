@@ -1,10 +1,11 @@
 import type { Tag } from "../types/tags.ts";
 import { useEffect, useState } from "react";
-import useAllTagsQuery from "./queries/useAllTagsQuery.ts";
 import useCreateCommonTagMutation from "./mutations/useCreateCommonTagMutation.ts";
+import useAllEnabledTagsQuery from "./queries/useAllEnabledTagsQuery.ts";
 
 function useTagSelection(itemTags?: Tag[]) {
-  const { allTagsData, fetchingAllTagsData } = useAllTagsQuery();
+  const { allEnabledTagsData, fetchingAllEnabledTagsData } =
+    useAllEnabledTagsQuery();
   const { createCommonTag, creatingCommonTag } = useCreateCommonTagMutation();
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
@@ -20,8 +21,8 @@ function useTagSelection(itemTags?: Tag[]) {
   }, [itemTags]);
 
   useEffect(() => {
-    if (allTagsData) {
-      const tagsData: Tag[] = allTagsData.map((tag) => ({
+    if (allEnabledTagsData) {
+      const tagsData: Tag[] = allEnabledTagsData.map((tag) => ({
         id: tag.id,
         name: tag.name,
         color: tag.color,
@@ -29,7 +30,7 @@ function useTagSelection(itemTags?: Tag[]) {
 
       setAvailableTags(tagsData);
     }
-  }, [allTagsData]);
+  }, [allEnabledTagsData]);
 
   const selectTag = (tag: Tag) => {
     const updatedTags = [...selectedTags, tag];
@@ -68,7 +69,7 @@ function useTagSelection(itemTags?: Tag[]) {
     setSearchQuery,
     onCreateCommonTag,
     creatingCommonTag,
-    fetchingAllTagsData,
+    fetchingAllEnabledTagsData,
   };
 }
 

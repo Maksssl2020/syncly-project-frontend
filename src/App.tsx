@@ -31,6 +31,8 @@ import useAuthentication from "./hooks/useAuthentication.ts";
 import { useEffect } from "react";
 import { connectStomp } from "./config/stompClient.ts";
 import TwoFactorVerificationCode from "./pages/TwoFactorVerificationCode.tsx";
+import ProtectedAdminModeratorRoute from "./routes/ProtectedAdminModeratorRoute.tsx";
+import ProtectedAdminRoute from "./routes/ProtectedAdminRoute.tsx";
 
 function App() {
   const { accessToken, username } = useAuthentication();
@@ -70,30 +72,42 @@ function App() {
             </Route>
 
             <Route element={<AdminLayout />}>
-              <Route path={"/admin/panel"} element={<AdminPanel />} />
-              <Route path={"/admin/panel/users"} element={<AdminUsers />} />
-              <Route
-                path={"/admin/panel/all-activity"}
-                element={<AdminAllActivity />}
-              />
-              <Route
-                path={"/admin/panel/users/edit/:id"}
-                element={<AdminUserForm />}
-              />
-              <Route path={"/admin/panel/reports"} element={<AdminReports />} />
-              <Route path={"/admin/panel/tags"} element={<AdminTags />} />
-              <Route
-                path={"/admin/panel/tags/create"}
-                element={<AdminTagForm />}
-              />
-              <Route
-                path={"/admin/panel/categories"}
-                element={<AdminCategories />}
-              />
-              <Route
-                path={"/admin/panel/categories/create"}
-                element={<AdminTagCategoryForm />}
-              />
+              <Route element={<ProtectedAdminModeratorRoute />}>
+                <Route path={"/admin/panel"} element={<AdminPanel />} />
+                <Route path={"/admin/panel/users"} element={<AdminUsers />} />
+                <Route
+                  path={"/admin/panel/reports"}
+                  element={<AdminReports />}
+                />
+                <Route path={"/admin/panel/tags"} element={<AdminTags />} />
+                <Route
+                  path={"/admin/panel/categories"}
+                  element={<AdminCategories />}
+                />
+              </Route>
+
+              <Route element={<ProtectedAdminRoute />}>
+                <Route
+                  path={"/admin/panel/all-activity"}
+                  element={<AdminAllActivity />}
+                />
+                <Route
+                  path={"/admin/panel/users/edit/:id"}
+                  element={<AdminUserForm />}
+                />
+                <Route
+                  path={"/admin/panel/tags/create"}
+                  element={<AdminTagForm isEdit={false} />}
+                />
+                <Route
+                  path={"/admin/panel/tags/edit/:tagId"}
+                  element={<AdminTagForm isEdit={true} />}
+                />
+                <Route
+                  path={"/admin/panel/categories/create"}
+                  element={<AdminTagCategoryForm />}
+                />
+              </Route>
             </Route>
             <Route path="/dashboard" element={<Dashboard />} />
           </Route>

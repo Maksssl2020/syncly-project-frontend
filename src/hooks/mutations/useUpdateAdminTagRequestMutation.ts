@@ -1,18 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AdminTagCreateRequest } from "../../types/tags.ts";
+import type { AdminTagUpdateRequest } from "../../types/tags.ts";
+import { handleUpdateTag } from "../../api/tag.ts";
+import toast from "react-hot-toast";
 import type { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../../types/types.ts";
-import toast from "react-hot-toast";
-import { handleCreateMainTag } from "../../api/tag.ts";
 
-function useCreateMainTagMutation(onSuccess?: () => void) {
+function useUpdateAdminTagRequestMutation(onSuccess?: () => void) {
   const queryClient = useQueryClient();
 
-  const { mutate: createMainTag, isPending: creatingMainTag } = useMutation({
-    mutationKey: ["createMainTag"],
-    mutationFn: (data: AdminTagCreateRequest) => handleCreateMainTag(data),
+  const { mutate: updateTag, isPending: updatingTag } = useMutation({
+    mutationKey: ["updateAdminTag"],
+    mutationFn: (data: AdminTagUpdateRequest) => handleUpdateTag(data),
     onSuccess: () => {
-      toast.success("Created new tag!");
+      toast.success("Successfully updated tag.");
       onSuccess?.();
 
       queryClient.invalidateQueries({
@@ -27,7 +27,7 @@ function useCreateMainTagMutation(onSuccess?: () => void) {
     },
   });
 
-  return { createMainTag, creatingMainTag };
+  return { updateTag, updatingTag };
 }
 
-export default useCreateMainTagMutation;
+export default useUpdateAdminTagRequestMutation;

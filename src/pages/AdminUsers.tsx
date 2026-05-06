@@ -1,7 +1,7 @@
 import Page from "../animation/Page.tsx";
 import Searchbar from "../components/input/Searchbar.tsx";
-import type { DropdownOption } from "../types/types.ts";
-import type { UserItem, UserRole, UserStatus } from "../types/user.ts";
+import type { AdminUserSortConfig, DropdownOption } from "../types/types.ts";
+import type { AdminUser, UserRole, UserStatus } from "../types/user.ts";
 import { useEffect, useState } from "react";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
 import UsersTable from "../components/table/UsersTable.tsx";
@@ -58,7 +58,7 @@ type FilterConfig = {
 };
 
 const AdminUsers = () => {
-  const [users, setUsers] = useState<UserItem[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [searchInputValue, setSearchInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
@@ -68,7 +68,10 @@ const AdminUsers = () => {
     status: undefined,
     search: searchQuery,
   });
-
+  const [sortConfig, setSortConfig] = useState<AdminUserSortConfig>({
+    sortBy: undefined,
+    sortDirection: "desc",
+  });
   useSearch({
     inputValue: searchInputValue,
     setSearch: setSearchQuery,
@@ -78,7 +81,8 @@ const AdminUsers = () => {
   const { allUsersData, fetchingAllUsersData } = useAllUsersQuery(
     currentPage,
     itemsPerPage,
-    "RECENT",
+    sortConfig.sortBy,
+    sortConfig.sortDirection,
     filterConfig.role,
     filterConfig.status,
     filterConfig.search,
@@ -188,7 +192,11 @@ const AdminUsers = () => {
         }
       >
         <div className={"overflow-x-auto"}>
-          <UsersTable users={users} />
+          <UsersTable
+            users={users}
+            sortConfig={sortConfig}
+            setSortConfig={setSortConfig}
+          />
         </div>
 
         {users.length === 0 && (

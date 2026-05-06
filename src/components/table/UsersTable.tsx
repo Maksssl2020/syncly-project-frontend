@@ -1,52 +1,26 @@
-import { useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import UsersTableRow from "../row/UsersTableRow.tsx";
-import type { UserItem } from "../../types/user.ts";
+import type { AdminUser } from "../../types/user.ts";
 import Modal from "../modal/Modal.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
+import type { AdminUserSortConfig } from "../../types/types.ts";
 
 type UsersTableProps = {
-  users: UserItem[];
+  users: AdminUser[];
+  sortConfig: AdminUserSortConfig;
+  setSortConfig: Dispatch<SetStateAction<AdminUserSortConfig>>;
 };
 
-type SortConfig = {
-  key: keyof UserItem | null;
-  direction: "asc" | "desc";
-};
-
-const UsersTable = ({ users }: UsersTableProps) => {
-  const [userToDelete, setUserToDelete] = useState<UserItem | null>(null);
+const UsersTable = ({ users, sortConfig, setSortConfig }: UsersTableProps) => {
+  const [userToBlock, setUserToBlock] = useState<AdminUser | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: null,
-    direction: "asc",
-  });
 
-  const sortedUsers = useMemo(() => {
-    const result = [...users];
-
-    if (sortConfig.key) {
-      result.sort((a, b) => {
-        const aValue = a[sortConfig.key as keyof UserItem];
-        const bValue = b[sortConfig.key as keyof UserItem];
-
-        if (!aValue) return -1;
-        if (!bValue) return 1;
-
-        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return result;
-  }, [users, sortConfig]);
-
-  const handleSort = (key: keyof UserItem) => {
-    setSortConfig((prevConfig) => ({
-      key,
-      direction:
-        prevConfig.key === key && prevConfig.direction === "asc"
+  const handleSort = (key: keyof AdminUser) => {
+    setSortConfig((prevConfig: AdminUserSortConfig) => ({
+      sortBy: key,
+      sortDirection:
+        prevConfig.sortBy === key && prevConfig.sortDirection === "asc"
           ? "desc"
           : "asc",
     }));
@@ -64,9 +38,9 @@ const UsersTable = ({ users }: UsersTableProps) => {
             >
               <div className={"flex items-center"}>
                 Role
-                {sortConfig.key === "role" && (
+                {sortConfig.sortBy === "role" && (
                   <span className={"ml-1 "}>
-                    {sortConfig.direction === "asc" ? (
+                    {sortConfig.sortDirection === "asc" ? (
                       <ChevronUp className={"size-4"} />
                     ) : (
                       <ChevronDown className={"size-4"} />
@@ -81,9 +55,9 @@ const UsersTable = ({ users }: UsersTableProps) => {
             >
               <div className="flex items-center">
                 Status
-                {sortConfig.key === "status" && (
+                {sortConfig.sortBy === "status" && (
                   <span className="ml-1">
-                    {sortConfig.direction === "asc" ? (
+                    {sortConfig.sortDirection === "asc" ? (
                       <ChevronUp className="size-4" />
                     ) : (
                       <ChevronDown className="size-4" />
@@ -98,9 +72,9 @@ const UsersTable = ({ users }: UsersTableProps) => {
             >
               <div className="flex items-center">
                 Posts
-                {sortConfig.key === "postCount" && (
+                {sortConfig.sortBy === "postCount" && (
                   <span className="ml-1">
-                    {sortConfig.direction === "asc" ? (
+                    {sortConfig.sortDirection === "asc" ? (
                       <ChevronUp className="size-4" />
                     ) : (
                       <ChevronDown className="size-4" />
@@ -111,23 +85,19 @@ const UsersTable = ({ users }: UsersTableProps) => {
             </th>
             <th
               className="px-4 py-3 text-left cursor-pointer"
-              // @ts-ignore
               onClick={() => handleSort("followersCount")}
             >
               <div className="flex items-center">
                 Followers
-                {
-                  // @ts-ignore
-                  sortConfig.key === "followersCount" && (
-                    <span className="ml-1">
-                      {sortConfig.direction === "asc" ? (
-                        <ChevronUp className="size-4" />
-                      ) : (
-                        <ChevronDown className="size-4" />
-                      )}
-                    </span>
-                  )
-                }
+                {sortConfig.sortBy === "followersCount" && (
+                  <span className="ml-1">
+                    {sortConfig.sortDirection === "asc" ? (
+                      <ChevronUp className="size-4" />
+                    ) : (
+                      <ChevronDown className="size-4" />
+                    )}
+                  </span>
+                )}
               </div>
             </th>
             <th
@@ -136,9 +106,9 @@ const UsersTable = ({ users }: UsersTableProps) => {
             >
               <div className="flex items-center">
                 Joined
-                {sortConfig.key === "createdAt" && (
+                {sortConfig.sortBy === "createdAt" && (
                   <span className="ml-1">
-                    {sortConfig.direction === "asc" ? (
+                    {sortConfig.sortDirection === "asc" ? (
                       <ChevronUp className="size-4" />
                     ) : (
                       <ChevronDown className="size-4" />
@@ -153,9 +123,9 @@ const UsersTable = ({ users }: UsersTableProps) => {
             >
               <div className="flex items-center">
                 Last Active
-                {sortConfig.key === "lastActive" && (
+                {sortConfig.sortBy === "lastActive" && (
                   <span className="ml-1">
-                    {sortConfig.direction === "asc" ? (
+                    {sortConfig.sortDirection === "asc" ? (
                       <ChevronUp className="size-4" />
                     ) : (
                       <ChevronDown className="size-4" />
@@ -168,12 +138,12 @@ const UsersTable = ({ users }: UsersTableProps) => {
           </tr>
         </thead>
         <tbody>
-          {sortedUsers.map((user) => (
+          {users.map((user) => (
             <UsersTableRow
               user={user}
-              onSelectUserToDelete={(user) => {
+              onSelectUserToBlock={(user) => {
                 setIsDeleteModalOpen(true);
-                setUserToDelete(user);
+                setUserToBlock(user);
               }}
             />
           ))}
@@ -181,7 +151,7 @@ const UsersTable = ({ users }: UsersTableProps) => {
       </table>
 
       <Modal
-        isOpen={isDeleteModalOpen && userToDelete !== null}
+        isOpen={isDeleteModalOpen && userToBlock !== null}
         onClose={() => setIsDeleteModalOpen(false)}
         className={
           "w-full max-w-md rounded-lg border-2 p-6 border-gray-600 bg-black-200"
@@ -189,8 +159,8 @@ const UsersTable = ({ users }: UsersTableProps) => {
       >
         <h2 className={"text-xl font-bold text-white-100"}>Delete User</h2>
         <p className={"text-gray-400"}>
-          Are you sure you want to delete user{" "}
-          <strong>{userToDelete?.username}</strong>? This action cannot be
+          Are you sure you want to block user{" "}
+          <strong>{userToBlock?.username}</strong>? This action cannot be
           undone.
         </p>
         <div className={"flex justify-end gap-2 mt-6"}>
@@ -214,7 +184,7 @@ const UsersTable = ({ users }: UsersTableProps) => {
             textColorHover={"#e6e6e6"}
             className={"px-4 py-2 rounded-lg"}
           >
-            Delete
+            Block
           </AnimatedButton>
         </div>
       </Modal>

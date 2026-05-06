@@ -23,6 +23,7 @@ import Spinner from "../components/spinner/Spinner.tsx";
 import useChangeTagCategoryMutation from "../hooks/mutations/useChangeTagCategoryMutation.ts";
 import ChangeTagCategoryModal from "../components/modal/ChangeTagCategoryModal.tsx";
 import type { AdminTag } from "../types/tags.ts";
+import useChangeTagStateMutation from "../hooks/mutations/useChangeTagStateMutation.ts";
 
 const AdminTags = () => {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ const AdminTags = () => {
     useChangeTagCategoryMutation();
 
   const { allTagsData, fetchingAllTagsData } = useAllTagsQuery();
+  const { changeTagState, changingTagState } = useChangeTagStateMutation();
 
   const tagsStats: PageStats[] = [
     {
@@ -181,7 +183,11 @@ const AdminTags = () => {
                   setSelectedTag(data);
                   setIsChangeCategoryModalOpen(true);
                 }}
-                isChanging={changingTagCategory && selectedTag?.id === tag.id}
+                onChangeTagState={(tagId) => changeTagState(tagId)}
+                isChanging={
+                  (changingTagCategory && selectedTag?.id === tag.id) ||
+                  changingTagState
+                }
               />
             ))}
           </AnimatePresence>

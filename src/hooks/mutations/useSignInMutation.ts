@@ -20,7 +20,7 @@ function useSignInMutation() {
           data.userId,
         );
         useAuthenticationStore.getState().verificationEmail = data.email;
-        toast.success("Wysłano wiadomość e-mail z kodem weryfikacyjnym.");
+        toast.success("An email with a verification code has been sent.");
         navigate("/verify-2fa");
       } else {
         useAuthenticationStore.getState().login(data);

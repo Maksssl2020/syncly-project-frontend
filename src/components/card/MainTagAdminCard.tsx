@@ -1,29 +1,28 @@
-import { motion } from "framer-motion";
-import type { AdminTag } from "../../types/tags.ts";
-import {
-  Edit,
-  Hash,
-  MessageSquare,
-  Trash2,
-  TrendingDown,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import {motion} from "framer-motion";
+import type {AdminTag} from "../../types/tags.ts";
+import {BanIcon, CirclePlusIcon, Edit, Hash, MessageSquare, TrendingUp, Users,} from "lucide-react";
 import Badge from "../badge/Badge.tsx";
 import AnimatedButton from "../button/AnimatedButton.tsx";
+import useAuthentication from "../../hooks/useAuthentication.ts";
+import {useNavigate} from "react-router-dom";
 
 type MainTagAdminCardProps = {
   tag: AdminTag;
   index: number;
   onChangeCategory: (data: AdminTag) => void;
+  onChangeTagState: (tagId: string | number) => void;
   isChanging?: boolean;
 };
 
 const MainTagAdminCard = ({
   tag,
   onChangeCategory,
+  onChangeTagState,
   isChanging,
 }: MainTagAdminCardProps) => {
+  const navigate = useNavigate();
+  const { role } = useAuthentication();
+
   return (
     <motion.div
       key={tag.id}
@@ -92,43 +91,39 @@ const MainTagAdminCard = ({
           >
             Change Category
           </AnimatedButton>
-          <AnimatedButton
-            textColor={tag.trending ? "#22c55e" : "#b0b0b0"}
-            bgColor={"#222222"}
-            borderColor={"#222222"}
-            bgColorHover={"#393939"}
-            borderColorHover={"#393939"}
-            textColorHover={tag.trending ? "#b0b0b0" : "#22c55e"}
-            className={`p-2 rounded-lg `}
-          >
-            {tag.trending ? (
-              <TrendingUp className={"size-5"} />
-            ) : (
-              <TrendingDown className={"size-5"} />
-            )}
-          </AnimatedButton>
-          <AnimatedButton
-            bgColor={"#222222"}
-            borderColor={"#222222"}
-            bgColorHover={"#393939"}
-            borderColorHover={"#393939"}
-            textColor={"#b0b0b0"}
-            textColorHover={"#b0b0b0"}
-            className={"p-2 rounded-lg"}
-          >
-            <Edit className={"size-5"} />
-          </AnimatedButton>
-          <AnimatedButton
-            bgColor={"#222222"}
-            borderColor={"#222222"}
-            bgColorHover={"#393939"}
-            borderColorHover={"#393939"}
-            textColor={"#ef4444"}
-            textColorHover={"#ef4444"}
-            className={"p-2 rounded-lg"}
-          >
-            <Trash2 className={"size-5"} />
-          </AnimatedButton>
+
+          {role === "ADMIN" && (
+            <>
+              <AnimatedButton
+                bgColor={"#222222"}
+                borderColor={"#222222"}
+                bgColorHover={"#393939"}
+                borderColorHover={"#393939"}
+                textColor={"#b0b0b0"}
+                textColorHover={"#b0b0b0"}
+                className={"p-2 rounded-lg"}
+                onClick={() => navigate(`/admin/panel/tags/edit/${tag.id}`)}
+              >
+                <Edit className={"size-5"} />
+              </AnimatedButton>
+              <AnimatedButton
+                bgColor={"#222222"}
+                borderColor={"#222222"}
+                bgColorHover={"#393939"}
+                borderColorHover={"#393939"}
+                textColor={tag.enabled ? "#ef4444" : "#22c55e"}
+                textColorHover={tag.enabled ? "#ef4444" : "#22c55e"}
+                className={"p-2 rounded-lg"}
+                onClick={() => onChangeTagState(tag.id)}
+              >
+                {tag.enabled ? (
+                  <BanIcon className={"size-5"} />
+                ) : (
+                  <CirclePlusIcon className={"size-5"} />
+                )}
+              </AnimatedButton>
+            </>
+          )}
         </div>
       </div>
     </motion.div>

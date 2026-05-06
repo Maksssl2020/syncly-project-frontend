@@ -14,20 +14,9 @@ import Spinner from "../components/spinner/Spinner.tsx";
 import Pagination from "../components/pagination/Pagination.tsx";
 import useSearch from "../hooks/useSearch.ts";
 import { CSVLink } from "react-csv";
-import { mapActivityToCsv } from "../utils/xlsxUtils.ts";
+import { exportDataToXLSX, mapActivityToCsv } from "../utils/xlsxUtils.ts";
 import { activityCsvColumns } from "../utils/csvData.ts";
-
-// @ts-ignore
-const exportDropdownOptions: DropdownOption[] = [
-  {
-    label: "Export as CSV",
-    value: "exportCsv",
-  },
-  {
-    label: "Export as JSON",
-    value: "exportJson",
-  },
-];
+import { exportDataToJson } from "../utils/jsonUtils.ts";
 
 const activityTypes: DropdownOption[] = [
   { value: "ALL", label: "All" },
@@ -71,16 +60,13 @@ const AdminAllActivity = () => {
 
   const { adminActivityData, fetchingAdminActivityData } =
     useAdminActivityDataQuery(
-      0,
+      currentPage,
       itemsPerPage,
       sortBy,
       activityActionType,
       activityTargetType,
       searchQuery,
     );
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
 
   useSearch({
     inputValue: searchQueryValue,
@@ -120,7 +106,7 @@ const AdminAllActivity = () => {
           <motion.div
             animate={{
               opacity: isExportDropdownOpen ? 1 : 0,
-              height: isExportDropdownOpen ? 115 : 0,
+              height: isExportDropdownOpen ? 135 : 0,
             }}
             className={
               "py-2 bg-black-200 flex flex-col gap-2 border-gray-600 absolute right-0 mt-4 w-48 rounded-lg border-2 z-10"
@@ -136,6 +122,7 @@ const AdminAllActivity = () => {
               <CSVLink
                 data={mapActivityToCsv(adminActivityData.content)}
                 headers={activityCsvColumns}
+                filename={"activity_data.csv"}
               >
                 Export as CSV
               </CSVLink>
@@ -146,6 +133,28 @@ const AdminAllActivity = () => {
                 backgroundColor: "#393939",
               }}
               className={"w-full h-[50px] text-white-100  cursor-pointer"}
+              onClick={() =>
+                exportDataToXLSX(
+                  adminActivityData.content,
+                  activityCsvColumns,
+                  "activity_data.xlsx",
+                )
+              }
+            >
+              Export as XLSX
+            </motion.button>
+            <motion.button
+              whileHover={{
+                color: "#14b8a6",
+                backgroundColor: "#393939",
+              }}
+              className={"w-full h-[50px] text-white-100  cursor-pointer"}
+              onClick={() =>
+                exportDataToJson(
+                  adminActivityData.content,
+                  "activity_data.json",
+                )
+              }
             >
               Export as JSON
             </motion.button>
@@ -168,7 +177,6 @@ const AdminAllActivity = () => {
                   value={searchQueryValue}
                   onChange={(value) => setSearchQueryValue(value)}
                 />
-
                 <DropdownMenu
                   options={activityTypes}
                   onChange={(value) => {
@@ -180,7 +188,6 @@ const AdminAllActivity = () => {
                   }}
                   value={activityActionType ?? "ALL"}
                 />
-
                 <DropdownMenu
                   options={activityTargets}
                   onChange={(value) => {
@@ -192,7 +199,6 @@ const AdminAllActivity = () => {
                   }}
                   value={activityTargetType ?? "ALL"}
                 />
-
                 <div className="flex items-center gap-2">
                   <SortDesc className="size-5 text-gray-400" />
                   <div className="w-full">
@@ -218,42 +224,16 @@ const AdminAllActivity = () => {
       </div>
 
       {adminActivityData.totalPages > 1 && (
-        <div className={"mt-8 flex items-center justify-between"}>
-          <p className={"text-gray-400"}>
-            Showing {startIndex + 1} -{" "}
-            {Math.min(endIndex, adminActivityData.size)} of{" "}
-            {adminActivityData.totalElements} activities
-          </p>
+        <div className={"mt-8 flex items-center justify-center"}>
           <div className={"flex items-center gap-2"}>
             <Pagination
               totalPages={adminActivityData.totalPages}
               totalItems={adminActivityData.totalElements}
               currentPageValue={currentPage}
-              currentPageDisplay={currentPage}
+              currentPageDisplay={currentPage + 1}
               perPage={itemsPerPage}
-              onPageChange={() => {}}
+              onPageChange={(newPage) => setCurrentPage(newPage)}
             />
-            <AnimatedButton
-              bgColor={"#222222"}
-              borderColorHover={"#14b8a6"}
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              className={"px-4 py-2 rounded-lg disabled:opacity-65"}
-            >
-              Previous
-            </AnimatedButton>
-            <span className={"text-white-100"}>
-              Page {currentPage} of {adminActivityData.totalPages}
-            </span>
-            <AnimatedButton
-              bgColor={"#222222"}
-              borderColorHover={"#14b8a6"}
-              disabled={currentPage === adminActivityData.totalPages}
-              onClick={() => setCurrentPage(Math.max(1, currentPage + 1))}
-              className={"px-4 py-2 rounded-lg disabled:opacity-65"}
-            >
-              Next
-            </AnimatedButton>
           </div>
         </div>
       )}

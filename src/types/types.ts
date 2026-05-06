@@ -1,4 +1,5 @@
 import React, { type JSX } from "react";
+import type { AdminUser } from "./user.ts";
 
 export type PostModalConfig = {
   title: string;
@@ -53,4 +54,9 @@ export type PageResponse<T> = {
 export interface CsvColumnsData {
   label: string;
   key: string;
+}
+
+export interface AdminUserSortConfig {
+  sortBy: keyof AdminUser | undefined;
+  sortDirection: "asc" | "desc";
 }

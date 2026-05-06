@@ -1,6 +1,6 @@
 import Page from "../animation/Page.tsx";
 import type { PageStats } from "../types/admin.ts";
-import { AlertCircle, ArrowRight, Flag, MessageSquare, Settings, Tag, Users } from "lucide-react";
+import { AlertCircle, ArrowRight, Flag, Folder, MessageSquare, Tag, Users } from "lucide-react";
 import PageStatsCard from "../components/card/PageStatsCard.tsx";
 import { motion } from "framer-motion";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
@@ -14,22 +14,22 @@ const quickActions = [
   {
     label: "Pending Reports",
     icon: <AlertCircle className={"size-5 text-red-400"} />,
-    link: "/admin/reports",
+    link: "/admin/panel/reports",
   },
   {
     label: "Manage Users",
     icon: <Users className={"size-5 text-teal-100"} />,
-    link: "/admin/users",
+    link: "/admin/panel/users",
   },
   {
     label: "Create New Tag",
     icon: <Tag className={"size-5 text-cyan-400"} />,
-    link: "/admin/tags/create",
+    link: "/admin/panel/tags/create",
   },
   {
-    label: "Platform Settings",
-    icon: <Settings className={"size-5 text-gray-400"} />,
-    link: "/admin/platform/settings",
+    label: "Create New Category",
+    icon: <Folder className={"size-5 text-blue-400"} />,
+    link: "/admin/panel/categories/create",
   },
 ];
 

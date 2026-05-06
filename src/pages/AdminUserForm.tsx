@@ -1,28 +1,17 @@
 import Page from "../animation/Page.tsx";
 import AdminManagementPanelHeader from "../components/header/AdminManagementPanelHeader.tsx";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
-import {
-  Activity,
-  Calendar,
-  Save,
-  Shield,
-  Trash2,
-  User,
-  X,
-} from "lucide-react";
+import { Activity, BanIcon, Calendar, Save, Shield, User, X } from "lucide-react";
 import { motion } from "framer-motion";
 import Avatar from "../components/img/Avatar.tsx";
-import {
-  getUserRoleBadgeColor,
-  getUserStatusBadgeColor,
-} from "../utils/colorUtils.ts";
+import { getUserRoleBadgeColor, getUserStatusBadgeColor } from "../utils/colorUtils.ts";
 import type { DropdownOption } from "../types/types.ts";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import FormTextArea from "../components/input/FormTextarea.tsx";
 import { useNavigate, useParams } from "react-router-dom";
 import useUserByIdQuery from "../hooks/queries/useUserByIdQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
-import type { UserItem, UserRole, UserStatus } from "../types/user.ts";
+import type { UserItem, UserRole } from "../types/user.ts";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
@@ -43,21 +32,6 @@ const userRolesDropdownOptions: DropdownOption[] = [
   {
     label: "ADMIN",
     value: "ADMIN",
-  },
-];
-
-const userStatusesDropdownOptions: DropdownOption[] = [
-  {
-    label: "Online",
-    value: "ONLINE",
-  },
-  {
-    label: "Blocked",
-    value: "BLOCKED",
-  },
-  {
-    label: "Offline",
-    value: "OFFLINE",
   },
 ];
 
@@ -128,8 +102,8 @@ const AdminUserForm = () => {
             textColorHover={"#222222"}
             className={"flex gap-2 px-4 py-2 rounded-lg items-center"}
           >
-            <Trash2 className={"size-4"} />
-            Delete User
+            <BanIcon className={"size-4"} />
+            Block User
           </AnimatedButton>
         }
         link={"-1"}
@@ -252,12 +226,6 @@ const AdminUserForm = () => {
                 onChange={(value) => setValue("role", value as UserRole)}
                 value={watch("role") ?? initialUserData.role}
                 placeholderChildren={<div>ROLE:</div>}
-              />
-              <DropdownMenu
-                options={userStatusesDropdownOptions}
-                onChange={(value) => setValue("status", value as UserStatus)}
-                value={watch("status") ?? initialUserData.status}
-                placeholderChildren={<div>STATUS:</div>}
               />
               <FormTextArea
                 onReset={() => setValue("bio", "")}

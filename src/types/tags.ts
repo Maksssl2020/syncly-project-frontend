@@ -10,6 +10,15 @@ export interface AdminTag {
   type: TagType;
   color: string;
   createdAt: string;
+  enabled: boolean;
+}
+
+export interface TagToEdit {
+  id: string | number;
+  tagCategoryId: string | number;
+  tagCategoryName: string;
+  name: string;
+  color: string;
 }
 
 export interface TagUsage {
@@ -20,10 +29,18 @@ export interface TagUsage {
 
 export type TagType = "MAIN" | "COMMON";
 
-export interface AdminTagRequest {
+export interface AdminTagCreateRequest {
   name: string;
   tagCategoryName: string;
   color: string;
+}
+
+export interface AdminTagUpdateRequest {
+  tagToUpdateId: string | number;
+  name?: string;
+  tagCategoryId?: string | number;
+  color?: string;
+  initialTagData: TagToEdit;
 }
 
 export interface CommonTagRequest {

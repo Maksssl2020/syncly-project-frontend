@@ -27,8 +27,6 @@ const TagSelector = ({ onSelectTag, initialTags }: TagSelectorProps) => {
     fetchingAllTagsData,
   } = useTagSelection(initialTags);
 
-  console.log(selectedTags);
-
   if (fetchingAllTagsData) {
     return null;
   }

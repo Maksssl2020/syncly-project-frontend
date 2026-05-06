@@ -1,4 +1,5 @@
 import type { UserProfile } from "./userProfile.ts";
+import type { Image } from "./image.ts";
 
 export const USER_ROLES = ["ADMIN", "MODERATOR", "REGISTERED"] as const;
 export type UserRole = (typeof USER_ROLES)[number];
@@ -18,6 +19,20 @@ export interface UserItem {
   isActive: boolean;
   userProfile: UserProfile;
   mutualFriendsCount: number;
+}
+
+export interface AdminUser {
+  userId: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  postCount: number;
+  createdAt: string;
+  lastActive?: string;
+  isActive: boolean;
+  avatar?: Image;
+  followersCount: number;
 }
 
 export interface UserSearchResult {

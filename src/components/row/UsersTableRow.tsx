@@ -1,20 +1,17 @@
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import { Edit, Trash2 } from "lucide-react";
-import type { UserItem } from "../../types/user.ts";
+import { BanIcon, Edit } from "lucide-react";
+import type { AdminUser } from "../../types/user.ts";
 import Avatar from "../img/Avatar.tsx";
-import {
-  getUserRoleBadgeColor,
-  getUserStatusBadgeColor,
-} from "../../utils/colorUtils.ts";
+import { getUserRoleBadgeColor, getUserStatusBadgeColor } from "../../utils/colorUtils.ts";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
 type UsersTableRowProps = {
-  user: UserItem;
-  onSelectUserToDelete?: (value: UserItem) => void;
+  user: AdminUser;
+  onSelectUserToBlock?: (value: AdminUser) => void;
 };
 
-const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
+const UsersTableRow = ({ user, onSelectUserToBlock }: UsersTableRowProps) => {
   const navigate = useNavigate();
 
   console.log(user.lastActive);
@@ -23,7 +20,7 @@ const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
     <tr key={user.userId} className={"border-t border-gray-600 bg-black-300"}>
       <td className={"px-4 py-3"}>
         <div className={"flex items-center gap-3"}>
-          <Avatar size={"size-10"} avatar={user.userProfile.avatar} />
+          <Avatar size={"size-10"} avatar={user.avatar} />
           <div className={"text-white-100"}>
             <div className={"font-medium "}>{user.username}</div>
             <div className={"text-sm"}>{user.email}</div>
@@ -54,9 +51,7 @@ const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
         </span>
       </td>
       <td className={"px-4 py-3 text-white-100"}>{user.postCount}</td>
-      <td className={"px-4 py-3 text-white-100"}>
-        {user.userProfile.followersCount}
-      </td>
+      <td className={"px-4 py-3 text-white-100"}>{user.followersCount}</td>
       <td className={"px-4 py-3 text-gray-400"}>
         {format(user.createdAt, "dd-MM-yyyy")}
       </td>
@@ -84,9 +79,9 @@ const UsersTableRow = ({ user, onSelectUserToDelete }: UsersTableRowProps) => {
             borderColorHover={"171719"}
             textColor={"#ef4444"}
             className={"p-1 rounded"}
-            onClick={() => onSelectUserToDelete?.(user)}
+            onClick={() => onSelectUserToBlock?.(user)}
           >
-            <Trash2 />
+            <BanIcon />
           </AnimatedButton>
         </div>
       </td>

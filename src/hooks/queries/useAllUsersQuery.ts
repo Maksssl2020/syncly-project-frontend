@@ -5,7 +5,8 @@ import type { UserRole, UserStatus } from "../../types/user.ts";
 function useAllUsersQuery(
   page: number = 0,
   size: number = 10,
-  sortOption: "RECENT" | "OLDEST" = "RECENT",
+  sortBy?: string,
+  sortDirection: "asc" | "desc" = "desc",
   userRole?: UserRole,
   userStatus?: UserStatus,
   searchQuery?: string,
@@ -15,13 +16,22 @@ function useAllUsersQuery(
       "allUsersData",
       page,
       size,
-      sortOption,
+      sortBy,
+      sortDirection,
       userRole,
       userStatus,
       searchQuery,
     ],
     queryFn: () =>
-      fetchAllUsers(page, size, sortOption, userRole, userStatus, searchQuery),
+      fetchAllUsers(
+        page,
+        size,
+        sortBy,
+        sortDirection,
+        userRole,
+        userStatus,
+        searchQuery,
+      ),
   });
 
   return { allUsersData, fetchingAllUsersData };

@@ -1,5 +1,5 @@
 export interface TagCategory {
-  id: string;
+  id: string | number;
   name: string;
   description: string;
   tagCount: number;

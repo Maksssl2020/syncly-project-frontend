@@ -7,15 +7,16 @@ import Tabs from "../components/tab/Tabs.tsx";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import TagCard from "../components/card/TagCard.tsx";
-import useAllTagsQuery from "../hooks/queries/useAllTagsQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
 import useFollowedTagsQuery from "../hooks/queries/useFollowedTagsQuery.ts";
 import useFollowTagMutation from "../hooks/mutations/useFollowTagMutation.ts";
 import useUnfollowTagMutation from "../hooks/mutations/useUnfollowTagMutation.ts";
 import { isThisWeek } from "date-fns";
+import useAllEnabledTagsQuery from "../hooks/queries/useAllEnabledTagsQuery.ts";
 
 const Tags = () => {
-  const { allTagsData, fetchingAllTagsData } = useAllTagsQuery();
+  const { allEnabledTagsData, fetchingAllEnabledTagsData } =
+    useAllEnabledTagsQuery();
   const { followedTags, fetchingFollowedTags } = useFollowedTagsQuery();
   const { followTag, followingTag } = useFollowTagMutation();
   const { unfollowTag, unfollowingTag } = useUnfollowTagMutation();
@@ -33,7 +34,11 @@ const Tags = () => {
     }
   }, [fetchingFollowedTags, followedTags]);
 
-  if (fetchingAllTagsData || !allTagsData || fetchingFollowedTags) {
+  if (
+    fetchingAllEnabledTagsData ||
+    !allEnabledTagsData ||
+    fetchingFollowedTags
+  ) {
     return <Spinner />;
   }
 
@@ -42,7 +47,7 @@ const Tags = () => {
       id: "all",
       label: "All Tags",
       icon: <Hash className="size-4" />,
-      count: allTagsData.length,
+      count: allEnabledTagsData.length,
       color: "#14b8a6",
     },
     {
@@ -56,14 +61,15 @@ const Tags = () => {
       id: "trending",
       label: "Trending",
       icon: <TrendingUp className="size-4" />,
-      count: allTagsData.filter((tag) => tag.trending).length,
+      count: allEnabledTagsData.filter((tag) => tag.trending).length,
       color: "#0d9488",
     },
     {
       id: "recent",
       label: "Recent",
       icon: <Clock className="size-4" />,
-      count: allTagsData.filter((tag) => isThisWeek(tag.createdAt)).length,
+      count: allEnabledTagsData.filter((tag) => isThisWeek(tag.createdAt))
+        .length,
       color: "#0d9488",
     },
   ];
@@ -82,7 +88,7 @@ const Tags = () => {
     }
   };
 
-  const filteredTags = allTagsData.filter((tag) => {
+  const filteredTags = allEnabledTagsData.filter((tag) => {
     const matchesSearch = tag.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
@@ -101,7 +107,7 @@ const Tags = () => {
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className={"grid grid-cols-1 lg:grid-cols-4 gap-8"}>
           <TagsSidebar
-            tagsData={allTagsData}
+            tagsData={allEnabledTagsData}
             followedTags={followingTags}
             searchQuery={searchQuery}
             onChange={(value) => setSearchQuery(value)}

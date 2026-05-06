@@ -1,20 +1,27 @@
 import axiosConfig from "../config/axiosConfig.ts";
-import type { UserItem, UserRole, UserStatus } from "../types/user.ts";
+import type {
+  AdminUser,
+  UserItem,
+  UserRole,
+  UserStatus,
+} from "../types/user.ts";
 import type { PageResponse } from "../types/types.ts";
 
 export async function fetchAllUsers(
   page: number = 0,
   size: number = 10,
-  sortOption: "RECENT" | "OLDEST" = "RECENT",
+  sortBy?: string,
+  sorDirection: "asc" | "desc" = "desc",
   userRole?: UserRole,
   userStatus?: UserStatus,
   searchQuery?: string,
 ) {
-  const response = await axiosConfig.get<PageResponse<UserItem>>("/users", {
+  const response = await axiosConfig.get<PageResponse<AdminUser>>("/users", {
     params: {
       page,
       size,
-      sortOption,
+      sortBy,
+      sorDirection,
       userRole,
       userStatus,
       searchQuery,
