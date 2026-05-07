@@ -2,7 +2,8 @@ import axios from "axios";
 import { useAuthenticationStore } from "../store/authenticationStore.ts";
 
 const instance = axios.create({
-  baseURL: "http://localhost:8080/api/v1",
+  // baseURL: "http://localhost:8080/api/v1",
+  baseURL: "https://ns31075468.ip-51-77-53.eu:8443/syncly/api/v1",
 });
 
 instance.interceptors.request.use((config) => {
