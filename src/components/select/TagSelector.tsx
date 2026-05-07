@@ -1,11 +1,11 @@
 import useClickOutside from "../../hooks/useClickOutside.ts";
 import useTagSelection from "../../hooks/useTagSelection.ts";
-import { useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import {useRef} from "react";
+import {AnimatePresence, motion} from "framer-motion";
 import TagSelectionCard from "../card/TagSelectionCard.tsx";
-import { Hash, Plus, Search, Trash2 } from "lucide-react";
+import {Hash, Plus, Search, Trash2} from "lucide-react";
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import type { Tag } from "../../types/tags.ts";
+import type {Tag} from "../../types/tags.ts";
 
 type TagSelectorProps = {
   initialTags?: Tag[];
@@ -24,10 +24,10 @@ const TagSelector = ({ onSelectTag, initialTags }: TagSelectorProps) => {
     onCreateCommonTag,
     setSearchQuery,
     searchQuery,
-    fetchingAllTagsData,
+    fetchingAllEnabledTagsData,
   } = useTagSelection(initialTags);
 
-  if (fetchingAllTagsData) {
+  if (fetchingAllEnabledTagsData) {
     return null;
   }
 

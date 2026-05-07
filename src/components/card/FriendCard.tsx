@@ -39,7 +39,7 @@ const FriendCard = ({ friend }: FriendCardProps) => {
         <div className={"relative"}>
           <Avatar size={"size-12"} avatar={friend.user.userProfile.avatar} />
 
-          {friend.user.status === "ACTIVE" && (
+          {friend.user.status === "ONLINE" && (
             <div
               className={
                 "absolute -bottom-1 -right-1 size-4 bg-teal-100 rounded-full"

@@ -3,6 +3,7 @@ import type {
   ChangePasswordRequest,
   SignInRequest,
   SignUpRequest,
+  TwoFactorVerificationRequest,
 } from "../types/authentication.ts";
 import axiosConfig from "../config/axiosConfig.ts";
 

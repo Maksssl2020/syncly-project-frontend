@@ -6,6 +6,11 @@ export async function fetchTagCategories() {
   return response.data;
 }
 
+export async function fetchTagCategoriesNames() {
+  const response = await axiosConfig.get<string[]>("/tag-categories/names");
+  return response.data;
+}
+
 export async function handleCreateTagCategory(data: TagCategoryRequest) {
   const response = await axiosConfig.post<void>("/tag-categories/create", data);
   return response.data;

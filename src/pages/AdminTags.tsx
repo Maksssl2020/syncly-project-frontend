@@ -1,35 +1,34 @@
 import Page from "../animation/Page";
 import AdminManagementPanelHeader from "../components/header/AdminManagementPanelHeader.tsx";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
-import {
-  Flag,
-  Hash,
-  MessageSquare,
-  Plus,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import {Flag, Hash, MessageSquare, Plus, TrendingUp, Users,} from "lucide-react";
 import PageStatsCard from "../components/card/PageStatsCard.tsx";
-import type { PageStats } from "../types/admin.ts";
-import { useEffect, useState } from "react";
+import type {PageStats} from "../types/admin.ts";
+import {useState} from "react";
 import Searchbar from "../components/input/Searchbar.tsx";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
-import type { DropdownOption } from "../types/types.ts";
-import { AnimatePresence } from "framer-motion";
+import type {DropdownOption} from "../types/types.ts";
+import {AnimatePresence} from "framer-motion";
 import MainTagAdminCard from "../components/card/MainTagAdminCard.tsx";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import useAllTagsQuery from "../hooks/queries/useAllTagsQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
 import useChangeTagCategoryMutation from "../hooks/mutations/useChangeTagCategoryMutation.ts";
 import ChangeTagCategoryModal from "../components/modal/ChangeTagCategoryModal.tsx";
-import type { AdminTag } from "../types/tags.ts";
+import type {AdminTag} from "../types/tags.ts";
 import useChangeTagStateMutation from "../hooks/mutations/useChangeTagStateMutation.ts";
+import useSearch from "../hooks/useSearch.ts";
+import useTagsAdminStatsQuery from "../hooks/queries/useTagsAdminStatsQuery.ts";
+import useTagCategoriesNamesQuery from "../hooks/queries/useTagCategoriesNamesQuery.ts";
+import Pagination from "../components/pagination/Pagination.tsx";
 
 const AdminTags = () => {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined,
+  );
   const [showTrendingOnly, setShowTrendingOnly] = useState(false);
   const [selectedTag, setSelectedTag] = useState<AdminTag | undefined>(
     undefined,
@@ -38,9 +37,27 @@ const AdminTags = () => {
     useState(false);
   const { changeTagCategory, changingTagCategory } =
     useChangeTagCategoryMutation();
+  const [currentPage, setCurrentPage] = useState<number>(0);
 
-  const { allTagsData, fetchingAllTagsData } = useAllTagsQuery();
+  useSearch({
+    inputValue: inputValue,
+    setSearch: setSearchTerm,
+    saveSearchEnabled: false,
+  });
+
+  const { allTagsData, fetchingAllTagsData } = useAllTagsQuery(
+    currentPage,
+    20,
+    "RECENT",
+    selectedCategory,
+    showTrendingOnly,
+    searchTerm,
+  );
+  const { tagsAdminStatsData, fetchingTagsAdminStats } =
+    useTagsAdminStatsQuery();
   const { changeTagState, changingTagState } = useChangeTagStateMutation();
+  const { tagCategoriesNamesData, fetchingTagCategoriesNamesData } =
+    useTagCategoriesNamesQuery();
 
   const tagsStats: PageStats[] = [
     {
@@ -48,64 +65,53 @@ const AdminTags = () => {
       icon: <Hash className={"size-6"} />,
       color: "#14b8a6",
       change: "",
-      value: allTagsData?.length ?? 0,
+      value: tagsAdminStatsData?.totalTags ?? 0,
     },
     {
       title: "Trending",
       icon: <TrendingUp className={"size-6"} />,
       color: "#22d3ee",
       change: "",
-      value: allTagsData?.filter((tag) => tag.trending).length ?? 0,
+      value: tagsAdminStatsData?.totalTrendingTags ?? 0,
     },
     {
       title: "Total Posts",
       icon: <MessageSquare className={"size-6"} />,
       color: "#0d9488",
       change: "",
-      value:
-        allTagsData
-          ?.reduce((sum, tag) => sum + tag.postsCount, 0)
-          .toLocaleString() ?? 0,
+      value: tagsAdminStatsData?.totalPosts ?? 0,
     },
     {
       title: "Total Followers",
       icon: <Users className={"size-6"} />,
       color: "#06b6d4",
       change: "",
-      value:
-        allTagsData
-          ?.reduce((sum, tag) => sum + tag.followersCount, 0)
-          .toLocaleString() ?? 0,
+      value: tagsAdminStatsData?.totalFollowers ?? 0,
     },
   ];
 
-  useEffect(() => {
-    const id = setTimeout(() => setSearchTerm(inputValue), 500);
-    return () => clearTimeout(id);
-  }, [inputValue]);
-
-  if (fetchingAllTagsData || !allTagsData) {
+  if (
+    fetchingAllTagsData ||
+    !allTagsData ||
+    fetchingTagsAdminStats ||
+    fetchingTagCategoriesNamesData
+  ) {
     return <Spinner />;
   }
 
-  const filteredTags = allTagsData.filter((tag) => {
-    const matchesSearch =
-      tag.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tag.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || tag.tagCategory === selectedCategory;
-    const matchesTrending = !showTrendingOnly || tag.trending;
-
-    return matchesSearch && matchesCategory && matchesTrending;
-  });
-
-  const tagsCategories = new Set(allTagsData.map((tag) => tag.tagCategory));
-  const filters: DropdownOption[] = [
-    { label: "All", value: "all" },
-    ...Array.from(tagsCategories.values()).map((category) => ({
+  const mappedCategoriesNames = (tagCategoriesNamesData ?? []).map(
+    (category) => ({
       value: category,
       label: category,
-    })),
+    }),
+  );
+
+  console.log(mappedCategoriesNames);
+  console.log(tagCategoriesNamesData);
+
+  const filters: DropdownOption[] = [
+    { label: "All", value: "All" },
+    ...mappedCategoriesNames,
   ];
 
   return (
@@ -151,8 +157,14 @@ const AdminTags = () => {
                 </div>
               }
               options={filters}
-              onChange={(value) => setSelectedCategory(value)}
-              value={selectedCategory}
+              onChange={(value) => {
+                if (value === "All") {
+                  setSelectedCategory(undefined);
+                } else {
+                  setSelectedCategory(value);
+                }
+              }}
+              value={selectedCategory || "All"}
             />
 
             <AnimatedButton
@@ -175,7 +187,7 @@ const AdminTags = () => {
 
         <div className={"flex flex-col gap-4"}>
           <AnimatePresence>
-            {filteredTags.map((tag, index) => (
+            {allTagsData.content.map((tag, index) => (
               <MainTagAdminCard
                 tag={tag}
                 index={index}
@@ -184,15 +196,15 @@ const AdminTags = () => {
                   setIsChangeCategoryModalOpen(true);
                 }}
                 onChangeTagState={(tagId) => changeTagState(tagId)}
-                isChanging={
-                  (changingTagCategory && selectedTag?.id === tag.id) ||
-                  changingTagState
+                isChangingCategory={
+                  changingTagCategory && selectedTag?.id === tag.id
                 }
+                isChangingState={changingTagState}
               />
             ))}
           </AnimatePresence>
 
-          {filteredTags.length === 0 && (
+          {allTagsData.totalElements === 0 && (
             <div className="text-center py-12">
               <Hash className="size-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-xl font-semibold mb-2 text-white-100">
@@ -203,6 +215,17 @@ const AdminTags = () => {
               </p>
             </div>
           )}
+        </div>
+
+        <div className={"w-full flex justify-center"}>
+          <Pagination
+            totalPages={allTagsData.totalPages}
+            totalItems={allTagsData.totalElements}
+            currentPageValue={currentPage}
+            currentPageDisplay={currentPage + 1}
+            perPage={allTagsData.size}
+            onPageChange={(newPage) => setCurrentPage(newPage)}
+          />
         </div>
       </div>
 

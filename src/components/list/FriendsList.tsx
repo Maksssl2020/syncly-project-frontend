@@ -29,7 +29,7 @@ const FriendsList = ({
       case "alphabetical":
         return a.user.username.localeCompare(b.user.username);
       case "activity":
-        return a.user.status === "ACTIVE" ? -1 : 1;
+        return a.user.status === "ONLINE" ? -1 : 1;
       case "mutual":
         return b.mutualFriendsCount - a.mutualFriendsCount;
       default:

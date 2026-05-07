@@ -13,6 +13,13 @@ export interface AdminTag {
   enabled: boolean;
 }
 
+export interface TagsAdminStats {
+  totalTags: number;
+  totalTrendingTags: number;
+  totalPosts: number;
+  totalFollowers: number;
+}
+
 export interface TagToEdit {
   id: string | number;
   tagCategoryId: string | number;

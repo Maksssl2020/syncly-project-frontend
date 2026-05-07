@@ -88,7 +88,7 @@ const AdminSidebar = () => {
 
         <div className={"absolute bottom-8 left-0 w-full px-6"}>
           <AnimatedButton
-            className={"flex items-center px-4 py-3 rounded-lg w-full"}
+            className={"flex items-center gap-3 px-4 py-3 rounded-lg w-full"}
             bgColor={"#222222"}
             bgColorHover={"#393939"}
             textColor={"#b0b0b0"}

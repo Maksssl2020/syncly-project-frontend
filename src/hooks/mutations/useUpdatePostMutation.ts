@@ -10,16 +10,13 @@ function useUpdatePostMutation<T extends PostType>(onSuccess?: () => void) {
 
   const { mutate: updatePost, isPending: updatingPost } = useMutation({
     mutationKey: ["updatePost"],
-    mutationFn: ({
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      userId,
-      type,
-      updateRequest,
-    }: {
+    mutationFn: (variables: {
       userId: string | number;
       type: T;
       updateRequest: UpdateRequestByType[T];
-    }) => handleUpdatePost(type, updateRequest),
+    }) => {
+      return handleUpdatePost(variables.type, variables.updateRequest);
+    },
     onSuccess: (_, variables) => {
       toast.success("Updated post successfully.");
       onSuccess?.();

@@ -11,14 +11,16 @@ type MainTagAdminCardProps = {
   index: number;
   onChangeCategory: (data: AdminTag) => void;
   onChangeTagState: (tagId: string | number) => void;
-  isChanging?: boolean;
+  isChangingCategory?: boolean;
+  isChangingState?: boolean;
 };
 
 const MainTagAdminCard = ({
   tag,
   onChangeCategory,
   onChangeTagState,
-  isChanging,
+  isChangingCategory,
+  isChangingState,
 }: MainTagAdminCardProps) => {
   const navigate = useNavigate();
   const { role } = useAuthentication();
@@ -63,6 +65,13 @@ const MainTagAdminCard = ({
                 bgColor={tag.color}
                 title={tag.tagCategory}
               />
+              <Badge
+                className={
+                  "px-2 py-1 rounded-full text-xs bg-gray-600 text-black-100 font-bold"
+                }
+                bgColor={tag.enabled ? "#22c55e" : "#ef4444"}
+                title={tag.enabled ? "ENABLED" : "DISABLED"}
+              />
             </div>
             <p className={"text-gray-400"}>{tag.description}</p>
             <div className={"flex items-center gap-6 text-sm"}>
@@ -87,7 +96,7 @@ const MainTagAdminCard = ({
             textColorHover={"#b0b0b0"}
             className={"p-2 rounded-lg border-2 mr-4"}
             onClick={() => onChangeCategory(tag)}
-            loading={isChanging}
+            loading={isChangingCategory}
           >
             Change Category
           </AnimatedButton>
@@ -115,6 +124,7 @@ const MainTagAdminCard = ({
                 textColorHover={tag.enabled ? "#ef4444" : "#22c55e"}
                 className={"p-2 rounded-lg"}
                 onClick={() => onChangeTagState(tag.id)}
+                loading={isChangingState}
               >
                 {tag.enabled ? (
                   <BanIcon className={"size-5"} />

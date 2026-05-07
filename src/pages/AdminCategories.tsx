@@ -91,7 +91,7 @@ const AdminCategories = () => {
         case "tagCount":
           return b.tagCount - a.tagCount;
         case "recent":
-          return b.id.localeCompare(a.id);
+          return b.id.toString().localeCompare(a.id.toString());
         default:
           return 0;
       }

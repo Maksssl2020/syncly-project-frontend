@@ -4,10 +4,12 @@ import type {
   AdminTagUpdateRequest,
   CommonTagRequest,
   Tag,
+  TagsAdminStats,
   TagToEdit,
-  TagUsage,
+  TagUsage
 } from "../types/tags.ts";
 import axiosConfig from "../config/axiosConfig.ts";
+import type { PageResponse } from "../types/types.ts";
 
 export async function handleCreateMainTag(data: AdminTagCreateRequest) {
   const response = await axiosConfig.post<void>("/tags/create/main", data);
@@ -19,8 +21,29 @@ export async function handleCreateCommonTag(data: CommonTagRequest) {
   return response.data;
 }
 
-export async function fetchAllTags() {
-  const response = await axiosConfig.get<AdminTag[]>("/tags");
+export async function fetchAllTags(
+  page: number = 0,
+  size: number = 10,
+  sortOption: "RECENT" | "OLDEST" = "RECENT",
+  tagCategoryName?: string,
+  trendingOnly?: boolean,
+  searchQuery?: string,
+) {
+  const response = await axiosConfig.get<PageResponse<AdminTag>>("/tags", {
+    params: {
+      page,
+      size,
+      sortOption,
+      tagCategoryName,
+      trendingOnly,
+      searchQuery,
+    },
+  });
+  return response.data;
+}
+
+export async function fetchTagsAdminStats() {
+  const response = await axiosConfig.get<TagsAdminStats>("/tags/admin-stats");
   return response.data;
 }
 
@@ -101,7 +124,9 @@ export async function handleChangeTagCategory(
 }
 
 export async function handleChangeTagState(tagId: string | number) {
-  const response = await axiosConfig.patch("/tags/change-state", tagId);
+  const response = await axiosConfig.patch("/tags/change-state", {
+    tagId,
+  });
   return response.data;
 }
 
