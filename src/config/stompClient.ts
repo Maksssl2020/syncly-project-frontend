@@ -27,7 +27,8 @@ export const connectStomp = (
     resolveConnected = resolve;
 
     stompClient = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () =>
+        new SockJS("https://ns31075468.ip-51-77-53.eu:8443/syncly/ws"),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
