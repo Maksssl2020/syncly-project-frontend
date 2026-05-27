@@ -16,7 +16,7 @@ export const connectStomp = (
   token: string,
   username: string,
 ): Promise<Client> => {
-  if (stompClient?.connected) {
+  if (stompClient?.connected || stompClient?.active) {
     console.log("STOMP already connected");
     return connectedPromise!;
   }
@@ -28,9 +28,7 @@ export const connectStomp = (
 
     stompClient = new Client({
       webSocketFactory: () =>
-        new SockJS(
-          `https://ns31075468.ip-51-77-53.eu:8443/syncly/ws?token=${encodeURIComponent(token)}`,
-        ),
+        new SockJS(`https://ns31075468.ip-51-77-53.eu:8443/syncly/ws`),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
