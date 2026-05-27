@@ -33,6 +33,7 @@ export interface AdminUser {
   isActive: boolean;
   avatar?: Image;
   followersCount: number;
+  accountNonLocked: boolean;
 }
 
 export interface UserSearchResult {

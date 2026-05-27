@@ -5,33 +5,13 @@ import type { UserRole, UserStatus } from "../../types/user.ts";
 function useAllUsersQuery(
   page: number = 0,
   size: number = 10,
-  sortBy?: string,
-  sortDirection: "asc" | "desc" = "desc",
   userRole?: UserRole,
   userStatus?: UserStatus,
   searchQuery?: string,
 ) {
   const { data: allUsersData, isLoading: fetchingAllUsersData } = useQuery({
-    queryKey: [
-      "allUsersData",
-      page,
-      size,
-      sortBy,
-      sortDirection,
-      userRole,
-      userStatus,
-      searchQuery,
-    ],
-    queryFn: () =>
-      fetchAllUsers(
-        page,
-        size,
-        sortBy,
-        sortDirection,
-        userRole,
-        userStatus,
-        searchQuery,
-      ),
+    queryKey: ["allUsersData", page, size, userRole, userStatus, searchQuery],
+    queryFn: () => fetchAllUsers(page, size, userRole, userStatus, searchQuery),
   });
 
   return { allUsersData, fetchingAllUsersData };

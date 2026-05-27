@@ -31,7 +31,7 @@ const ConversationsSidebar = ({
   return (
     <aside
       className={
-        "w-ful md:w-80 hidden overflow-y-auto md:block min-h-[91.15vh] px-2 py-4 bg-black-200 border-gray-600 border-r-2"
+        "w-ful md:w-80 hidden overflow-y-auto md:block min-h-[93vh] px-2 py-4 bg-black-200 border-gray-600 border-r-2"
       }
     >
       <div className={"flex-1 flex flex-col min-h-[87.5vh] w-full gap-8"}>

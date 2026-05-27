@@ -5,14 +5,10 @@ import AnimatedButton from "../button/AnimatedButton.tsx";
 import { Send, Smile } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import useAuthentication from "../../hooks/useAuthentication.ts";
-import type {
-  ConversationMessage,
-  ConversationRequest,
-} from "../../types/conversation.ts";
-import { Client, Stomp } from "@stomp/stompjs";
+import type { ConversationMessage, ConversationRequest } from "../../types/conversation.ts";
 import useConversationInfiniteQuery from "../../hooks/queries/useConversationInfiniteQuery.ts";
-import SockJS from "sockjs-client";
 import Spinner from "../spinner/Spinner.tsx";
+import { connectStomp, sendMessage, subscribeToMessages } from "../../config/stompClient.ts";
 
 type ConversationSectionProps = {
   receiverId: string | number;
@@ -24,10 +20,9 @@ const ConversationSection = ({
   receiverUsername,
 }: ConversationSectionProps) => {
   const { inView } = useInView();
-  const { username, userId } = useAuthentication();
+  const { username, userId, accessToken } = useAuthentication();
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [messageText, setMessageText] = useState("");
-  const [stompClient, setStompClient] = useState<Client | null>(null);
 
   const { fetchNextPage, data, isFetchingNextPage, hasNextPage, isLoading } =
     useConversationInfiniteQuery(20, receiverId);
@@ -35,48 +30,33 @@ const ConversationSection = ({
   const allMessages = data?.pages?.flatMap((page) => page?.content);
 
   useEffect(() => {
-    const connectWithWebSocket = () => {
-      const socket = new SockJS("http://localhost:8080/ws");
-      const client = Stomp.over(socket);
+    if (!accessToken || !username) return;
 
-      client.connect({}, () => {
-        setStompClient(client);
+    connectStomp(accessToken, username);
 
-        client.subscribe(`/user/${username}/queue/messages`, (message) => {
-          const receivedMessage: ConversationMessage = JSON.parse(message.body);
-          setMessages((prevState) => [...prevState, receivedMessage]);
-        });
-      });
+    const unsubscribe = subscribeToMessages((message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [accessToken, username]);
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) return;
+    if (!username || !receiverUsername || !userId || !receiverId) return;
+
+    const messageToSend: ConversationRequest = {
+      senderUsername: username,
+      senderId: userId,
+      recipientUsername: receiverUsername,
+      recipientId: receiverId,
+      message: messageText,
     };
 
-    connectWithWebSocket();
-  }, [username]);
-
-  const sendMessage = async () => {
-    if (!messageText.trim() || !receiverId || !stompClient) return;
-
-    try {
-      if (username && receiverUsername && userId && receiverId) {
-        const messageToSend: ConversationRequest = {
-          senderUsername: username,
-          senderId: userId,
-          recipientUsername: receiverUsername,
-          recipientId: receiverId,
-          message: messageText,
-        };
-
-        stompClient.publish({
-          destination: "/app/conversation",
-          body: JSON.stringify(messageToSend),
-          headers: { "content-type": "application/json" },
-        });
-
-        setMessageText("");
-      }
-    } catch (error) {
-      console.error("Błąd podczas wysyłania wiadomości:", error);
-      throw error;
-    }
+    await sendMessage(messageToSend);
+    setMessageText("");
   };
 
   useEffect(() => {
@@ -159,7 +139,7 @@ const ConversationSection = ({
                   bgColorHover={"#222222"}
                   textColorHover={"#14b8a6"}
                   className={"p-1 rounded-full"}
-                  onClick={sendMessage}
+                  onClick={handleSendMessage}
                 >
                   <Send className={"size-6"} />
                 </AnimatedButton>

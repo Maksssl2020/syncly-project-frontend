@@ -151,6 +151,7 @@ const AdminPanel = () => {
               textColor={"#e6e6e6"}
               textColorHover={"#14b8a6"}
               className={"rounded-lg px-8 py-4 mx-auto uppercase text-lg"}
+              onClick={() => navigate("/admin/panel/all-activity")}
             >
               View All Activity
             </AnimatedButton>

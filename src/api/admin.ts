@@ -47,6 +47,16 @@ export async function fetchAdminActivityData(
   return response.data;
 }
 
+export async function handleBlockUser(userId: string | number) {
+  const response = await axiosConfig.patch(`/admin/user/block/${userId}`);
+  return response.data;
+}
+
+export async function handleUnblockUser(userId: string | number) {
+  const response = await axiosConfig.patch(`/admin/user/unblock/${userId}`);
+  return response.data;
+}
+
 export async function handleUpdateUserAsAdmin(data: UpdateUserAsAdminRequest) {
   const { userId, updatedUserData, initialUserData } = data;
   const formData = new FormData();

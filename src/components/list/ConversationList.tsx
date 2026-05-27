@@ -1,4 +1,7 @@
-import type { ConversationResponse, SelectedConversation } from "../../types/conversation.ts";
+import type {
+  ConversationResponse,
+  SelectedConversation,
+} from "../../types/conversation.ts";
 import ConversationCard from "../card/ConversationCard.tsx";
 import { getConversationId } from "../../utils/conversationUtils.ts";
 
@@ -35,6 +38,7 @@ const ConversationList = ({
 
         return (
           <ConversationCard
+            key={conversation.conversationId}
             onSelect={onSelect}
             isActive={isActive}
             conversation={conversation}

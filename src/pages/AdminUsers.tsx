@@ -1,6 +1,6 @@
 import Page from "../animation/Page.tsx";
 import Searchbar from "../components/input/Searchbar.tsx";
-import type { AdminUserSortConfig, DropdownOption } from "../types/types.ts";
+import type { DropdownOption } from "../types/types.ts";
 import type { AdminUser, UserRole, UserStatus } from "../types/user.ts";
 import { useEffect, useState } from "react";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
@@ -12,6 +12,8 @@ import { Shield, User } from "lucide-react";
 import DropdownMenu from "../components/dropdown/DropdownMenu.tsx";
 import useSearch from "../hooks/useSearch.ts";
 import Pagination from "../components/pagination/Pagination.tsx";
+import useBlockUserMutation from "../hooks/mutations/useBlockUserMutation.ts";
+import useUnblockUserMutation from "../hooks/mutations/useUnblockUserMutation.ts";
 
 const roleFilterOptions: DropdownOption[] = [
   {
@@ -63,14 +65,11 @@ const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage] = useState(20);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [filterConfig, setFilterConfig] = useState<FilterConfig>({
     role: undefined,
     status: undefined,
     search: searchQuery,
-  });
-  const [sortConfig, setSortConfig] = useState<AdminUserSortConfig>({
-    sortBy: undefined,
-    sortDirection: "desc",
   });
   useSearch({
     inputValue: searchInputValue,
@@ -81,12 +80,14 @@ const AdminUsers = () => {
   const { allUsersData, fetchingAllUsersData } = useAllUsersQuery(
     currentPage,
     itemsPerPage,
-    sortConfig.sortBy,
-    sortConfig.sortDirection,
     filterConfig.role,
     filterConfig.status,
     filterConfig.search,
   );
+  const { blockUser } = useBlockUserMutation(() => {
+    setIsBlockModalOpen(false);
+  });
+  const { unblockUser, unblockingUser } = useUnblockUserMutation();
 
   useEffect(() => {
     if (!fetchingAllUsersData && allUsersData) {
@@ -194,8 +195,11 @@ const AdminUsers = () => {
         <div className={"overflow-x-auto"}>
           <UsersTable
             users={users}
-            sortConfig={sortConfig}
-            setSortConfig={setSortConfig}
+            onBlockUser={(user) => blockUser(user.userId)}
+            onUnblockUser={(user) => unblockUser(user.userId)}
+            isUnblocking={unblockingUser}
+            isBlockModalOpen={isBlockModalOpen}
+            setIsBlockModalOpen={setIsBlockModalOpen}
           />
         </div>
 

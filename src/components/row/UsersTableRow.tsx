@@ -1,20 +1,30 @@
 import AnimatedButton from "../button/AnimatedButton.tsx";
-import { BanIcon, Edit } from "lucide-react";
+import { BanIcon, Edit, UnlockIcon } from "lucide-react";
 import type { AdminUser } from "../../types/user.ts";
 import Avatar from "../img/Avatar.tsx";
-import { getUserRoleBadgeColor, getUserStatusBadgeColor } from "../../utils/colorUtils.ts";
+import {
+  getUserRoleBadgeColor,
+  getUserStatusBadgeColor,
+} from "../../utils/colorUtils.ts";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
 type UsersTableRowProps = {
   user: AdminUser;
   onSelectUserToBlock?: (value: AdminUser) => void;
+  selectedUserToUnblock?: AdminUser;
+  onUnblockUser: (value: AdminUser) => void;
+  isUnblocking?: boolean;
 };
 
-const UsersTableRow = ({ user, onSelectUserToBlock }: UsersTableRowProps) => {
+const UsersTableRow = ({
+  user,
+  onSelectUserToBlock,
+  onUnblockUser,
+  isUnblocking,
+  selectedUserToUnblock,
+}: UsersTableRowProps) => {
   const navigate = useNavigate();
-
-  console.log(user.lastActive);
 
   return (
     <tr key={user.userId} className={"border-t border-gray-600 bg-black-300"}>
@@ -72,17 +82,34 @@ const UsersTableRow = ({ user, onSelectUserToBlock }: UsersTableRowProps) => {
           >
             <Edit />
           </AnimatedButton>
-          <AnimatedButton
-            bgColor={"#171719"}
-            bgColorHover={"#ef4444"}
-            borderColor={"#171719"}
-            borderColorHover={"171719"}
-            textColor={"#ef4444"}
-            className={"p-1 rounded"}
-            onClick={() => onSelectUserToBlock?.(user)}
-          >
-            <BanIcon />
-          </AnimatedButton>
+          {user.accountNonLocked ? (
+            <AnimatedButton
+              bgColor={"#171719"}
+              bgColorHover={"#ef4444"}
+              borderColor={"#171719"}
+              borderColorHover={"171719"}
+              textColor={"#ef4444"}
+              className={"p-1 rounded"}
+              onClick={() => onSelectUserToBlock?.(user)}
+            >
+              <BanIcon />
+            </AnimatedButton>
+          ) : (
+            <AnimatedButton
+              bgColor={"#171719"}
+              bgColorHover={"#22c55e"}
+              borderColor={"#171719"}
+              borderColorHover={"171719"}
+              textColor={"#22c55e"}
+              className={"p-1 rounded"}
+              onClick={() => onUnblockUser(user)}
+              loading={
+                isUnblocking && selectedUserToUnblock?.userId === user.userId
+              }
+            >
+              <UnlockIcon />
+            </AnimatedButton>
+          )}
         </div>
       </td>
     </tr>

@@ -108,9 +108,7 @@ const AdminAllActivity = () => {
               opacity: isExportDropdownOpen ? 1 : 0,
               height: isExportDropdownOpen ? 135 : 0,
             }}
-            className={
-              "py-2 bg-black-200 flex flex-col gap-2 border-gray-600 absolute right-0 mt-4 w-48 rounded-lg border-2 z-10"
-            }
+            className={`py-2 bg-black-200 flex flex-col gap-2 border-gray-600 absolute right-0 mt-4 w-48 rounded-lg border-2 z-10 ${isExportDropdownOpen ? "pointer-events-auto" : "pointer-events-none"}`}
           >
             <motion.button
               whileHover={{
@@ -169,7 +167,7 @@ const AdminAllActivity = () => {
             animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={{ opacity: 0, height: 0, y: -10 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="w-full overflow-hidden rounded-lg border-2 bg-black-200 border-gray-600"
+            className="w-full rounded-lg border-2 bg-black-200 border-gray-600"
           >
             <div className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -187,6 +185,7 @@ const AdminAllActivity = () => {
                     );
                   }}
                   value={activityActionType ?? "ALL"}
+                  className={"z-10"}
                 />
                 <DropdownMenu
                   options={activityTargets}

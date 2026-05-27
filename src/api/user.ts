@@ -10,8 +10,6 @@ import type { PageResponse } from "../types/types.ts";
 export async function fetchAllUsers(
   page: number = 0,
   size: number = 10,
-  sortBy?: string,
-  sorDirection: "asc" | "desc" = "desc",
   userRole?: UserRole,
   userStatus?: UserStatus,
   searchQuery?: string,
@@ -20,8 +18,6 @@ export async function fetchAllUsers(
     params: {
       page,
       size,
-      sortBy,
-      sorDirection,
       userRole,
       userStatus,
       searchQuery,

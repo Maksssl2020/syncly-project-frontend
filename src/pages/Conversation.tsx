@@ -13,12 +13,12 @@ import useAllConversationsByUserQuery from "../hooks/queries/useAllConversations
 import type { ConversationMessage, ConversationRequest } from "../types/conversation.ts";
 import { useInView } from "react-intersection-observer";
 import { getConversationId, uniqueMessages } from "../utils/conversationUtils.ts";
-import { sendMessage, subscribeToMessages } from "../config/stompClient.ts";
+import { connectStomp, sendMessage, subscribeToMessages } from "../config/stompClient.ts";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Conversation = () => {
   const { inView } = useInView();
-  const { username, userId } = useAuthentication();
+  const { username, userId, accessToken } = useAuthentication();
   const { receiverId, receiverUsername } = useParams();
   const navigate = useNavigate();
 
@@ -36,6 +36,12 @@ export const Conversation = () => {
     useAllConversationsByUserQuery();
 
   useEffect(() => {
+    if (!accessToken || !username) return;
+
+    connectStomp(accessToken, username);
+  }, [accessToken, username]);
+
+  useEffect(() => {
     setMessages([]);
   }, [receiverId]);
 
@@ -43,9 +49,18 @@ export const Conversation = () => {
     if (!receiverId) return;
 
     return subscribeToMessages((message: ConversationMessage) => {
+      console.log("MESSAGE RECEIVED IN COMPONENT:", message);
+
+      const currentConversationId = getConversationId(
+        username ?? "",
+        receiverUsername ?? "",
+      );
       const isCurrentConversation =
-        String(message.senderUserId) === String(receiverId) ||
-        String(message.recipientUserId) === String(receiverId);
+        message.conversationId === currentConversationId;
+
+      console.log("CURRENT:", currentConversationId);
+      console.log("MESSAGE:", message.conversationId);
+      console.log("IS CURRENT:", isCurrentConversation);
 
       queryClient.invalidateQueries({
         queryKey: ["allConversationsByUser"],
@@ -55,7 +70,7 @@ export const Conversation = () => {
 
       setMessages((prev) => uniqueMessages([...prev, message]));
     });
-  }, [receiverId, queryClient]);
+  }, [receiverId, queryClient, username, receiverUsername]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {

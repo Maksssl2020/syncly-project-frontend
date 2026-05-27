@@ -1,11 +1,10 @@
-import {Client, type IMessage, type StompSubscription} from "@stomp/stompjs";
+import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import type {ConversationMessage, ConversationRequest,} from "../types/conversation.ts";
+import type { ConversationMessage, ConversationRequest } from "../types/conversation.ts";
 
 let stompClient: Client | null = null;
 let connectedPromise: Promise<Client> | null = null;
 let resolveConnected: ((client: Client) => void) | null = null;
-let connectedUserUsername: string | null = null;
 let messageSubscription: StompSubscription | null = null;
 let errorSubscription: StompSubscription | null = null;
 
@@ -21,14 +20,15 @@ export const connectStomp = (
     return connectedPromise!;
   }
 
-  connectedUserUsername = username;
-
   connectedPromise = new Promise<Client>((resolve, reject) => {
     resolveConnected = resolve;
 
     stompClient = new Client({
       webSocketFactory: () =>
-        new SockJS(`https://ns31075468.ip-51-77-53.eu:8443/syncly/ws`),
+        new SockJS(
+          `https://ns31075468.ip-51-77-53.eu:8443/syncly/ws?token=${encodeURIComponent(token)}`,
+          // `http://localhost:8080/ws?token=${encodeURIComponent(token)}`,
+        ),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
@@ -37,23 +37,23 @@ export const connectStomp = (
       heartbeatOutgoing: 4000,
       debug: (str) => console.debug("[STOMP]", str),
       onConnect: () => {
-        console.log("✅ Połączono ze STOMP");
+        console.log("✅ Połączono ze STOMP jako:", username);
         resolveConnected?.(stompClient!);
         initializeSubscriptions();
       },
       onDisconnect: () => {
         console.log("❌ Rozłączono STOMP");
-        cleanup();
+        // cleanup();
       },
       onStompError: (frame) => {
         console.error("STOMP Error:", frame.headers.message);
         reject(frame);
-        cleanup();
+        // cleanup();
       },
       onWebSocketError: (event) => {
         console.error("WebSocket Error:", event);
         reject(event);
-        cleanup();
+        // cleanup();
       },
     });
 
@@ -64,25 +64,42 @@ export const connectStomp = (
 };
 
 const initializeSubscriptions = () => {
-  if (!stompClient?.connected) return;
+  console.log("INIT SUBSCRIPTIONS");
+  console.log("connected:", stompClient?.connected);
+  console.log("messageSubscription:", messageSubscription);
 
-  if (messageSubscription) {
+  if (!stompClient?.connected) {
+    console.log("NOT CONNECTED");
     return;
   }
 
-  messageSubscription = stompClient.subscribe(
-    `/user/${connectedUserUsername}/queue/messages`,
-    (message: IMessage) => {
-      const parsed: ConversationMessage = JSON.parse(message.body);
-      console.log("📩 Otrzymano wiadomość:", parsed);
+  if (!messageSubscription) {
+    console.log("SUBSCRIBING NOW");
 
-      messageCallbacks.forEach((cb) => cb(parsed));
-    },
-  );
+    messageSubscription = stompClient.subscribe(
+      "/user/queue/messages",
+      (message: IMessage) => {
+        console.log("RAW MESSAGE:", message);
 
-  errorSubscription = stompClient.subscribe("/user/queue/errors", (message) => {
-    console.error("🚨 Błąd z serwera:", message.body);
-  });
+        const parsed: ConversationMessage = JSON.parse(message.body);
+
+        console.log("PARSED MESSAGE:", parsed);
+
+        messageCallbacks.forEach((cb) => cb(parsed));
+      },
+    );
+
+    console.log("SUBSCRIBED:", messageSubscription);
+  }
+
+  if (!errorSubscription) {
+    errorSubscription = stompClient.subscribe(
+      "/user/queue/errors",
+      (message) => {
+        console.error("Error from server:", message.body);
+      },
+    );
+  }
 };
 
 const cleanup = () => {
@@ -95,6 +112,8 @@ const cleanup = () => {
   stompClient = null;
   connectedPromise = null;
   resolveConnected = null;
+
+  messageCallbacks.clear();
 };
 
 export const getStompClient = async (): Promise<Client> => {
@@ -121,7 +140,14 @@ export const sendMessage = async (
 ): Promise<ConversationMessage> => {
   try {
     const client = await getStompClient();
-    const message: ConversationMessage = {
+
+    client.publish({
+      destination: "/app/conversation",
+      body: JSON.stringify(data),
+      headers: { "content-type": "application/json" },
+    });
+
+    return {
       id: 0,
       senderUserId: data.senderId,
       recipientUserId: data.recipientId,
@@ -131,16 +157,8 @@ export const sendMessage = async (
       content: data.message,
       timestamp: new Date().toISOString(),
     };
-
-    await client.publish({
-      destination: "/app/conversation",
-      body: JSON.stringify(data),
-      headers: { "content-type": "application/json" },
-    });
-
-    return message;
   } catch (error) {
-    console.error("Błąd podczas wysyłania wiadomości:", error);
+    console.error("Error during sending the message:", error);
     throw error;
   }
 };
@@ -149,17 +167,19 @@ export const subscribeToMessages = (
   callback: (message: any) => void,
 ): (() => void) => {
   messageCallbacks.add(callback);
+
   return () => messageCallbacks.delete(callback);
 };
 
 export const sendPresenceUpdate = async (status: "online" | "offline") => {
   try {
     const client = await getStompClient();
+
     client.publish({
       destination: "/app/presence",
       body: JSON.stringify({ status, timestamp: new Date().toISOString() }),
     });
   } catch (error) {
-    console.error("Błąd aktualizacji statusu:", error);
+    console.error("Error during status update: ", error);
   }
 };

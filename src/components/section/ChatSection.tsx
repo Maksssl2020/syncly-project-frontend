@@ -57,19 +57,10 @@ const ChatSection = ({ messages }: ChatSectionProps) => {
     return groups;
   };
 
-  // useEffect(() => {
-  //   if (chatBoxRef.current) {
-  //     chatBoxRef.current.scroll({
-  //       top: chatBoxRef.current.scrollHeight,
-  //       behavior: "smooth",
-  //     });
-  //   }
-  // }, [messages]);
-
   return (
     <div
       ref={chatBoxRef}
-      className={"overflow-y-auto p-4 flex flex-col gap-4 w-full h-[731px]"}
+      className={"overflow-y-auto p-4 flex flex-col gap-4 w-full h-[82.5vh]"}
     >
       {Object.entries(groupedMessages).map(([date, dateMessages]) => (
         <div key={date} className={"flex flex-col gap-4 w-full "}>
