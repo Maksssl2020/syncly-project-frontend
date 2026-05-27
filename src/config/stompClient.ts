@@ -1,6 +1,6 @@
-import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
+import {Client, type IMessage, type StompSubscription} from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import type { ConversationMessage, ConversationRequest } from "../types/conversation.ts";
+import type {ConversationMessage, ConversationRequest,} from "../types/conversation.ts";
 
 let stompClient: Client | null = null;
 let connectedPromise: Promise<Client> | null = null;
@@ -28,7 +28,9 @@ export const connectStomp = (
 
     stompClient = new Client({
       webSocketFactory: () =>
-        new SockJS("https://ns31075468.ip-51-77-53.eu:8443/syncly/ws"),
+        new SockJS("https://ns31075468.ip-51-77-53.eu:8443/syncly/ws", null, {
+          transports: ["websocket"],
+        }),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
