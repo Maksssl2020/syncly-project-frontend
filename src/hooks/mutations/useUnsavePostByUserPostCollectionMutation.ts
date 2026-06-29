@@ -19,10 +19,13 @@ function useUnsavePostByUserPostCollectionMutation() {
       postId: string | number;
     }) => handleUnsavePostByPostCollection(postCollectionId, postId),
     onSuccess: () => {
-      toast.success("Post saved successfully.");
+      toast.success("Post unsaved successfully.");
 
       queryClient.invalidateQueries({
         queryKey: ["allSavedPostsByUserData", userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["userPostCollectionsData", userId],
       });
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {

@@ -22,6 +22,9 @@ const SavedPostsSidebar = ({
   onClearAllClick,
   selectedQuickAction,
 }: SavedPostsSidebarProps) => {
+  const isMostLikedSelected = selectedQuickAction === "MOST_LIKED";
+  const isMostCommentedSelected = selectedQuickAction === "MOST_COMMENTED";
+
   return (
     <div className={"lg:col-span-1 space-y-6"}>
       <div
@@ -55,27 +58,37 @@ const SavedPostsSidebar = ({
         </h3>
         <div className={"space-y-2"}>
           <AnimatedButton
-            className={"w-full flex items-center gap-3 p-3 rounded-lg"}
-            bgColor={"#222222"}
-            borderColor={"#222222"}
-            bgColorHover={"#2c2c2e"}
-            textColorHover={"#14b8a6"}
+            className="w-full flex items-center gap-3 p-3 rounded-lg"
+            bgColor={
+              isMostLikedSelected ? "rgba(20, 184, 166, 0.16)" : "#222222"
+            }
+            bgColorHover={
+              isMostLikedSelected ? "rgba(20, 184, 166, 0.24)" : "#2c2c2e"
+            }
+            borderColor={isMostLikedSelected ? "#14b8a6" : "#222222"}
+            borderColorHover={isMostLikedSelected ? "#2dd4bf" : "#222222"}
+            textColor={isMostLikedSelected ? "#14b8a6" : "#E6E6E6"}
+            textColorHover={isMostLikedSelected ? "#2dd4bf" : "#14b8a6"}
             onClick={onMostLikedClick}
-            isSelected={selectedQuickAction === "MOST_LIKED"}
           >
-            <Heart className={"size-4"} />
+            <Heart className="size-4" />
             Most Liked
           </AnimatedButton>
           <AnimatedButton
-            bgColor={"#222222"}
-            bgColorHover={"#2c2c2e"}
-            borderColor={"#222222"}
-            textColorHover={"#14b8a6"}
-            className={"w-full flex items-center gap-3 p-3 rounded-lg"}
+            className="w-full flex items-center gap-3 p-3 rounded-lg"
+            bgColor={
+              isMostCommentedSelected ? "rgba(20, 184, 166, 0.16)" : "#222222"
+            }
+            bgColorHover={
+              isMostCommentedSelected ? "rgba(20, 184, 166, 0.24)" : "#2c2c2e"
+            }
+            borderColor={isMostCommentedSelected ? "#14b8a6" : "#222222"}
+            borderColorHover={isMostCommentedSelected ? "#2dd4bf" : "#222222"}
+            textColor={isMostCommentedSelected ? "#14b8a6" : "#E6E6E6"}
+            textColorHover={isMostCommentedSelected ? "#2dd4bf" : "#14b8a6"}
             onClick={onMostCommentedClick}
-            isSelected={selectedQuickAction === "MOST_COMMENTED"}
           >
-            <MessageCircle className={"size-4"} />
+            <MessageCircle className="size-4" />
             Most Commented
           </AnimatedButton>
           <AnimatedButton

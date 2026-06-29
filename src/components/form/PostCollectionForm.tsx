@@ -29,6 +29,10 @@ type PostCollectionFormProps = {
 const PostCollectionForm = ({ onClose }: PostCollectionFormProps) => {
   const { register, setValue, handleSubmit, watch } = useForm({
     resolver: yupResolver(postCollectionFormValidator),
+    defaultValues: {
+      title: "",
+      color: "#0d9488",
+    },
   });
 
   const { createPostCollection, creatingPostCollection } =
@@ -86,6 +90,7 @@ const PostCollectionForm = ({ onClose }: PostCollectionFormProps) => {
               }`}
               style={{ backgroundColor: color.value }}
               title={color.name}
+              type={"button"}
             >
               {watch("color") === color.value && (
                 <motion.div
@@ -153,7 +158,7 @@ const PostCollectionForm = ({ onClose }: PostCollectionFormProps) => {
           ) : (
             <>
               <Plus className="size-4" />
-              Create & Save
+              Dasb Create Collection
             </>
           )}
         </AnimatedButton>

@@ -34,22 +34,22 @@ const UsersTable = ({
         <thead>
           <tr className={"bg-black-300 text-gray-400"}>
             <th className={"px-4 py-3 text-left"}>Users</th>
-            <th className={"px-4 py-3 text-left cursor-pointer"}>
+            <th className={"px-4 py-3 text-left"}>
               <div className={"flex items-center"}>Role</div>
             </th>
-            <th className="px-4 py-3 text-left cursor-pointer">
+            <th className="px-4 py-3 text-left">
               <div className="flex items-center">Status</div>
             </th>
-            <th className="px-4 py-3 text-left cursor-pointer">
+            <th className="px-4 py-3 text-left">
               <div className="flex items-center">Posts</div>
             </th>
-            <th className="px-4 py-3 text-left cursor-pointer">
+            <th className="px-4 py-3 text-left">
               <div className="flex items-center">Followers</div>
             </th>
-            <th className="px-4 py-3 text-left cursor-pointer">
+            <th className="px-4 py-3 text-left">
               <div className="flex items-center">Joined</div>
             </th>
-            <th className="px-4 py-3 text-left cursor-pointer">
+            <th className="px-4 py-3 text-left">
               <div className="flex items-center">Last Active</div>
             </th>
             <th className="px-4 py-3 text-left">Actions</th>

@@ -31,7 +31,7 @@ const DashboardPeopleYouMayKnowCard = ({
   const { friendRequestStatus } = useFriendRequestStatusQuery(user.userId);
 
   const onSendFriendRequestClick = () => {
-    if (friendRequestStatus === "PENDING") {
+    if (friendRequestStatus?.friendStatus === "PENDING") {
       onDeleteFriendRequest(user.userId);
     } else {
       onSendFriendRequest(user.userId);
@@ -39,7 +39,7 @@ const DashboardPeopleYouMayKnowCard = ({
   };
 
   const getFriendStatus = () => {
-    switch (friendRequestStatus) {
+    switch (friendRequestStatus?.friendStatus) {
       case "ACCEPTED":
         return (
           <>
@@ -68,7 +68,7 @@ const DashboardPeopleYouMayKnowCard = ({
   };
 
   const getBorderColor = () => {
-    switch (friendRequestStatus) {
+    switch (friendRequestStatus?.friendStatus) {
       case "PENDING":
         return "#eab308";
       default:
@@ -77,7 +77,7 @@ const DashboardPeopleYouMayKnowCard = ({
   };
 
   const getTextColor = () => {
-    switch (friendRequestStatus) {
+    switch (friendRequestStatus?.friendStatus) {
       case "ACCEPTED":
       case "NONE":
         return "#14b8a6";
@@ -89,7 +89,7 @@ const DashboardPeopleYouMayKnowCard = ({
   };
 
   const getTextColorHover = () => {
-    switch (friendRequestStatus) {
+    switch (friendRequestStatus?.friendStatus) {
       case "ACCEPTED":
       case "PENDING":
         return "#ef4444";
@@ -99,7 +99,7 @@ const DashboardPeopleYouMayKnowCard = ({
   };
 
   const getBgColorHover = () => {
-    switch (friendRequestStatus) {
+    switch (friendRequestStatus?.friendStatus) {
       case "ACCEPTED":
       case "PENDING":
         return "#222222";
@@ -109,7 +109,7 @@ const DashboardPeopleYouMayKnowCard = ({
   };
 
   const getBorderColorHover = () => {
-    switch (friendRequestStatus) {
+    switch (friendRequestStatus?.friendStatus) {
       case "ACCEPTED":
       case "PENDING":
         return "#ef4444";
@@ -155,7 +155,7 @@ const DashboardPeopleYouMayKnowCard = ({
         onMouseEnter={() => setIsFriendButtonHovered(true)}
         onMouseLeave={() => setIsFriendButtonHovered(false)}
       >
-        {friendRequestStatus === "ACCEPTED" ? (
+        {friendRequestStatus?.friendStatus === "ACCEPTED" ? (
           <AnimatePresence mode={"wait"}>
             {isFriendButtonHovered ? (
               <XIcon className={"size-2"} />

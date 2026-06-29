@@ -6,21 +6,24 @@ import useUserProfileAvatarByUserIdQuery from "../../hooks/queries/useUserProfil
 
 interface ChatSectionProps {
   messages: ConversationMessage[];
+  shouldScrollToBottom?: boolean;
 }
 
-const ChatSection = ({ messages }: ChatSectionProps) => {
+const ChatSection = ({ messages, shouldScrollToBottom }: ChatSectionProps) => {
   const { userId } = useAuthentication();
   const chatBoxRef = useRef(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const foundId = messages
     .map((message) => message.senderUserId)
-    .find((id) => id !== userId);
+    .find((id) => String(id) !== String(userId));
 
   const { userProfileAvatar } = useUserProfileAvatarByUserIdQuery(foundId);
 
   useEffect(() => {
+    if (!shouldScrollToBottom) return;
+
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [shouldScrollToBottom, messages.length]);
 
   const sortedMessages = [...messages].sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
@@ -60,7 +63,7 @@ const ChatSection = ({ messages }: ChatSectionProps) => {
   return (
     <div
       ref={chatBoxRef}
-      className={"overflow-y-auto p-4 flex flex-col gap-4 w-full h-[82.5vh]"}
+      className={"p-4 flex flex-col gap-4 w-full min-h-full"}
     >
       {Object.entries(groupedMessages).map(([date, dateMessages]) => (
         <div key={date} className={"flex flex-col gap-4 w-full "}>
@@ -86,6 +89,8 @@ const ChatSection = ({ messages }: ChatSectionProps) => {
           ))}
         </div>
       ))}
+
+      <div ref={messagesEndRef} />
     </div>
   );
 };

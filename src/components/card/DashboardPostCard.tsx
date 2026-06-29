@@ -11,7 +11,7 @@ import VideoPostCard from "./VideoPostCard.tsx";
 import LinkPostCard from "./LinkPostCard.tsx";
 import useLikePostMutation from "../../hooks/mutations/useLikePostMutation.ts";
 import useAuthentication from "../../hooks/useAuthentication.ts";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import CommentsSection from "../section/CommentsSection.tsx";
 import useUnsavePostByUserPostCollectionMutation
   from "../../hooks/mutations/useUnsavePostByUserPostCollectionMutation.ts";
@@ -30,11 +30,13 @@ import useUpdatePostMutation from "../../hooks/mutations/useUpdatePostMutation.t
 type DashboardPostCardProps = {
   isSavedPost?: boolean;
   post: PostUnion;
+  selectedCollectionId?: string | number;
 };
 
 const DashboardPostCard = ({
   isSavedPost = false,
   post,
+  selectedCollectionId,
 }: DashboardPostCardProps) => {
   const { userId } = useAuthentication();
   const navigate = useNavigate();
@@ -52,15 +54,20 @@ const DashboardPostCard = ({
     authorAvatar,
   } = currentPost;
 
-  const likesBySet = new Set(likesBy);
-  const savedBySet = new Set(savedBy);
-  const sharedBySet = new Set(sharedBy);
+  const likesBySet = useMemo(() => new Set(likesBy), [likesBy]);
+  const savedBySet = useMemo(() => new Set(savedBy), [savedBy]);
+  const sharedBySet = useMemo(() => new Set(sharedBy), [sharedBy]);
+  const numericUserId = userId ? Number(userId) : null;
 
-  const [isLiked, setIsLiked] = useState(likesBySet.has(Number(userId)));
-  // @ts-ignore
-  const [isSaved, setIsSaved] = useState(savedBySet.has(Number(userId)));
-  const [isShared, setIsShared] = useState(sharedBySet.has(Number(userId)));
-
+  const [isLiked, setIsLiked] = useState(
+    numericUserId !== null && likesBySet.has(numericUserId),
+  ); // @ts-ignore
+  const [isSaved, setIsSaved] = useState(
+    numericUserId !== null && savedBySet.has(numericUserId),
+  );
+  const [isShared, setIsShared] = useState(
+    numericUserId !== null && sharedBySet.has(numericUserId),
+  );
   const [likes, setLikes] = useState<number>(likesBySet.size);
   const [sharedCount, setSharedCount] = useState<number>(sharedBySet.size);
   const [showComments, setShowComments] = useState(false);
@@ -113,6 +120,8 @@ const DashboardPostCard = ({
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
 
   const onLikePost = () => {
+    if (likingPost || unlikingPost) return;
+
     if (!isLiked) {
       likePost(id);
     } else {
@@ -121,20 +130,25 @@ const DashboardPostCard = ({
   };
 
   const onSharePost = () => {
-    if (!isShared) {
-      sharePost(id);
-    }
+    if (sharingPost || isShared) return;
+
+    sharePost(id);
   };
 
   const { deletePost, deletingPost } = useDeletePostMutation();
 
   const onDeletePost = () => {
-    deletePost({
-      postId: id,
-      authorId: authorId,
-    });
-
-    setShowDeleteWarningModal(false);
+    deletePost(
+      {
+        postId: id,
+        authorId,
+      },
+      {
+        onSuccess: () => {
+          setShowDeleteWarningModal(false);
+        },
+      },
+    );
   };
 
   return (
@@ -179,16 +193,9 @@ const DashboardPostCard = ({
           />
 
           {isSavedPost && (
-            <AnimatedButton
-              className={"p-2 h-fit rounded-lg border-2"}
-              bgColor={"#222222"}
-              bgColorHover={"#14b8a6"}
-              textColor={"#14b8a6"}
-              textColorHover={"#222222"}
-              borderColor={"#14b8a6"}
-            >
-              <Bookmark className={"size-4"} />
-            </AnimatedButton>
+            <div className="p-2 h-fit rounded-lg border-2 bg-[#222222] text-[#14b8a6] border-[#14b8a6]">
+              <Bookmark className="size-4" />
+            </div>
           )}
         </div>
       </header>
@@ -198,9 +205,11 @@ const DashboardPostCard = ({
 
       <div className={"flex flex-wrap gap-1"}>
         {post.tags.map((tag) => (
-          <Link to={`/tags/${tag.name}`}>
+          <Link
+            key={tag.name + tag.id}
+            to={`/tags/${encodeURIComponent(tag.name)}`}
+          >
             <span
-              key={tag.name + tag.id}
               style={{
                 backgroundColor: tag.color,
               }}
@@ -277,11 +286,13 @@ const DashboardPostCard = ({
           textColorHover={"#b0b0b0"}
           onClick={() => {
             if (isSaved) {
-              if (userId) {
+              if (isSaved && selectedCollectionId) {
                 unsavePost({
-                  postCollectionId: userId,
+                  postCollectionId: selectedCollectionId,
                   postId: post.id,
                 });
+
+                setIsSaved(false);
               }
             } else {
               setShowSavePostModal(true);
@@ -301,6 +312,10 @@ const DashboardPostCard = ({
         postId={post.id}
         isOpen={showSavePostModal}
         onClose={() => setShowSavePostModal(false)}
+        onSaved={() => {
+          setIsSaved(true);
+          setShowSavePostModal(false);
+        }}
       />
 
       <ReportFormModal

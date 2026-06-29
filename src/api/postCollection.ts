@@ -65,7 +65,7 @@ export async function handleUnsavePostByPostCollection(
   postId: string | number,
 ) {
   const response = await axiosConfig.delete(
-    `/post-collections/unsave-post/${postCollectionId}/${postId}`,
+    `/post-collections/unsave-post/by-post-collection/${postCollectionId}/${postId}`,
   );
   return response.data;
 }

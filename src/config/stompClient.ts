@@ -1,6 +1,9 @@
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import type { ConversationMessage, ConversationRequest } from "../types/conversation.ts";
+import type {
+  ConversationMessage,
+  ConversationRequest,
+} from "../types/conversation.ts";
 
 let stompClient: Client | null = null;
 let connectedPromise: Promise<Client> | null = null;
@@ -8,7 +11,6 @@ let resolveConnected: ((client: Client) => void) | null = null;
 let messageSubscription: StompSubscription | null = null;
 let errorSubscription: StompSubscription | null = null;
 
-// const presenceCallbacks: Set<(presence: PresenceMessage) => void> = new Set();
 const messageCallbacks: Set<(message: any) => void> = new Set();
 
 export const connectStomp = (

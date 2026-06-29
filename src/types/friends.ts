@@ -13,6 +13,10 @@ export interface FriendUser {
   mutualFriendsCount: number;
 }
 
+export interface FriendStatusData {
+  friendStatus: FriendStatus;
+}
+
 export type FriendStatus =
   | "PENDING"
   | "ACCEPTED"

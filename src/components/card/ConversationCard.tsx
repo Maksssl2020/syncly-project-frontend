@@ -6,8 +6,6 @@ import { motion } from "framer-motion";
 import Avatar from "../img/Avatar.tsx";
 import { format } from "date-fns";
 import useAuthentication from "../../hooks/useAuthentication.ts";
-import useUserProfileAvatarByUserIdQuery from "../../hooks/queries/useUserProfileAvatarByUserIdQuery.ts";
-import ComponentSpinner from "../spinner/ComponentSpinner.tsx";
 import { useUserPresence } from "../../hooks/useUserPresence.ts";
 import { usePresenceStore } from "../../store/presenceStore.ts";
 
@@ -23,37 +21,18 @@ const ConversationCard = ({
   onSelect,
 }: ConversationCardProps) => {
   const { userId } = useAuthentication();
-  // const navigate = useNavigate();
   useUserPresence(conversation.recipientId);
   const userPresence = usePresenceStore(
     (state) => state.presenceMap[conversation.recipientId] || null,
   );
 
-  const { userProfileAvatar, fetchingUserProfileAvatar } =
-    useUserProfileAvatarByUserIdQuery(conversation.recipientId);
-
   console.log(conversation.lastMessageTimestamp);
-
-  if (fetchingUserProfileAvatar) {
-    return (
-      <div
-        className={
-          "flex items-center cursor-pointer gap-3 p-2 rounded-lg border-l-4 w-full h-auto"
-        }
-      >
-        <ComponentSpinner />
-      </div>
-    );
-  }
 
   return (
     <motion.div
       onClick={() => {
-        // navigate(
-        //   `/conversation/${conversation.recipientId}/${conversation.recipientUsername}`,
-        // );
         onSelect({
-          conversationId: conversation.id,
+          conversationId: conversation.conversationId,
           recipientId: conversation.recipientId,
           recipientUsername: conversation.recipientUsername,
         });
@@ -71,7 +50,7 @@ const ConversationCard = ({
       }}
     >
       <div className={"relative"}>
-        <Avatar avatar={userProfileAvatar} size={"size-12"} />
+        <Avatar avatar={conversation.recipientAvatar} size={"size-12"} />
         {userPresence?.status && (
           <span
             className={
@@ -101,11 +80,6 @@ const ConversationCard = ({
             {conversation.lastMessageSenderId === userId ? "You: " : ""}
             {conversation.lastMessageContent}
           </p>
-          {/*{conversation.unreadCount > 0 && (*/}
-          {/*  <span className="bg-teal-100 text-white text-xs rounded-full min-w-5 min-h-5 flex items-center justify-center">*/}
-          {/*    {conversation.unreadCount}*/}
-          {/*  </span>*/}
-          {/*)}*/}
         </div>
       </div>
     </motion.div>

@@ -10,22 +10,22 @@ import {
   MapPin,
   Quote,
   TextIcon,
-  Video,
+  Video
 } from "lucide-react";
-import {useEffect, useMemo, useState} from "react";
-import type {TabData} from "../types/types.ts";
+import { useEffect, useMemo, useState } from "react";
+import type { TabData } from "../types/types.ts";
 import Tabs from "../components/tab/Tabs.tsx";
-import {motion} from "framer-motion";
+import { motion } from "framer-motion";
 import DashboardPostCard from "../components/card/DashboardPostCard.tsx";
 import useUserProfileByUserIdQuery from "../hooks/queries/useUserProfileByUserIdQuery.ts";
 import useAuthentication from "../hooks/useAuthentication.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
-import {format} from "date-fns";
+import { format } from "date-fns";
 import usePostsByUserIdQuery from "../hooks/queries/usePostsByUserIdQuery.ts";
-import {useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useSharedPostsByUserIdQuery from "../hooks/queries/useSharedPostsByUserIdQuery.ts";
-import type {PostUnion} from "../types/post.ts";
-import type {UserItem} from "../types/user.ts";
+import type { PostUnion } from "../types/post.ts";
+import type { UserItem } from "../types/user.ts";
 import SharedPostCard from "../components/card/SharedPostCard.tsx";
 import useUserSettingsByUserIdQuery from "../hooks/queries/useUserSettingsByUserIdQuery.ts";
 import useIsUserFollowedByUserProfileIdQuery from "../hooks/queries/useIsUserFollowedByUserProfileIdQuery.ts";
@@ -221,9 +221,8 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
     },
   ];
 
-  console.log("userBlogPosts", userBlogPosts);
+  const isFriend = friendRequestStatus?.friendStatus === "ACCEPTED";
 
-  const isFriend = friendRequestStatus === "ACCEPTED";
   return (
     <Page className={"w-full mt-8 flex flex-col items-center"}>
       <div className={"max-w-6xl w-full flex flex-col gap-8"}>
@@ -294,8 +293,7 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
                 <ComponentSpinner size={12} />
               ) : (
                 <FriendButton
-                  isFriend={isFriend}
-                  friendRequestStatus={friendRequestStatus}
+                  friendRequestStatus={friendRequestStatus?.friendStatus}
                   receiverId={id}
                 />
               )}

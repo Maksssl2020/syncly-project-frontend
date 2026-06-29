@@ -42,8 +42,6 @@ const SavedPosts = () => {
     (postCollection) => postCollection.title.toLowerCase() === selectedCategory,
   );
 
-  console.log("selectedCollection", selectedCollection?.posts);
-
   const sortedPosts = [...(selectedCollection?.posts || [])].sort((a, b) => {
     if (selectedQuickActionOption === "MOST_LIKED") {
       return b.likesCount - a.likesCount;
@@ -129,6 +127,7 @@ const SavedPosts = () => {
                   key={post.id}
                   post={post}
                   isSavedPost={true}
+                  selectedCollectionId={selectedCollection?.id}
                 />
               ))}
             </motion.div>

@@ -25,8 +25,6 @@ const UserSearchCard = ({
     return <ComponentSpinner />;
   }
 
-  const isFriend = friendRequestStatus === "ACCEPTED";
-
   return (
     <motion.div
       onClick={onClick}
@@ -67,8 +65,7 @@ const UserSearchCard = ({
         <div className={"flex gap-2 w-full"}>
           <FollowButton isFollowed={isFollowed} userId={user.userId} />
           <FriendButton
-            isFriend={isFriend}
-            friendRequestStatus={friendRequestStatus}
+            friendRequestStatus={friendRequestStatus?.friendStatus}
             receiverId={user.userId}
           />
         </div>

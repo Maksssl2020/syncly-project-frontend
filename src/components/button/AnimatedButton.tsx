@@ -37,9 +37,9 @@ const AnimatedButton = ({
   return (
     <motion.button
       whileHover={{
-        color: isSelected ? textColor : textColorHover,
-        backgroundColor: isSelected ? bgColor : bgColorHover,
-        borderColor: isSelected ? borderColor : borderColorHover,
+        color: textColorHover,
+        backgroundColor: bgColorHover,
+        borderColor: borderColorHover,
       }}
       style={{
         color: isSelected ? textColorHover : textColor,

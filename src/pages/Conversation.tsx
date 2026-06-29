@@ -3,7 +3,7 @@ import ConversationsSidebar from "../components/sidebar/ConversationsSidebar.tsx
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import AnimatedButton from "../components/button/AnimatedButton.tsx";
-import { Send, Smile } from "lucide-react";
+import { Send } from "lucide-react";
 import ChatSection from "../components/section/ChatSection.tsx";
 import useConversationInfiniteQuery from "../hooks/queries/useConversationInfiniteQuery.ts";
 import Spinner from "../components/spinner/Spinner.tsx";
@@ -57,10 +57,6 @@ export const Conversation = () => {
       );
       const isCurrentConversation =
         message.conversationId === currentConversationId;
-
-      console.log("CURRENT:", currentConversationId);
-      console.log("MESSAGE:", message.conversationId);
-      console.log("IS CURRENT:", isCurrentConversation);
 
       queryClient.invalidateQueries({
         queryKey: ["allConversationsByUser"],
@@ -188,17 +184,6 @@ export const Conversation = () => {
                 style={{ minHeight: "65px", maxHeight: "120px" }}
               />
               <div className={"absolute right-5 bottom-5 flex gap-2"}>
-                <AnimatedButton
-                  bgColor={"#222222"}
-                  borderColorHover={"#222222"}
-                  borderColor={"#222222"}
-                  bgColorHover={"#222222"}
-                  textColorHover={"#14b8a6"}
-                  className={"p-1 rounded-full"}
-                >
-                  <Smile className={"size-6"} />
-                </AnimatedButton>
-
                 <AnimatedButton
                   bgColor={"#222222"}
                   borderColorHover={"#222222"}

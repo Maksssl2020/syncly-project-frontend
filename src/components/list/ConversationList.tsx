@@ -1,9 +1,5 @@
-import type {
-  ConversationResponse,
-  SelectedConversation,
-} from "../../types/conversation.ts";
+import type { ConversationResponse, SelectedConversation } from "../../types/conversation.ts";
 import ConversationCard from "../card/ConversationCard.tsx";
-import { getConversationId } from "../../utils/conversationUtils.ts";
 
 interface ConversationListProps {
   conversations: ConversationResponse[];
@@ -16,25 +12,20 @@ const ConversationList = ({
   onSelect,
   selectedConversationId,
 }: ConversationListProps) => {
+  const getTime = (value?: string | null) => {
+    if (!value) return 0;
+    const time = new Date(value).getTime();
+    return Number.isNaN(time) ? 0 : time;
+  };
+
   const sortedConversations = [...conversations].sort(
-    (a, b) =>
-      new Date(b.lastMessageTimestamp).getTime() -
-      new Date(a.lastMessageTimestamp).getTime(),
+    (a, b) => getTime(b.lastMessageTimestamp) - getTime(a.lastMessageTimestamp),
   );
 
   return (
     <div className={"flex flex-col gap-2"}>
       {sortedConversations.map((conversation) => {
-        const isActive =
-          selectedConversationId ===
-          (getConversationId(
-            conversation.senderUsername,
-            conversation.recipientUsername,
-          ) ||
-            getConversationId(
-              conversation.recipientUsername,
-              conversation.senderUsername,
-            ));
+        const isActive = selectedConversationId === conversation.conversationId;
 
         return (
           <ConversationCard

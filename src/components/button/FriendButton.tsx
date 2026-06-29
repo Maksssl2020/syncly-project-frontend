@@ -4,7 +4,7 @@ import {
   getBorderColor,
   getBorderColorHover,
   getTextColor,
-  getTextColorHover
+  getTextColorHover,
 } from "../../utils/friendStatusUtils.ts";
 import { AnimatePresence } from "framer-motion";
 import { Check, Clock, Send, XIcon } from "lucide-react";
@@ -15,7 +15,6 @@ import useDeleteFriendMutation from "../../hooks/mutations/useDeleteFriendMutati
 import useDeleteFriendRequestMutation from "../../hooks/mutations/useDeleteFriendRequestMutation.ts";
 
 type FriendButton = {
-  isFriend: boolean;
   friendRequestStatus?: FriendStatus;
   receiverId?: string | number;
 };
@@ -53,11 +52,7 @@ const getFriendStatus = (friendRequestStatus?: FriendStatus) => {
   }
 };
 
-const FriendButton = ({
-  isFriend,
-  friendRequestStatus,
-  receiverId,
-}: FriendButton) => {
+const FriendButton = ({ friendRequestStatus, receiverId }: FriendButton) => {
   const [isFriendButtonHovered, setIsFriendButtonHovered] = useState(false);
   const { sendFriendRequest, sendingFriendRequest } =
     useSendFriendRequestMutation();
@@ -83,7 +78,7 @@ const FriendButton = ({
   return (
     <AnimatedButton
       className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 border-2`}
-      bgColor={isFriend ? "#222222" : "#14b8a6"}
+      bgColor={"#222222"}
       bgColorHover={getBgColorHover(friendRequestStatus)}
       textColor={getTextColor(friendRequestStatus)}
       textColorHover={getTextColorHover(friendRequestStatus)}

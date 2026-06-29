@@ -21,7 +21,7 @@ const Conversations = () => {
   }
 
   return (
-    <Page className={"w-full flex overflow-hidden items-center"}>
+    <Page className="w-full h-[calc(100vh-85px)] flex overflow-hidden bg-black-100">
       <ConversationsSidebar
         conversationsData={allConversationsByUserData ?? []}
         onSelect={(data) => setSelectedConversation(data)}

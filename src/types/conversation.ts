@@ -1,3 +1,5 @@
+import type { Image } from "./image.ts";
+
 export interface ConversationUser {
   id: string;
   username: string;
@@ -38,6 +40,7 @@ export interface ConversationResponse {
   lastMessageSenderId: number;
   senderId: number;
   recipientId: number;
+  recipientAvatar?: Image;
 }
 
 export interface ConversationMessage {

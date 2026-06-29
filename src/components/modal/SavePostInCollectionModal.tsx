@@ -12,12 +12,14 @@ type SavePostInCollectionModalProps = {
   postId: string | number;
   isOpen: boolean;
   onClose: () => void;
+  onSaved?: () => void;
 };
 
 const SavePostInCollectionModal = ({
   postId,
   isOpen,
   onClose,
+  onSaved,
 }: SavePostInCollectionModalProps) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const { userPostCollections, fetchingUserPostCollections } =
@@ -29,10 +31,17 @@ const SavePostInCollectionModal = ({
   }
 
   const handleSavePostToCollection = (postCollectionId: string | number) => {
-    savePost({
-      postCollectionId: postCollectionId,
-      postId: postId,
-    });
+    savePost(
+      {
+        postCollectionId: postCollectionId,
+        postId: postId,
+      },
+      {
+        onSuccess: () => {
+          onSaved?.();
+        },
+      },
+    );
   };
 
   return (
