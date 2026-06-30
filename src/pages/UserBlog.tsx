@@ -12,7 +12,7 @@ import {
   TextIcon,
   Video
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { TabData } from "../types/types.ts";
 import Tabs from "../components/tab/Tabs.tsx";
 import { motion } from "framer-motion";
@@ -49,7 +49,7 @@ type UserBlogProps = {
 };
 
 type UserBlogPost = {
-  sharedBy: UserItem | undefined;
+  sharedBy?: UserItem;
   postDate: string;
   isShared: boolean;
   post: PostUnion;
@@ -59,63 +59,58 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
   const { id } = useParams();
   const { userId } = useAuthentication();
   const [chosenFilter, setChosenFilter] = useState<FilterType>("ALL");
-  const [userBlogPosts, setUserBlogPosts] = useState<UserBlogPost[]>([]);
   const navigate = useNavigate();
 
-  const { userProfile, fetchingUserProfile } = useUserProfileByUserIdQuery(
-    isSignedInUserBlog ? userId : id,
-  );
-  const { userPosts, fetchingUserPosts } = usePostsByUserIdQuery(
-    isSignedInUserBlog ? userId : id,
-  );
-  const { userSettings, fetchingUserSettings } = useUserSettingsByUserIdQuery(
-    isSignedInUserBlog ? userId : id,
-  );
+  const targetUserId = isSignedInUserBlog ? userId : id;
+
+  const { userProfile, fetchingUserProfile } =
+    useUserProfileByUserIdQuery(targetUserId);
+
+  const { userPosts, fetchingUserPosts } = usePostsByUserIdQuery(targetUserId);
+
+  const { userSettings, fetchingUserSettings } =
+    useUserSettingsByUserIdQuery(targetUserId);
+
+  const { sharedPostsByUserId, fetchingSharedPostsByUserId } =
+    useSharedPostsByUserIdQuery(targetUserId);
+
   const { isUserFollowedData, fetchingIsUserFollowed } =
     useIsUserFollowedByUserProfileIdQuery(id);
+
   const { friendRequestStatus, fetchingFriendRequestStatus } =
     useFriendRequestStatusQuery(id);
 
-  const { sharedPostsByUserId, fetchingSharedPostsByUserId } =
-    useSharedPostsByUserIdQuery(isSignedInUserBlog ? userId : id);
-
-  useEffect(() => {
-    if (userPosts && !fetchingUserPosts) {
-      const mappedUserPosts: UserBlogPost[] = userPosts.map((post) => ({
+  const userBlogPosts = useMemo<UserBlogPost[]>(() => {
+    const mappedUserPosts: UserBlogPost[] =
+      userPosts?.map((post) => ({
         sharedBy: undefined,
         postDate: post.createdAt,
         isShared: false,
-        post: post,
-      }));
+        post,
+      })) ?? [];
 
-      setUserBlogPosts(mappedUserPosts);
-    }
-  }, [fetchingUserPosts, userPosts]);
+    const mappedSharedPosts: UserBlogPost[] =
+      sharedPostsByUserId?.map((sharedPost) => ({
+        sharedBy: sharedPost.sharedBy,
+        isShared: true,
+        post: sharedPost.originalPost,
+        postDate: sharedPost.sharedAt,
+      })) ?? [];
 
-  useEffect(() => {
-    if (sharedPostsByUserId && !fetchingSharedPostsByUserId) {
-      const mappedUserPosts: UserBlogPost[] = sharedPostsByUserId.map(
-        (post) => ({
-          sharedBy: post.sharedBy,
-          isShared: true,
-          post: post.originalPost,
-          postDate: post.sharedAt,
-        }),
-      );
-
-      setUserBlogPosts((prevState) => [...prevState, ...mappedUserPosts]);
-    }
-  }, [fetchingSharedPostsByUserId, sharedPostsByUserId]);
+    return [...mappedUserPosts, ...mappedSharedPosts];
+  }, [userPosts, sharedPostsByUserId]);
 
   const filteredPosts = useMemo(() => {
-    return [...userBlogPosts].filter((post) => {
+    return userBlogPosts.filter((item) => {
       if (chosenFilter === "ALL") {
-        return post;
-      } else if (chosenFilter === "SHARED") {
-        return post.isShared;
-      } else {
-        return post.post.postType === chosenFilter && !post.isShared;
+        return true;
       }
+
+      if (chosenFilter === "SHARED") {
+        return item.isShared;
+      }
+
+      return item.post.postType === chosenFilter && !item.isShared;
     });
   }, [chosenFilter, userBlogPosts]);
 
@@ -224,66 +219,74 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
   const isFriend = friendRequestStatus?.friendStatus === "ACCEPTED";
 
   return (
-    <Page className={"w-full mt-8 flex flex-col items-center"}>
-      <div className={"max-w-6xl w-full flex flex-col gap-8"}>
-        <div className={"w-full flex-col rounded-lg bg-black-200 p-8"}>
-          <div className={"w-full h-full gap-8 flex "}>
-            <div className={"flex flex-col gap-4 items-center lg:items-start"}>
-              <Avatar size={"size-32"} avatar={avatar} />
-              <div className={"text-center lg:text-left"}>
-                <h1 className={"text-3xl font-bold text-white-100"}>
+    <Page className="w-full mt-8 flex flex-col items-center">
+      <div className="max-w-6xl w-full flex flex-col gap-8">
+        <div className="w-full flex-col rounded-lg bg-black-200 p-8">
+          <div className="w-full h-full gap-8 flex">
+            <div className="flex flex-col gap-4 items-center lg:items-start">
+              <Avatar size="size-32" avatar={avatar} />
+
+              <div className="text-center lg:text-left">
+                <h1 className="text-3xl font-bold text-white-100">
                   {displayName}
                 </h1>
-                <p className={"text-xl text-gray-300"}>@{username}</p>
+                <p className="text-xl text-gray-300">@{username}</p>
               </div>
             </div>
-            <div className={"flex-1 space-y-4"}>
-              <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
-                {userStats.map((stat, index) => (
-                  <div key={index} className={"text-center lg:text-left"}>
-                    <div className={"text-2xl font-bold text-white-100"}>
+
+            <div className="flex-1 space-y-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {userStats.map((stat) => (
+                  <div key={stat.label} className="text-center lg:text-left">
+                    <div className="text-2xl font-bold text-white-100">
                       {stat.value}
                     </div>
-                    <div className={"text-gray-400"}>{stat.label}</div>
+                    <div className="text-gray-400">{stat.label}</div>
                   </div>
                 ))}
               </div>
-              <div className={"flex flex-wrap gap-4 text-gray-300"}>
+
+              <div className="flex flex-wrap gap-4 text-gray-300">
                 {userSettings?.showLocation && location && (
-                  <div className={"flex items-center gap-2"}>
-                    <MapPin className={"size-4"} />
+                  <div className="flex items-center gap-2">
+                    <MapPin className="size-4" />
                     <span>{location}</span>
                   </div>
                 )}
+
                 {userSettings?.showEmail && (
-                  <div className={"flex items-center gap-2"}>
-                    <MailIcon className={"size-4"} />
+                  <div className="flex items-center gap-2">
+                    <MailIcon className="size-4" />
                     <span>{email}</span>
                   </div>
                 )}
 
-                <div className={"flex items-center gap-2"}>
-                  <Calendar className={"size-4"} />
-                  <span>Joined in {format(joinedAt, "yyyy")}</span>
+                <div className="flex items-center gap-2">
+                  <Calendar className="size-4" />
+                  <span>Joined in {format(new Date(joinedAt), "yyyy")}</span>
                 </div>
+
                 {website && (
-                  <div className={"flex items-center gap-2"}>
-                    <LinkIcon className={"size-4"} />
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="size-4" />
                     <a
                       href={website}
-                      target={"_blank"}
-                      className={"hover:underline text-teal-100"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:underline text-teal-100"
                     >
                       {website}
                     </a>
                   </div>
                 )}
               </div>
-              <p className={"text-lg leading-relaxed text-white-100"}>{bio}</p>
+
+              <p className="text-lg leading-relaxed text-white-100">{bio}</p>
             </div>
           </div>
+
           {!isSignedInUserBlog && (
-            <div className={"flex gap-3 w-auto items-center mt-5"}>
+            <div className="flex gap-3 w-auto items-center mt-5">
               {fetchingIsUserFollowed ? (
                 <ComponentSpinner size={12} />
               ) : (
@@ -304,26 +307,16 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
 
               {isFriend && (
                 <MessageButton
-                  className={"rounded-lg w-full px-4 py-2 border-2 "}
-                  onClick={() =>
-                    navigate(`/conversation/${userId}/${username}`)
-                  }
+                  className="rounded-lg w-full px-4 py-2 border-2"
+                  onClick={() => navigate(`/conversation/${id}/${username}`)}
                 />
               )}
             </div>
           )}
         </div>
 
-        <div
-          className={
-            "rounded-lg p-6 border-2 w-full bg-black-200 border-gray-600 mb-8"
-          }
-        >
-          <div
-            className={
-              "flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center"
-            }
-          >
+        <div className="rounded-lg p-6 border-2 w-full bg-black-200 border-gray-600 mb-8">
+          <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
             <Tabs
               data={filterOptions}
               activeTabId={chosenFilter}
@@ -332,24 +325,23 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
           </div>
         </div>
 
-        <motion.div className={"space-y-6"}>
-          {sortedPosts?.map((post, index) => (
+        <motion.div className="space-y-6">
+          {sortedPosts.map((item, index) => (
             <motion.div
-              key={post.post.id ?? index}
+              key={`${item.isShared ? "shared" : "post"}-${item.post.id}-${item.postDate}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              {post.isShared ? (
+              {item.isShared && item.sharedBy ? (
                 <SharedPostCard
-                  sharedBy={post.sharedBy!}
-                  post={post.post}
-                  sharedAt={post.postDate}
+                  sharedBy={item.sharedBy}
+                  post={item.post}
+                  sharedAt={item.postDate}
                 />
               ) : (
-                <DashboardPostCard post={post.post} />
+                <DashboardPostCard post={item.post} />
               )}
-              ,
             </motion.div>
           ))}
         </motion.div>

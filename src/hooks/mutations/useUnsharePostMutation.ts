@@ -3,10 +3,8 @@ import { handleUnsharePost } from "../../api/share.ts";
 import type { AxiosError } from "axios";
 import type { ApiErrorResponse } from "../../types/types.ts";
 import toast from "react-hot-toast";
-import useAuthentication from "../useAuthentication.ts";
 
 function useUnsharePostMutation(onSuccess?: () => void) {
-  const { userId } = useAuthentication();
   const queryClient = useQueryClient();
 
   const { mutate: unsharePost, isPending: unsharingPost } = useMutation({
@@ -16,7 +14,7 @@ function useUnsharePostMutation(onSuccess?: () => void) {
       onSuccess?.();
 
       queryClient.invalidateQueries({
-        queryKey: ["sharedPostsByUserId", userId],
+        queryKey: ["sharedPostsByUserId"],
       });
     },
     onError: (error: AxiosError<ApiErrorResponse>) => {
