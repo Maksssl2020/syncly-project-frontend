@@ -269,7 +269,11 @@ const UserBlog = ({ isSignedInUserBlog = false }: UserBlogProps) => {
                 {website && (
                   <div className={"flex items-center gap-2"}>
                     <LinkIcon className={"size-4"} />
-                    <a href={"#"} className={"hover:underline text-teal-100"}>
+                    <a
+                      href={website}
+                      target={"_blank"}
+                      className={"hover:underline text-teal-100"}
+                    >
                       {website}
                     </a>
                   </div>
